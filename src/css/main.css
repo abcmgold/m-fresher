@@ -1,0 +1,59 @@
+@import url("./components/table.css");
+@import url("./components/paging.css");
+@import url("./components/form.css");
+@import url("./variables.css");
+
+@font-face {
+    font-family: Roboto;
+    src: url("../assets/font/Roboto-Regular.ttf");
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: Roboto;
+    src: url("../assets/font/Roboto-Medium.ttf");
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: Roboto;
+    src: url("../assets/font/Roboto-Bold.ttf");
+    font-weight: 700;
+}
+@font-face {
+    font-family: Roboto;
+    src: url("../assets/font/Roboto-Italic.ttf");
+    font-style: italic;
+}
+
+*{
+    box-sizing: border-box;
+    margin: 0;
+}
+body {
+    font-family: Roboto;
+    font-size: 14px;
+}
+
+a {
+    text-decoration: none;
+}
+
+.row {
+    width: 100%;
+    margin-top: 30px
+}
+
+.container { 
+    width: 100%;
+    display: flex;
+}   
+
+.container--sidebar--small .main{
+    width: calc(100% - var(--small-sidebar-width));
+}
+
+.main {
+    flex: 1;
+    width: calc(100% - var(--sidebar-width));
+}
