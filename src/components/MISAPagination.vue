@@ -4,7 +4,6 @@
             layout="prev, pager, next"
             :total="this.numberPages"
             :pager-count="5"
-          
             v-model:current-page="this.currentPage"       
             @current-change="handleCurrentChange(this.currentPage)"
         />

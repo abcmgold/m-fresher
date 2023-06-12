@@ -3,9 +3,18 @@
  * Author: BATUAN (28/05/2023) 
  */
 export function formatMoney(money) {
-    money = parseFloat(money).toFixed(0);
-    money = money.toString();
-    return money.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+    try {
+        if (money) {
+            money = parseFloat(money).toFixed(0);
+            money = money.toString();
+            return money.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+        } else {
+            return 0;
+        }
+
+    } catch (error) {
+        return error
+    }
 }
 
 /**

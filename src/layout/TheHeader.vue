@@ -26,7 +26,7 @@
           <li class="header__right-icon" title="Thông báo">
             <img src="../assets/icon/bell-icon.svg" />
           </li>
-          <li class="header__right-icon">
+          <li class="header__right-icon" title="Cài đặt">
             <img src="../assets/icon/system-icon.svg" />
           </li>
           <li class="header__right-icon" title="Hỏi đáp">

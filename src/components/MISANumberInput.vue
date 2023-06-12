@@ -2,13 +2,14 @@
     <div class="number-field__input">
         <input
             ref="myInputNumber"
-            type="number"
+            type="text"
             class="number-field__input--value"
             :class="[{ 'number-field__input--error': error }, individualClass, , { 'text__input--icon': isShowIcon }]"
-            :value="modelValue"
-            @input="$emit('update:modelValue', Number($event.target.value))"
+            v-model="currentvalue"
             v-on:blur="onBlurFunction"
             v-on:click="onChangeFunction"
+            v-on:change="onChangeFunction"
+            @keydown="blockAlphabets"
         />
         <div class="number-field__input--icons" v-if="isShowIcon">
             <div class="number-field__input--icon--up" @click="this.increasingValue"></div>
@@ -33,16 +34,41 @@ export default {
     data() {
         return {
             error: false,
+            currentvalue: null,
         };
+    },
+    created() {
+        this.currentvalue = this.formattedMoney(this.modelValue);
+    },
+    watch: {
+        currentvalue: function (newValue) {
+            newValue = this.unformatNumber(newValue);
+            this.$emit('update:modelValue', newValue);
+            this.currentvalue = this.formattedMoney(newValue);
+        },
     },
     emit: ['update:modelValue'],
     methods: {
+        blockAlphabets(event) {
+            // Lấy giá trị của phím được nhấn
+            const keyCode = event.keyCode || event.which;
+            const key = String.fromCharCode(keyCode);
+            if (event.ctrlKey && (keyCode === 65 || keyCode === 86 || keyCode === 67)) {
+                // Cho phép sự kiện xảy ra
+                return;
+            }
+
+            // Kiểm tra nếu ký tự không phải số
+            if (!/^[0-9]+$/.test(key) && keyCode !== 8 && keyCode !== 37 && keyCode !== 39 && keyCode !== 9) {
+                event.preventDefault(); // Chặn sự kiện nhập
+            }
+        },
         increasingValue() {
-            this.$emit('update:modelValue', Number(Number(this.modelValue) + 1));
+            this.$emit('update:modelValue', Number(this.modelValue) + 1);
         },
         decreasingValue() {
             if (this.modelValue > 0) {
-                this.$emit('update:modelValue', Number(Number(this.modelValue) - 1));
+                this.$emit('update:modelValue', Number(this.modelValue) - 1);
             }
         },
         onBlurFunction() {
@@ -63,12 +89,17 @@ export default {
             return formatMoney(value);
         },
 
-        unformatNumber(value) {
-            const number = parseFloat(value.replace(/[^0-9.-]+/g, ''));
-            if (isNaN(number)) {
-                return value;
+        unformatNumber(money) {
+            try {
+                if (money) {
+                    var value = parseInt(money.replaceAll('.', ''));
+                    return value;
+                } else {
+                    return '';
+                }
+            } catch (error) {
+                console.log(error);
             }
-            return number;
         },
     },
 };

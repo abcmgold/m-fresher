@@ -280,7 +280,7 @@
                                 ></m-number-input>
                             </div> -->
                             <m-group-input
-                                text="Tỉ lệ hao mòn"
+                                text="Tỉ lệ hao mòn (%)"
                                 :isForce="true"
                                 message="Tỉ lệ hao mòn không được phép để trống"
                             >
@@ -428,14 +428,14 @@
             :thirdBtnFunction="hideDialogAndModal"
         ></m-dialog>
     </m-modal>
-    <m-modal v-show="isShowDialogValidate">
+    <!-- <m-modal v-show="isShowDialogValidate">
         <m-dialog
             :text="this.textDialog"
             :endText="this.validateMsg"
             thirdBtnLabel="Đóng"
             :thirdBtnFunction="hideDialogValidate"
         ></m-dialog>
-    </m-modal>
+    </m-modal> -->
 </template>
 
 <script scoped>
@@ -522,6 +522,7 @@ export default {
         },
         // Tính toán lại tỷ lệ hao mòn và giá trị hao mòn năm khi số năm sử dụng thay đổi
         'property.NumberYearsUse': function (newValue) {
+            console.log(newValue)
             if (newValue == 0) {
                 this.property.WearRate = 0;
             } else {
@@ -530,15 +531,6 @@ export default {
                     ((Number((this.property.OriginalValue * this.property.WearRate).toFixed(2)) / 100) * 100) / 100;
             }
         },
-        // 'property.WearRate': function (newValue) {
-        //     if (newValue == 0) {
-        //         this.property.NumberYearsUse = 0;
-        //     }
-        //     else {
-        //         this.property.NumberYearsUse = Math.floor(1 / newValue * 100) ;
-        //         this.property.Limit = (Number((this.property.OriginalValue * newValue).toFixed(2)) * 100) / 100;
-        //     }
-        // },
     },
 
     methods: {

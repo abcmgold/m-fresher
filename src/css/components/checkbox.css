@@ -1,0 +1,12 @@
+.checkbox {
+    background: url('../../assets/icon/qlts-icon.svg') no-repeat -113px -377px;
+	width: 14px;
+	height: 14px;
+    cursor: pointer;
+}
+
+.checkbox.checked {
+    background: url('../../assets/icon/qlts-icon.svg') no-repeat -157px -377px;
+	width: 14px;
+	height: 14px;
+}

@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <input type="checkbox" v-model="isChecked" @change="handleCheckboxChange" />
+    <div class = "checkbox" :class = '{"checked": isChecked}' @click="handleCheckboxChange">
+        <!-- <input type="checkbox" v-model="isChecked" @change="handleCheckboxChange" /> -->
     </div>
 </template>
 
@@ -23,8 +23,8 @@ export default {
     methods: {
         handleCheckboxChange() {
             // Xử lý khi checkbox được chọn
-
-            if (this.isChecked) {
+            if (!this.isChecked) {
+                this.isChecked = true;
                 if (this.type == 'primary') {
                     this.$emit('selectAllRow');
                 } else {
@@ -32,7 +32,7 @@ export default {
                 }
             } else {
                 // Xử lý khi checkbox bị bỏ chọn
-
+                this.isChecked = false;
                 if (this.type == 'primary') {
                     this.$emit('unSelectAllRow');
                 } else {
@@ -45,5 +45,5 @@ export default {
 </script>
 
 <style scoped>
-@import url(../css/components/table.css);
+@import url(../css/components/checkbox.css);
 </style>

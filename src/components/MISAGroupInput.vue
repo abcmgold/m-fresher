@@ -26,9 +26,6 @@ export default {
             isShowMessage: false,
         };
     },
-    mounted() {
-        console.log(this.$refs);
-    },
     methods: {
         showErrorMessage() {
             this.isShowMessage = true;
