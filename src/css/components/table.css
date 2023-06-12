@@ -50,18 +50,6 @@ table thead tr th:first-child {
     background-color: #f5f5f5;
 }
 
-.table td input[type='checkbox'],
-.table th input[type='checkbox'] {
-    width: 16px;
-    height: 16px;
-    margin: 0;
-}
-
-.table td input[type='checkbox']:checked,
-.table th input[type='checkbox']:checked {
-    accent-color: #1c3048;
-}
-
 .text-align-left {
     text-align: left;
 }
@@ -74,37 +62,42 @@ table thead tr th:first-child {
 }
 
 .table tbody tr:hover {
-    background-color: rgba(26, 164, 200, 0.1);
+    background-color: #d1edf4;
     cursor: pointer;
 }
 
 .table tbody .row-selected {
-    background-color: rgba(26, 164, 200, 0.2);
+    background-color: #d1edf4;
 }
 
 .table-list-icons {
-    margin-top: 14px;
+    height: 48px;
     display: flex;
     justify-content: space-evenly;
     align-items: center;
 }
 
-.table-icon {
-    width: 20px;
-    height: 20px;
+.table--icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background-color: #ffffff;
 }
 
-.table-icon-pencil {
-    background-image: url(../../assets/icon/qlts-icon.svg);
-    background-repeat: no-repeat;
-    background-position: -156px -68px;
+.table--icon:hover {
+    box-shadow: #a09e9e 1px 2px 4px 1px;;
 }
 
-.table-icon-comment {
+.table--icon-pencil {
     background-image: url(../../assets/icon/qlts-icon.svg);
     background-repeat: no-repeat;
-    background-position: -244px -112px;
+    background-position: -150px -64px;
 }
+
+.table--icon-comment {
+    background-image: url(../../assets/icon/qlts-icon.svg);
+    background-repeat: no-repeat;
+    background-position: -238px -107px;}
 
 .table__paging-total {
     float: left;
@@ -191,7 +184,7 @@ thead {
     top: 0;
 }
 
-tfoot{
+tfoot {
     position: sticky;
     bottom: 0px;
     background-color: #ffffff;

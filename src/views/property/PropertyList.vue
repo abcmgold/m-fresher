@@ -90,9 +90,8 @@
                 <tr
                     v-for="(data, index) in this.dataRender"
                     :key="data.Id"
-                    @mouseover="showIcons(index)"
-                    @mouseout="hideIcons()"
                     :class="{ 'row-selected': isSelected(index) }"
+                    @click="clickOnRowTable(index, $event)"
                 >
                     <td class="text-align-center">
                         <m-checkbox
@@ -113,13 +112,13 @@
                     <td class="text-align-right">{{ this.formatedMoney(data.ResidualValue) }}</td>
                     <td class="table-list-icons">
                         <div
-                            class="table-icon table-icon-pencil"
-                            v-show="isHovered(index)"
+                            class="table--icon table--icon-pencil"
+                            title="Chỉnh sửa"
                             @click="this.showDetail(index, data.id)"
                         ></div>
                         <div
-                            class="table-icon table-icon-comment"
-                            v-show="isHovered(index)"
+                            class="table--icon table--icon-comment"
+                            title="Nhân bản"
                             @click="this.duplicateRow(index)"
                         ></div>
                     </td>
@@ -173,6 +172,15 @@
                 :thirdBtnFunction="deleteRow"
             ></m-dialog>
         </m-modal>
+        <m-modal v-if="this.isShowWarnDialog">
+            <m-dialog
+                :text="this.textDialog"
+                thirdBtnLabel="Đóng"
+                :thirdBtnFunction="() => {
+                    this.isShowWarnDialog = false;
+                }"
+            ></m-dialog>
+        </m-modal>
         <div v-show="this.isLoadingData" class="table--loading"><font-awesome-icon icon="fa-solid fa-spinner" /></div>
     </div>
     <PropertyAdd
@@ -220,6 +228,7 @@ export default {
             isShowToastSuccess: false,
             isShowAddProperty: false,
             isShowDeleteDialog: false,
+            isShowWarnDialog: false,
             deleteMsg: '',
             beginText: '',
             textDialog: '',
@@ -294,8 +303,6 @@ export default {
         this.getAllProperty();
         this.calculateNumberPage();
         this.getPropertyWithFilter();
-
-        console.log(this.dataTable)
     },
     watch: {
         numberRecords: function (newValue) {
@@ -423,7 +430,7 @@ export default {
          */
         showDetail(index, id) {
             this.isShowAddProperty = true;
-            this.selectedData = this.dataRender[index];
+            this.selectedData = this.dataRender[index];  
             this.seletedRowIndex = index;
             this.idSelectedData = id;
         },
@@ -469,19 +476,6 @@ export default {
             this.isShowAddProperty = false;
         },
         /*
-         * Hiển thị icon khi hover vào hàng trong table
-         * Author: BATUAN (27/05/2023)
-         */
-        showIcons(index) {
-            this.hoveredRow = index;
-        },
-        hideIcons() {
-            this.hoveredRow = null;
-        },
-        isHovered(index) {
-            return this.hoveredRow === index;
-        },
-        /*
          * Update dữ liệu khi lưu dữ liệu trong form chỉnh sửa
          * Author: BATUAN (27/05/2023)
          */
@@ -495,6 +489,29 @@ export default {
                 });
             // cập nhật lại bảng
             this.getPropertyWithFilter();
+        },
+        /*
+         * Sự kiện click vào hàng của table
+         * Author: BATUAN (12/06/2023)
+         */
+        clickOnRowTable(index, event) {
+            if (event.ctrlKey) {
+                if (!this.selectedRow.includes(index)) {
+                    this.selectedRow.push(index);
+                    this.$refs[`checkbox-${index}`][0].isChecked = true;
+                    if (this.selectedRow.length == this.dataRender.length) {
+                        this.$refs['checkbox-all'].isChecked = true;
+                    }
+                } else {
+                    this.selectedRow = this.selectedRow.filter((num) => {
+                        if (num == index) {
+                            this.$refs[`checkbox-${num}`][0].isChecked = false;
+                            this.$refs['checkbox-all'].isChecked = false;
+                        }
+                        return num != index;
+                    });
+                }
+            }
         },
         /*
          * Thêm một bản ghi mới vào dữ liệu
@@ -556,6 +573,9 @@ export default {
                 for (let i = 0; i < this.dataRender.length; i++) {
                     if (!this.selectedRow.includes(i)) {
                         this.selectedRow.push(i);
+                        this.selectedRow.sort(function (a, b) {
+                            return a - b;
+                        });
                         targetRef.push(`checkbox-${i}`);
                     }
                 }
@@ -590,17 +610,22 @@ export default {
             this.beginText = '';
             this.endText = '';
 
-            if (this.selectedRow.length <= 0) return;
-            this.isShowDeleteDialog = true;
-            if (this.selectedRow.length == 1) {
-                this.textDialog = 'Bạn có muốn xóa tài sản';
-                this.deleteMsg = `<<${this.dataRender[this.selectedRow[0]].PropertyCode}-${
-                    this.dataRender[this.selectedRow[0]].PropertyName
-                }>>`;
+            if (this.selectedRow.length <= 0) {
+                this.isShowWarnDialog = true;
+                this.textDialog = "Vui lòng chọn ít nhất 1 bản ghi!"
             } else {
-                this.deleteMsg = '';
-                this.beginText = this.selectedRow.length > 10 ? this.selectedRow.length : `0${this.selectedRow.length}`;
-                this.textDialog = ' tài sản đã được chọn. Bạn có muốn xóa các tài sản này khỏi danh sách?';
+                this.isShowDeleteDialog = true;
+                if (this.selectedRow.length == 1) {
+                    this.textDialog = 'Bạn có muốn xóa tài sản';
+                    this.deleteMsg = `<<${this.dataRender[this.selectedRow[0]].PropertyCode}-${
+                        this.dataRender[this.selectedRow[0]].PropertyName
+                    }>>`;
+                } else {
+                    this.deleteMsg = '';
+                    this.beginText =
+                        this.selectedRow.length > 10 ? this.selectedRow.length : `0${this.selectedRow.length}`;
+                    this.textDialog = ' tài sản đã được chọn. Bạn có muốn xóa các tài sản này khỏi danh sách?';
+                }
             }
         },
         /*
@@ -659,6 +684,38 @@ export default {
                 console.log(e);
             }
         },
+        // handleKeyDown(event) {
+        //     console.log(event)
+        //     // Kiểm tra nếu phím Ctrl được nhấn
+        //     if (event.ctrlKey && event.key === 'Control') {
+        //         // Bắt đầu lắng nghe sự kiện click khi Ctrl đã được nhấn
+        //         window.addEventListener('click', () => {
+        //             console.log(event)
+        //         });
+        //     }
+        // },
+        // clickOnRowTable(event,index) {
+        //     if (event.ctrlKey) {
+
+        //     }
+        //     if (!this.selectedRow.includes(index)) {
+        //         this.selectedRow.push(index);
+        //     } else {
+        //         this.selectedRow = this.selectedRow.filter((num) => {
+        //             return num != index;
+        //         });
+        //     }
+        // },
+        // handleCtrlClick(event) {
+        //     // Kiểm tra xem sự kiện click có xảy ra trong khi Ctrl đã được nhấn không
+        //     if (event.ctrlKey) {
+        //         // Xử lý sự kiện Ctrl+Click ở đây
+        //         console.log('Ctrl+Click');
+        //     }
+
+        //     // Ngừng lắng nghe sự kiện click
+        //     window.removeEventListener('click', this.handleCtrlClick);
+        // },
     },
 };
 </script>
