@@ -1,0 +1,52 @@
+.content {
+    background-color: #f4f7ff;
+    height: calc(100vh - 56px);
+    padding: 23px 24px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 3px;
+}
+
+.content__navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.content__navbar-left {
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    column-gap: 12px;
+}
+
+.content__navbar-right {
+    display: flex;
+    align-items: center;
+    column-gap: 12px;
+}
+
+.content__body {
+    flex: 1;
+    border: 1px solid #afafaf;
+    border-radius: 4px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .16);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    /* Cứ set heigth là nó được, không rõ giá trị bao nhiêu */
+    height: 200px;
+}
+
+  
+.content__navbar-right button {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .16);
+}
+
+
+
+
+

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33516.290
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MISA.WebFresher042023.Demo", "MISA.WebFresher042023.Demo\MISA.WebFresher042023.Demo.csproj", "{7EDD8333-ADCC-4F65-AB0E-53E78B5623DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MISA.WEBFresher042023.Demo.UnitTests", "MISA.WEBFresher042023.Demo.UnitTests\MISA.WEBFresher042023.Demo.UnitTests.csproj", "{B2C73824-BEE3-4841-B9DF-671C7AA019A6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7EDD8333-ADCC-4F65-AB0E-53E78B5623DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EDD8333-ADCC-4F65-AB0E-53E78B5623DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EDD8333-ADCC-4F65-AB0E-53E78B5623DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EDD8333-ADCC-4F65-AB0E-53E78B5623DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2C73824-BEE3-4841-B9DF-671C7AA019A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2C73824-BEE3-4841-B9DF-671C7AA019A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2C73824-BEE3-4841-B9DF-671C7AA019A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2C73824-BEE3-4841-B9DF-671C7AA019A6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {910E1699-777A-4A92-8754-454112EA5E8A}
+	EndGlobalSection
+EndGlobal
