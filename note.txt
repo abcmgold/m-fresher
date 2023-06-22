@@ -1,0 +1,71 @@
++ Hiển thị được dữ liệu qua table
++ Form thêm, sửa tài sản.
++ Lọc dữ liệu quan api (fake api)
++ Phân trang
++ Xóa bản ghi
++ Validate dữ liệu trống
+
+- Chưa xong: 
++ Format tiền khi nhập input
++ Các chức năng nâng cao: di chuyển lên, xuống dòng dữ liệu, chọn nhiều bằng Ctrl, Shift để xóa nhiều; ContextMenu; Thay đổi độ rộng cột
+
+Ngày (08/06/2023)
+Sửa:
+- xóa tài sản có cảnh báo khi chưa chọn bản ghi nào: DONE
+- hover vào row của table có màu: DONE
+- tool tip: DONE
+- icon trong table không cần hover vào để hiện: DONE
+- ô tìm kiếm paging: DONE
+- Ctrl, shift để chọn dòng: DONE
+- Validate độ dài input: DONE
+- Thêm nguyên giá thì các giá trị bị cảnh báo được xóa: DONE
+- Format tiền: DONE
+- Sửa ô checkbox table: DONE
+- Auto thêm mã tài sản: DONE
+
+Ngày (16/06/2023)
+
+Sửa: Còn lưu lại các lựa chọn sau khi đã xóa : DONE
+     Thêm toast message khi xóa thành công  : DONE
+     Sửa cái nhân bản thành xóa trong icon ở table : Gần DONE
+     Sửa lại style của tool tip trên tất cả chương trình (tham khảo trang mẫu) 
+     Chỉnh sửa phần margin của table cho giống nhau : DONE
+     Cho summary sang 1 dòng riêng, bôi đậm thêm : DONE
+     Scroll kéo sang trái phải : DONE
+     Không cho nhập số âm vào input trang : xử lý theo cách khác
+     Thêm sự kiện click vào 1 dòng thì các dòng đang bôi đen mất, chỉ chọn 1 dòng (giống window)
+     Tăng kích thước checkbox : DONE
+     Sửa lại toast message thêm thành công (nên để ở trên) : DONE
+     Cho to chữ danh sách tài sản : DONE
+
+
+
+
+
+
+
+
+
+
+Ngày (22/06/2023)
+Sửa: Xóa <<,>> ở confirm xóa 1 bản ghi
+     Background khi hiện popup: cho sáng hơn
+     Nhập số âm vào ô input số trang thì ở lại trang hiện tại
+     Set min-width cho các cột: số tiền: độ dài đáp ứng đủ 100 tỷ
+     Tăng time toast message
+     Thêm nút nạp
+     Check trùng
+     Thêm ảnh không có dữ liệu
+     Validate dữ liệu bên backend
+     Xóa box-shadow của table
+     Kích thước xung quanh table: 12px
+     Chỉnh lại kích thước ô chọn trang, pagesize, bỏ border của ô pagesize.
+     Focus vào dòng đầu của table khi mới vào trang hoặc sau khi xóa
+     Border của cột chức năng khi có ít bản ghi
+     Place holder để chung 1 style (thường)
+     Loading table 
+     Double click vào 1 dòng để lên form sửa
+     Cho icon ô xóa giống nhau, chỉnh sửa lại kích thước
+     Tổng số tài sản phải map với số giá trị tìm được, số trang (Lỗi khi tìm kiếm)
+
+
