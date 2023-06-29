@@ -104,5 +104,6 @@
 
 .combo-box--small .el-input__wrapper {
     height: 32px !important;
-    width: 70px !important;
+    width: 55px !important;
+    border: none !important;
 }

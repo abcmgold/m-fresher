@@ -8,7 +8,7 @@
 export default {
   name: "TheContent",
   components: {
-  }
+  },
 };
 </script>
 

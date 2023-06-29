@@ -34,6 +34,8 @@
     outline: none;
     text-align: right;
     padding-right: 12px;
+    width: 100%;
+    min-width: 36px;
 }
 
 .number-field__input--value.text__input--icon {

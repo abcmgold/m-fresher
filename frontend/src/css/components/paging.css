@@ -1,7 +1,6 @@
 .paging {
     display: flex;
     height: 48px;
-    border-bottom: 1px solid #ccc;
     align-items: center;
     justify-content: space-between;
     padding: 0px 16px;
@@ -45,8 +44,8 @@
 
 .pagination-block {
     display: inline-block;
-    margin-top: 4px;
-    margin-left: 20px !important;
+    display: flex;
+    align-items: center;
 }
 
 .el-pager li:hover {
@@ -135,6 +134,7 @@
 
 .paging-list {
     display: flex;
+    margin-top: 4px;
 }
 
 .el-pager .number {
@@ -151,4 +151,10 @@
 
 .more {
     width: 24px !important;
+}
+
+.paging-list-text {
+    white-space: nowrap; 
+    line-height: 100%;
+    padding-top: 8px;
 }

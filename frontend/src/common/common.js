@@ -18,6 +18,23 @@ export function formatMoney(money) {
 }
 
 /**
+ * Bỏ format tiền
+ * Author: BATUAN (28/05/2023) 
+ */
+export function unformatMoney(money) {
+    try {
+        if (money) {
+            var value = parseInt(money.replaceAll('.', ''));
+            return value;
+        } else {
+            return '';
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+/**
  * Format ngày tháng
  * Author: BATUAN (29/05/2023) 
  */

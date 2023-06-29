@@ -4,9 +4,9 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 80%);
+    background-color: rgba(0, 0, 0, 60%);
     /* display: none; */
-    z-index: 3;
+    z-index: 11;
 }
 
 .modal__content {

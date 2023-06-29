@@ -27,9 +27,17 @@ export default {
         };
     },
     methods: {
+        /*
+         * Sự kiện hiển thị error message dưới các ô input trong các form
+         * Author: BATUAN (14/06/2023)
+         */
         showErrorMessage() {
             this.isShowMessage = true;
         },
+         /*
+         * Sự kiện ẩn error message dưới các ô input trong các form
+         * Author: BATUAN (14/06/2023)
+         */
         hideErrorMessage() {
             this.isShowMessage = false;
         },

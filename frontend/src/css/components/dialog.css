@@ -10,6 +10,10 @@
     transform: translate(-50%, -50%);
 }
 
+.dialog__btn {
+    display: flex;
+}
+
 .dialog__header__icon-close {
     width: 18px;
     height: 18px;

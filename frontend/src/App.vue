@@ -1,26 +1,27 @@
 <template>
-  <div class="container">
-    <TheSidebar></TheSidebar>
-    <div class="main">
-      <TheHeader></TheHeader>
-      <TheContent></TheContent>
+    <div class="container">
+        <TheSidebar></TheSidebar>
+        <div class="main">
+            <div v-if="this.$store.state.maskElementShow" class="mask-element"></div>
+            <TheHeader></TheHeader>
+            <TheContent></TheContent>
+        </div>
     </div>
-  </div>
 </template>
 
 <script>
-import TheHeader from "./layout/TheHeader.vue"
-import TheSidebar from "./layout/TheSidebar.vue"
-import TheContent from "./layout/TheContent.vue"
+import TheHeader from './layout/TheHeader.vue';
+import TheSidebar from './layout/TheSidebar.vue';
+import TheContent from './layout/TheContent.vue';
 
 export default {
-  name: 'App',
-  components: {
-    TheHeader,
-    TheSidebar,
-    TheContent,
-  }
-}
+    name: 'App',
+    components: {
+        TheHeader,
+        TheSidebar,
+        TheContent,
+    },
+};
 </script>
 
 <style>

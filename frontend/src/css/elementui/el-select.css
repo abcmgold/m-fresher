@@ -3,12 +3,15 @@
     height: 36px !important;
 }
 
+.el-select.back-ground__icon {
+    width: 260px !important;
+}
+
 .el-input__wrapper {
     border: 1px solid #afafaf;
     box-shadow: none !important;
     height: 36px !important;
     padding: 0px 12px 0px 12px !important;
-    width: 260px !important;
 }
 
 body .el-select .el-input.is-focus .el-input__wrapper {
@@ -51,6 +54,10 @@ body .el-select .el-input__wrapper.is-focus {
     color: var(--primary-color) !important;
 }
 
+.el-select-dropdown__item {
+    padding-left: 30px !important;
+}
+
 
 .el-select--error .el-input__wrapper {
     border-color: red !important;
@@ -60,3 +67,10 @@ body .el-select .el-input__wrapper.is-focus {
     color: black !important;
 }
 
+.el-input__suffix-inner>:first-child {
+    margin-left: 0px !important;
+}
+
+.pagination-block .el-input__wrapper {
+    height: 32px !important;
+}

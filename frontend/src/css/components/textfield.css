@@ -19,10 +19,6 @@
     color: #000000;
 }
 
-.text__input::placeholder {
-    font-style: italic;
-}
-
 .text__input-icon-end {
     background-image: url('../../assets/icon/search-icon.svg');
     background-repeat: no-repeat;
@@ -55,10 +51,14 @@
   	outline: none;
 }
 
-.text__input-error {
+.text__input--error {
     border-color: #E61D1D;
 }
 
+.text__input--not-allowed {
+    cursor: not-allowed;
+    pointer-events: none;
+}
 .input__value--left {
     text-align: right;
 }

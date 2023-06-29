@@ -19,15 +19,17 @@ import MISACombobox from './components/MISACombobox.vue'
 import MISANumberInput from './components/MISANumberInput.vue'
 import MISAGroupInput from './components/MISAGroupInput.vue'
 import MISADialog from './components/MISADialog.vue'
-import MISATable from './components/MISATable.vue'
 import MISACheckbox from './components/MISACheckbox.vue'
 import MISADatePicker from './components/MISADatepicker.vue'
 import MISAPagination from './components/MISAPagination.vue'
 import MISAMoneyInput from './components/MISAMoneyInput.vue'
 import MISAValidateText from './components/MISAValidateText.vue'
 
+import pressEscEvent from './common/directive.js'
 
 import vueRouter from './router';
+
+import store from './store'
 
 /* import specific icons */
 import { faUserSecret, faSpinner, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
@@ -44,7 +46,6 @@ app.component('m-modal', MISAModal)
 app.component('m-combo-box', MISACombobox)
 app.component('m-number-input', MISANumberInput)
 app.component('m-dialog', MISADialog)
-app.component('m-table', MISATable)
 app.component('m-checkbox', MISACheckbox)
 app.component('m-date-picker', MISADatePicker)
 app.component('m-pagination', MISAPagination)
@@ -53,6 +54,12 @@ app.component('m-validate-text', MISAValidateText)
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.component('m-group-input', MISAGroupInput)
 app.component('m-money-input', MISAMoneyInput)
+
+// add directive
+app.directive('esc',pressEscEvent);
+
+// add store
+app.use(store)
 
 const emitter = mitt();
 app.config.globalProperties.$emitter = emitter;

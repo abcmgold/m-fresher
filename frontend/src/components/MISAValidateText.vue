@@ -8,12 +8,7 @@ export default {
     props: {
         message: String,
         isEmptyField: Boolean
-    },
-    data() {
-        return {
-            // isEmptyField: false
-        }
-    },
+    }
 };
 </script>
 

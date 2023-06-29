@@ -1,10 +1,16 @@
 <template>
-    <m-modal>
+    <m-modal
+        v-esc="
+            () => {
+                this.$emit('hideAddProperty');
+            }
+        "
+    >
         <div class="popup">
             <div class="popup__header">
                 <div class="popup__header__title">{{ this.title }}</div>
                 <div id="btnCloseModalAdd" class="popup__header__close" @click="$emit('hideAddProperty')">
-                    <el-tooltip effect="dark" content="Đóng" placement="bottom-start">
+                    <el-tooltip effect="dark" :content="this.MISAResource['vn-VI'].close" placement="bottom-start">
                         <div class="icon--close"></div>
                     </el-tooltip>
                 </div>
@@ -14,14 +20,14 @@
                     <div class="popup__row-col-3">
                         <div class="popup__item popup__item-force">
                             <m-group-input
-                                text="Mã tài sản"
+                                :text="this.MISAResource['vn-VI'].property.propertyCode"
                                 :isForce="true"
-                                message="Mã tài sản không được phép để trống"
+                                :message="this.MISAResource['vn-VI'].property.propertyCodeError"
                             >
                                 <m-text-input
                                     ref="propertyCodeInput"
                                     v-model="property.PropertyCode"
-                                    placeholder="Nhập mã tài sản"
+                                    :placeholder="this.MISAResource['vn-VI'].property.propertyCodeType"
                                     :isRequired="true"
                                     type="text-field"
                                     :maxLength="this.enum.maxLengthCode"
@@ -32,15 +38,14 @@
                     <div class="popup__row-col-6" label="propertyName">
                         <div class="popup__item popup__item-force">
                             <m-group-input
-                                text="Tên tài sản"
+                                :text="this.MISAResource['vn-VI'].property.propertyName"
                                 :isForce="true"
-                                message="Tên tài sản không được phép để trống"
+                                :message="this.MISAResource['vn-VI'].property.propertyNameError"
                             >
                                 <m-text-input
                                     ref="propertyNameInput"
                                     v-model="property.PropertyName"
-                                    placeholder="Nhập tên tài sản"
-                                    errorMsg="Tên tài sản"
+                                    :placeholder="this.MISAResource['vn-VI'].property.propertyNameType"
                                     :isRequired="true"
                                     type="text-field"
                                     :maxLength="this.enum.maxLengthText"
@@ -53,19 +58,19 @@
                     <div class="popup__row-col-3">
                         <div class="popup__item popup__item-force">
                             <m-group-input
-                                text="Mã bộ phận sử dụng"
+                                :text="this.MISAResource['vn-VI'].property.departmentCode"
                                 :isForce="true"
-                                message="Mã bộ phận sử dụng không được phép để trống"
+                                :message="this.MISAResource['vn-VI'].property.departmentCodeError"
                             >
                                 <m-combo-box
                                     ref="departmentUseInput"
                                     v-model="property.DepartmentCode"
                                     :isRequired="true"
                                     :dataSelect="this.departmentCodes"
-                                    placeholder="Nhập mã bộ phận sử dụng"
-                                    errorMsg="Mã bộ phận sử dụng"
+                                    :placeholder="this.MISAResource['vn-VI'].property.departmentCodeType"
                                     type="combo-box"
                                     url="Department"
+                                    :filterable="true"
                                 ></m-combo-box>
                             </m-group-input>
                         </div>
@@ -73,7 +78,7 @@
                     <div class="popup__row-col-6">
                         <div class="popup__item">
                             <div class="input-group">
-                                <div class="input__text--label">Tên bộ phận sử dụng</div>
+                                <div class="input__text--label">{{this.MISAResource['vn-VI'].property.departmentName}}</div>
                                 <m-text-input
                                     v-model="property.DepartmentName"
                                     :isRequired="true"
@@ -86,26 +91,26 @@
                 <div class="popup__row">
                     <div class="popup__row-col-3">
                         <m-group-input
-                            text="Mã loại tài sản"
+                            :text="this.MISAResource['vn-VI'].property.propertyTypeCode"
                             :isForce="true"
-                            message="Mã loại tài sản không được phép để trống"
+                            :message="this.MISAResource['vn-VI'].property.propertyTypeCodeError"
                         >
                             <m-combo-box
                                 ref="propertyTypeInput"
                                 v-model="property.PropertyTypeCode"
                                 :isRequired="true"
                                 :dataSelect="this.propertyTypeCodes"
-                                errorMsg="Mã loại tài sản"
-                                placeholder="Nhập mã loại tài sản"
+                                :placeholder="this.MISAResource['vn-VI'].property.propertyTypeCodeType"
                                 type="combo-box"
                                 url="PropertyType"
+                                :filterable="true"
                             ></m-combo-box>
                         </m-group-input>
                     </div>
                     <div class="popup__row-col-6">
                         <div class="popup__item">
                             <div class="input-group">
-                                <div class="input__text--label">Tên loại tài sản</div>
+                                <div class="input__text--label">{{this.MISAResource['vn-VI'].property.propertyTypeName}}</div>
                                 <m-text-input
                                     v-model="property.PropertyTypeName"
                                     :isRequired="true"
@@ -118,32 +123,30 @@
                 <div class="popup__row">
                     <div class="popup__row-col-3">
                         <div class="popup__item popup__item-force">
-                            <m-group-input text="Số lượng" :isForce="true" message="Số lượng không được phép để trống">
-                                <m-number-input
+                            <m-group-input :text="this.MISAResource['vn-VI'].property.quantity" :isForce="true" :message="this.MISAResource['vn-VI'].property.quantityError">
+                                <m-money-input
                                     ref="quantityInput"
                                     v-model="property.Quantity"
                                     :isRequired="true"
-                                    errorMsg="Số lượng"
                                     :isShowIcon="true"
                                     type="number-field"
                                     :maxLength="this.enum.maxLengthNumber"
-                                ></m-number-input>
+                                ></m-money-input>
                             </m-group-input>
                         </div>
                     </div>
                     <div class="popup__row-col-3">
                         <div class="popup__item">
                             <m-group-input
-                                text="Nguyên giá"
+                                :text="this.MISAResource['vn-VI'].property.originalPrice"
                                 :isForce="true"
-                                message="Nguyên giá không được phép để trống"
+                                :message="this.MISAResource['vn-VI'].property.originalPriceError"
                             >
                                 <m-money-input
                                     ref="originalValueInput"
                                     v-model="property.OriginalPrice"
                                     :isRequired="true"
                                     individualClass="input__value--left"
-                                    errorMsg="Nguyên giá"
                                     type="number-field"
                                     :maxLength="this.enum.maxLengthNumber"
                                 ></m-money-input>
@@ -153,19 +156,18 @@
                     <div class="popup__row-col-3">
                         <div class="popup__item popup__item-force">
                             <m-group-input
-                                text="Số năm sử dụng"
+                                :text="this.MISAResource['vn-VI'].property.numberYearUse"
                                 :isForce="true"
-                                message="Số năm sử dụng không được phép để trống"
+                                :message="this.MISAResource['vn-VI'].property.numberYearUseError"
                             >
-                                <m-number-input
+                                <m-money-input
                                     ref="numberYearsUseInput"
                                     v-model="property.NumberYearUse"
                                     :isRequired="true"
                                     individualClass="input__value--left"
-                                    errorMsg="Số năm sử dụng"
                                     type="number-field"
                                     :maxLength="this.enum.maxLengthNumber"
-                                ></m-number-input>
+                                ></m-money-input>
                             </m-group-input>
                         </div>
                     </div>
@@ -174,15 +176,14 @@
                     <div class="popup__row-col-3">
                         <div class="popup__item popup__item-force">
                             <m-group-input
-                                text="Tỉ lệ hao mòn (%)"
+                                :text="this.MISAResource['vn-VI'].property.wearRate"
                                 :isForce="true"
-                                message="Tỉ lệ hao mòn không được phép để trống"
+                                :message="this.MISAResource['vn-VI'].property.wearRateError"
                             >
                                 <m-number-input
                                     ref="wearRateInput"
                                     v-model="property.WearRate"
                                     :isRequired="true"
-                                    errorMsg="Tỷ lệ hao mòn"
                                     :isShowIcon="true"
                                     type="number-field"
                                     :maxLength="this.enum.maxLengthNumber"
@@ -193,15 +194,14 @@
                     <div class="popup__row-col-3">
                         <div class="popup__item popup__item-force">
                             <m-group-input
-                                text="Giá trị hao mòn năm"
+                                :text="this.MISAResource['vn-VI'].property.wearRateValue"
                                 :isForce="true"
-                                message="Giá trị hao mòn năm không được phép để trống"
+                                :message="this.MISAResource['vn-VI'].property.wearRateValueError"
                                 ><m-money-input
                                     ref="limitInput"
                                     v-model="property.WearRateValue"
                                     :isRequired="true"
                                     individualClass="input__value--left"
-                                    errorMsg="Giá trị hao mòn năm"
                                     type="number-field"
                                     :maxLength="this.enum.maxLengthNumber"
                                 ></m-money-input>
@@ -212,7 +212,7 @@
                         <div class="popup__item">
                             <div class="input-group">
                                 <div class="input__text--label">
-                                    Năm theo dõi
+                                    {{this.MISAResource['vn-VI'].property.followYear}}
                                     <div class="popup__item-icon-force">*</div>
                                 </div>
                                 <m-text-input
@@ -229,31 +229,29 @@
                     <div class="popup__row-col-3">
                         <div class="popup__item popup__item-force">
                             <div class="popup__item-label text__label">
-                                Ngày mua
+                                {{this.MISAResource['vn-VI'].property.purchaseDate}}
                                 <div class="popup__item-icon-force">*</div>
                             </div>
                             <m-date-picker
                                 ref="purchaseDateInput"
                                 type="date"
-                                isRequired="true"
+                                :isRequired="true"
                                 v-model="property.PurchaseDate"
-                                errorMsg="Ngày mua"
                             ></m-date-picker>
                         </div>
                     </div>
                     <div class="popup__row-col-3">
                         <div class="popup__item popup__item-force">
                             <div class="popup__item-label text__label">
-                                Ngày bắt đầu sử dụng
+                                {{this.MISAResource['vn-VI'].property.useDate}}
                                 <div class="popup__item-icon-force">*</div>
                             </div>
 
                             <m-date-picker
                                 ref="useDateInput"
                                 type="date"
-                                isRequired="true"
+                                :isRequired="true"
                                 v-model="property.FollowDate"
-                                errorMsg="Ngày bắt đầu sử dụng"
                             ></m-date-picker>
                         </div>
                     </div>
@@ -327,15 +325,6 @@ export default {
             validateMsg: '',
             textDialog: '',
             enum: ENUM,
-            // DepartmentCodes: [
-            //     { value: 'Phòng Hành chính Tổng hợp', label: 'HCTH' },
-            //     { value: 'Phòng Kế toán', label: 'KT' },
-            //     { value: 'Phòng Nhân sự', label: 'NS' },
-            // ],
-            // PropertyTypeCodes: [
-            //     { value: 'Máy vi tính xách tay', label: 'MTXT' },
-            //     { value: 'Máy tính bàn', label: 'MTB' },
-            // ],
 
             title: '',
             propertyCodeSample: '',
@@ -345,7 +334,6 @@ export default {
         if (!this.selectedRow) {
             // tính giá trị code mới được gợi ý
             await this.generateSampleCode();
-
             this.title = this.MISAResource['vn-VI'].addProperty;
         }
         // gán các giá trị mặc định
@@ -418,25 +406,32 @@ export default {
             await instance
                 .get('Property/GetLastestCode')
                 .then((res) => {
-                    // Tách phần số từ chuỗi mã
-                    let numberPart = res.data.match(/\d+/)[0];
-                    // tính độ dài của phần số trong đoạn mã
-                    let length = numberPart.length;
-                    // chuyển phần số thành 1 số nguyên
-                    let number = parseInt(numberPart);
-                    // tăng giá trị lên 1
-                    number++;
-                    // chuyển lại về string
-                    number = number.toString();
-                    // gắn thêm các số 0 ở trước cho đủ độ dài ban đâu
-                    let preZero = '';
-                    for (let i = 0; i < length - number.length; i++) {
-                        preZero = preZero + '0';
-                    }
-                    // giá trị sau khi được tăng
-                    let newPropertyCode = 'TS' + preZero + number;
+                    // Tách phần chữ
+                    let textPart = res.data.match(/[A-Za-z]+/)[0];
 
-                    this.propertyCodeSample = newPropertyCode;
+                    if (!res.data.match(/\d+/)) {
+                        let newPropertyCode = textPart + '1';
+                        this.propertyCodeSample = newPropertyCode;
+                    } else {
+                        // Tách phần số từ chuỗi mã
+                        let numberPart = res.data.match(/\d+/)[0];
+                        // tính độ dài của phần số trong đoạn mã
+                        let length = numberPart.length;
+                        // chuyển phần số thành 1 số nguyên
+                        let number = parseInt(numberPart);
+                        // tăng giá trị lên 1
+                        number++;
+                        // chuyển lại về string
+                        number = number.toString();
+                        // gắn thêm các số 0 ở trước cho đủ độ dài ban đâu
+                        let preZero = '';
+                        for (let i = 0; i < length - number.length; i++) {
+                            preZero = preZero + '0';
+                        }
+                        // giá trị sau khi được tăng
+                        let newPropertyCode = textPart + preZero + number;
+                        this.propertyCodeSample = newPropertyCode;
+                    }
                 })
                 .catch((err) => {
                     console.log(err);
@@ -457,10 +452,7 @@ export default {
                         this.property.ResidualValue = this.property.OriginalValue - this.property.WearRateValue;
                         // sửa tài sản
                         this.$emit('updateValueRow', this.property);
-                        // show toast thông báo thành công
-                        this.$emit('showToastSuccess', 'Cập nhật dữ liệu thành công');
-                        // đóng modal thêm tài sản
-                        this.$emit('hideAddProperty');
+                      
                     }
                     // Thêm tài sản
                     else {
@@ -468,10 +460,6 @@ export default {
                         this.property.ResidualValue = this.property.OriginalValue - this.property.WearRateValue;
                         // thêm tài sản mới
                         this.$emit('addNewProperty', this.property);
-                        // show toast thông báo thành công
-                        this.$emit('showToastSuccess', 'Lưu dữu liệu thành công');
-                        // đóng modal thêm tài sản
-                        this.$emit('hideAddProperty');
                     }
                 } else {
                     this.isShowDialogValidate = true;
@@ -482,7 +470,7 @@ export default {
                         this.$refs[ref].onBlurFunction();
                     }
                 }
-                // this.focusOnErrorInput();
+                this.focusOnErrorInput();
             }
         },
         /*
@@ -515,11 +503,11 @@ export default {
             if (
                 Number(this.property.WearRate.toFixed(2)) != Number((1 / this.property.NumberYearUse) * 100).toFixed(2)
             ) {
-                this.textDialog = 'Tỷ lệ hao mòn phải bằng 1/Số năm sử dụng';
+                this.textDialog = this.MISAResource['vn-VI'].wearRateError;
                 check = false;
             }
             if (Number(this.property.WearRateValue) > Number(this.property.OriginalPrice)) {
-                this.textDialog = 'Hao mòn năm phải nhỏ hơn hoặc bằng nguyên giá';
+                this.textDialog = this.MISAResource['vn-VI'].wearRateValueError;
                 check = false;
             }
             return check;
@@ -572,6 +560,10 @@ export default {
             this.$emit('hideAddProperty');
             this.isShowDialogCancel = false;
         },
+        /*
+         * Focus vào ô input lỗi đầu tiên
+         * Author: BATUAN (27/05/2023)
+         */
         focusOnErrorInput() {
             if (this.validateData().refText) {
                 this.$nextTick(() => {

@@ -48,24 +48,39 @@ Sửa: Còn lưu lại các lựa chọn sau khi đã xóa : DONE
 
 
 Ngày (22/06/2023)
-Sửa: Xóa <<,>> ở confirm xóa 1 bản ghi
-     Background khi hiện popup: cho sáng hơn
-     Nhập số âm vào ô input số trang thì ở lại trang hiện tại
-     Set min-width cho các cột: số tiền: độ dài đáp ứng đủ 100 tỷ
-     Tăng time toast message
-     Thêm nút nạp
-     Check trùng
-     Thêm ảnh không có dữ liệu
-     Validate dữ liệu bên backend
-     Xóa box-shadow của table
-     Kích thước xung quanh table: 12px
-     Chỉnh lại kích thước ô chọn trang, pagesize, bỏ border của ô pagesize.
+Sửa: Xóa <<,>> ở confirm xóa 1 bản ghi : DONE
+     Background khi hiện popup: cho sáng hơn :DONE
+     Set min-width cho các cột: số tiền: độ dài đáp ứng đủ 100 tỷ : DONE
+     Tăng time toast message :DONE
+     Thêm nút nạp : DONE
+     Check trùng : DONE
+     Thêm ảnh không có dữ liệu : DONE
+     Validate dữ liệu bên backend : Check trùng, đặt các attribute: Xong
+     Xóa box-shadow của table : DONE
+     Kích thước xung quanh table: 16px : DONE
+     Chỉnh lại kích thước ô chọn trang, pagesize, bỏ border của ô pagesize: DONE
      Focus vào dòng đầu của table khi mới vào trang hoặc sau khi xóa
-     Border của cột chức năng khi có ít bản ghi
-     Place holder để chung 1 style (thường)
-     Loading table 
-     Double click vào 1 dòng để lên form sửa
-     Cho icon ô xóa giống nhau, chỉnh sửa lại kích thước
-     Tổng số tài sản phải map với số giá trị tìm được, số trang (Lỗi khi tìm kiếm)
+     Bỏ border của cột chức năng khi có ít bản ghi : DONE
+     Place holder để chung 1 style (thường) : DONE
+     Loading table : DONE
+     Double click vào 1 dòng để lên form sửa : DONE
+     Cho icon ô xóa giống nhau, chỉnh sửa lại kích thước : DONE
+     Tổng số tài sản phải map với số giá trị tìm được, số trang (Lỗi khi tìm kiếm): XONG
+     Bug khi chọn 1 bản ghi khi đã filter: DONE	
 
-
+Ngày (29/06/2023)
+     Bỏ border dọc
+     Responsive cho màn hình nhỏ: 1366x768 hoặc 1024x768
+     Lỗi check trùng nên để thành required giống như lỗi input trống
+     Summary tổng tất cả các bản ghi
+     màn thêm ngắn lại, các input cũng ngắn lại (70%)
+     Cột số lượng cho nhỏ lại
+     lỗi các dòng trong form đang bị lệch (Mã loại tài sản)
+     Check trùng khi autoId (Tự sinh mã mới luôn)
+     mũi tên trỏ xuống chỗ số 20(page size) cách ra khoảng 3px
+     Cho loading dịch lên (không che sumary và paging)
+     Focus vào dòng đầu của table khi mới vào trang hoặc sau khi xóa
+     Style tool tip (tham khảo trang mẫu)
+     
+client : F8, F10, F11, Shift F11, call stack, watch, console, console.trace
+server: F5, F10, F11, Shift F11, Shift F9, call stack, watch, ctrl alt + {I,O,E,P}

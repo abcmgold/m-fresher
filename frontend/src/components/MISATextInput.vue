@@ -2,20 +2,22 @@
     <input
         ref="inputValue"
         type="text-field"
-        :class="['text__input', individualClass, { 'text__input-error': error }]"
+        :class="[
+            'text__input',
+            individualClass,
+            { 'text__input--error': error, 'text__input--not-allowed': isDisabled },
+        ]"
         :value="modelValue"
-        @input="$emit('update:modelValue', $event.target.value)"
+        @input="
+            ($event) => {
+                $emit('update:modelValue', $event.target.value);
+                onChangeFunction();
+            }
+        "
         :placeholder="placeholder"
         :disabled="isDisabled"
         v-on:blur="onBlurFunction"
-        v-on:change="onChangeFunction"
-        @focus="
-            () => {
-                if (this.$parent.hideErrorMessage) {
-                    this.$parent.hideErrorMessage();
-                }
-            }
-        "
+        @focus="highlightInput"
     />
 </template>
 
@@ -40,6 +42,18 @@ export default {
     },
 
     methods: {
+         /*
+         * Sự kiện khi click vào ô input thì giá trị trong ô đó được bôi đậm
+         * Author: BATUAN (14/06/2023)
+         */
+        highlightInput: function () {
+            // Bôi đen nội dung trong ô input khi tập trung
+            this.$refs.inputValue.select();
+        },
+         /*
+         * Sự kiện khi blur khỏi ô input
+         * Author: BATUAN (14/06/2023)
+         */
         onBlurFunction() {
             if (this.isRequired) {
                 if (this.modelValue === undefined || this.modelValue === '') {
@@ -50,37 +64,15 @@ export default {
                 }
             }
         },
+         /*
+         * Sự kiện khi giá trị ô input thay đổi
+         * Author: BATUAN (14/06/2023)
+         */
         onChangeFunction() {
             this.error = false;
             if (this.$parent.hideErrorMessage) {
                 this.$parent.hideErrorMessage();
             }
-        },
-        // onKeyDown(event) {
-        //     if (this.type == 'number') {
-        //         const keyCode = event.keyCode || event.which;
-        //         const key = String.fromCharCode(keyCode);
-        //         const allowedKeys = /[0-9,\b\t\x25\x27]/;
-
-        //         if (!allowedKeys.test(key)) {
-        //             event.preventDefault();
-        //         }
-        //     }
-        // },
-        formattedMoney(value) {
-            const number = parseFloat(value);
-            if (isNaN(number)) {
-                return value;
-            }
-            return number.toLocaleString('en-US');
-        },
-
-        unformatNumber(value) {
-            const number = parseFloat(value.replace(/[^0-9.-]+/g, ''));
-            if (isNaN(number)) {
-                return value;
-            }
-            return number.toString();
         },
     },
     emits: ['update:modelValue'],
