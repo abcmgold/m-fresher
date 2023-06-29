@@ -7,9 +7,12 @@
             :class="[{ 'number-field__input--error': error }, individualClass, , { 'text__input--icon': isShowIcon }]"
             v-model="currentvalue"
             v-on:blur="onBlurFunction"
-            v-on:click="onChangeFunction"
-            v-on:change="onChangeFunction"
-            @input="checkMaxLength"
+            @input="
+                () => {
+                    checkMaxLength();
+                    onChangeFunction();
+                }
+            "
             @keydown="blockAlphabets"
         />
         <div class="number-field__input--icons" v-if="isShowIcon">
@@ -26,7 +29,10 @@ export default {
         label: String,
         individualClass: String,
         modelValue: Number,
-        isRequired: Boolean,
+        isRequired: {
+            type: Boolean,
+            default: false,
+        },
         errorMsg: String,
         isShowIcon: Boolean,
         type: String,
@@ -55,6 +61,10 @@ export default {
     },
     emit: ['update:modelValue'],
     methods: {
+         /*
+         * Sự kiện ngăn chặn người dùng nhập các ksi tự không hợp lệ vào ô input number
+         * Author: BATUAN (14/06/2023)
+         */
         blockAlphabets(event) {
             // Lấy giá trị của phím được nhấn
             const keyCode = event.keyCode || event.which;
@@ -69,34 +79,56 @@ export default {
                 event.preventDefault(); // Chặn sự kiện nhập
             }
         },
-        // Kiểm tra xem ô input vượt quá độ dài max hay chưa
+         /*
+         * Kiểm tra xem độ dài ô input vượt quá giới hạn hay chưa
+         * Author: BATUAN (14/06/2023)
+         */
         checkMaxLength() {
             if (this.currentvalue && this.currentvalue.length > this.maxLength) {
                 // Giá trị vượt quá maxLength
                 this.currentvalue = this.currentvalue.slice(0, this.maxLength);
-
             }
         },
+         /*
+         * Tăng giá trị ô input khi ấn vào mũi tên tăng
+         * Author: BATUAN (14/06/2023)
+         */
         increasingValue() {
             this.$emit('update:modelValue', Number(this.modelValue) + 1);
         },
+        /*
+         * Giảm giá trị ô input khi ấn vào mũi tên giảm
+         * Author: BATUAN (14/06/2023)
+        */
         decreasingValue() {
             if (this.modelValue > 0) {
                 this.$emit('update:modelValue', Number(this.modelValue) - 1);
             }
         },
+        /*
+         * Sự kiện khi blur khỏi ô input
+         * Author: BATUAN (14/06/2023)
+        */
         onBlurFunction() {
-            if (this.modelValue === undefined || this.modelValue == '') {
-                this.error = true;
-                if (this.$parent.showErrorMessage) {
-                    this.$parent.showErrorMessage();
+            if (this.isRequired) {
+                if (this.modelValue === undefined || this.modelValue == '') {
+                    this.error = true;
+                    if (this.$parent.showErrorMessage) {
+                        this.$parent.showErrorMessage();
+                    }
                 }
             }
         },
+        /*
+         * Sự kiện giá trị ô input thay đổi
+         * Author: BATUAN (14/06/2023)
+        */
         onChangeFunction() {
-            this.error = false;
-            if (this.$parent.hideErrorMessage) {
-                this.$parent.hideErrorMessage();
+            if (this.isRequired) {
+                this.error = false;
+                if (this.$parent.hideErrorMessage) {
+                    this.$parent.hideErrorMessage();
+                }
             }
         },
     },

@@ -4,14 +4,14 @@
             <div class="text-field">
                 <m-text-input
                     v-model="this.searchInput"
-                    placeholder="Tìm kiếm tài sản"
+                    :placeholder="this.MISAResource['vn-VI'].searchProperty"
                     individualClass="text__input-icon-start"
                 ></m-text-input>
             </div>
             <el-select
                 v-model="propertyTypeFilter"
                 clearable
-                placeholder="Loại tài sản"
+                :placeholder="this.MISAResource['vn-VI'].propertyType"
                 class="back-ground__icon"
                 filterable
                 :title="propertyTypeFilter"
@@ -26,7 +26,7 @@
             <el-select
                 v-model="departmentUseFilter"
                 clearable
-                placeholder="Bộ phận sử dụng"
+                :placeholder="this.MISAResource['vn-VI'].departmentUse"
                 class="back-ground__icon"
                 filterable
                 :title="departmentUseFilter"
@@ -38,15 +38,32 @@
                     :value="item.DepartmentName"
                 ></el-option>
             </el-select>
+            <m-button
+                :label="this.MISAResource['vn-VI'].reload"
+                class="content__btn--reload"
+                :individualClass="'btn btn--noborder'"
+                :icon="'icon--reload'"
+                @click="
+                    async () => {
+                        await this.$store.commit('toggleMaskElement');
+                        await this.getPropertyWithFilter();
+                    }
+                "
+            ></m-button>
         </div>
         <div class="content__navbar-right">
-            <m-button label="+ Thêm tài sản" :individualClass="'btn--primary'" @click="this.showAddProperty"></m-button>
+            <m-button
+                :label="this.MISAResource['vn-VI'].addProperties"
+                :individualClass="'btn--primary'"
+                @click="this.showAddProperty"
+            ></m-button>
             <el-tooltip effect="dark" content="Xuất file excel" placement="bottom-start">
                 <m-button :individualClass="' btn--single btn--combo-excel'"></m-button>
             </el-tooltip>
             <el-tooltip effect="dark" content="Xóa" placement="bottom-start">
                 <m-button
-                    :individualClass="' btn--single btn--combo-delete'"
+                    :individualClass="' btn--single'"
+                    :icon="'icon--delete'"
                     @click="this.deleteRowOnClickIcon"
                     data-title="Xóa"
                 ></m-button>
@@ -54,176 +71,167 @@
         </div>
     </div>
     <div class="content__body">
-        <div class="table">
-            <div class="table__content">
-                <div class="table__content--header">
-                    <div
-                        class="table__content--header-item cell--item"
-                        v-for="(header, index) in this.listHeader"
-                        :key="index"
-                        :style="{ minWidth: header.width }"
-                    >
-                        <template v-if="header.name === 'checkbox'">
-                            <m-checkbox
-                                ref="checkbox-all"
-                                @selectAllRow="selectAllRow"
-                                @unSelectAllRow="unSelectAllRow"
-                                type="primary"
-                                :class="header.align"
-                            ></m-checkbox>
-                        </template>
-                        <template v-else>
-                            <el-tooltip
-                                v-if="header.fullName"
-                                effect="dark"
-                                :content="header.fullName"
-                                placement="bottom-start"
-                            >
-                            <div                                 :class="header.align"
-                            >                                {{ header.name }}
-                        </div>
-                            </el-tooltip>
-                            <div v-else :class="header.align">
-                                {{ header.name }}
-                            </div>
-                        </template>
-                    </div>
-                </div>
-                <div class="table__content--body" ref="contentBody">
-                    <div
-                        v-for="(data, index) in this.dataRender"
-                        :key="data.Id"
-                        :class="{ 'row-selected': isSelected(index), 'row-hovered': this.hoveredRowIndex===index }"
-                        @click="clickOnRowTable(index, $event)"
-                        class="table__content--row"
-                        @mouseover="handleMouseOver(index)"
-                        @mouseout="handleMouseOut"
-                    >
-                        <div class="text-align-center cell--item cell--item--checkbox" style="minWidth: 50px">
-                            <m-checkbox
-                                :ref="`checkbox-${index}`"
-                                @checkedCheckbox="checkedCheckbox"
-                                @uncheckedCheckbox="uncheckedCheckbox"
-                                :index="index"
-                            ></m-checkbox>
-                        </div>
-                        <div class="text-align-center cell--item" style="minWidth: 50px">{{ index + 1 }}</div>
-                        <div class="text-align-left cell--item" style="minWidth: 150px">{{ data.PropertyCode }}</div>
-                        <div class="text-align-left cell--item" style="minWidth: 300px">{{ data.PropertyName }}</div>
-                        <div class="text-align-left cell--item" style="minWidth: 300px">
-                            {{ data.PropertyTypeName }}
-                        </div>
-                        <div class="text-align-left cell--item" style="minWidth: 300px">{{ data.DepartmentName }}</div>
-                        <div class="text-align-right cell--item" style="minWidth: 160px">{{ data.Quantity }}</div>
-                        <div class="text-align-right cell--item" style="minWidth: 200px">
-                            {{ this.formatedMoney(data.OriginalPrice) }}
-                        </div>
-                        <div class="text-align-right cell--item" style="minWidth: 300px">
-                            {{ this.formatedMoney(data.WearRateValue) }}
-                        </div>
-                        <div class="text-align-right cell--item" style="minWidth: 150px">
-                            {{ this.formatedMoney(data.OriginalPrice - data.WearRateValue) }}
-                        </div>
-                        <div class="table-list-icons cell--item" style="minWidth: 120px">
-                            <el-tooltip effect="dark" content="Chỉnh sửa" placement="bottom-start">
-                                <div
-                                    class="table--icon table--icon-pencil"
-                                    @click="this.showDetail(index, data.id)"
-                                ></div>
-                            </el-tooltip>
-                            <el-tooltip effect="dark" content="Xóa" placement="bottom-start">
-                                <div
-                                    class="table--icon table--icon-delete"
-                                    @click="this.duplicateRow(index)"
-                                ></div>
-                            </el-tooltip>
-                        </div>
-                    </div>
-                </div>
-                <div class="table__content--sumary">
-                    <div class="text-align-center cell--item" style="minWidth: 50px"></div>
-                    <div style="minWidth: 50px"></div>
-                    <div style="minWidth: 150px"></div>
-                    <div style="minWidth: 300px"></div>
-                    <div style="minWidth: 300px"></div>
-                    <div style="minWidth: 300px"></div>
-                    <div style="minWidth: 160px; font-weight: bold; padding: 0px 16px;" class="text-align-right">
-                        {{ this.formatedMoney(this.totalProperties['Quantity']) }}
-                    </div>
-                    <div style="minWidth: 200px; font-weight: bold; padding: 0px 16px;" class="text-align-right">
-                        {{ this.formatedMoney(this.totalProperties['OriginalPrice']) }}
-                    </div>
-                    <div style="minWidth: 300px; font-weight: bold; padding: 0px 16px;" class="text-align-right">
-                        {{ this.formatedMoney(this.totalProperties['WearRateValue']) }}
-                    </div>
-                    <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px;" class="text-align-right">
-                        {{
-                            this.formatedMoney(
-                                this.totalProperties['OriginalPrice'] - this.totalProperties['WearRateValue'],
-                            )
-                        }}
-                    </div>
-                    <div style="minWidth: 120px"></div>
-                </div>
-                <div class="table__fixed">
-                    <div class="table__fixed--header">Chức năng</div>
-                    <div class="table__fixed--body" ref="fixedBody">
-                        <div                         :class="{ 'row-selected': isSelected(index), 'row-hovered': this.hoveredRowIndex===index }"
-                        v-for="(data, index) in this.dataRender" :key="index" class="table-list-icons cell--item" 
-                        @mouseover="handleMouseOver(index)"
-                        @mouseout="handleMouseOut"
+        <div class="table__content">
+            <div class="table__content--header">
+                <div
+                    class="table__content--header-item cell--item"
+                    v-for="(header, index) in this.listHeader"
+                    :key="index"
+                    :style="{ minWidth: header.width }"
+                >
+                    <template v-if="header.name === 'checkbox'">
+                        <m-checkbox
+                            ref="checkbox-all"
+                            @selectAllRow="selectAllRow"
+                            @unSelectAllRow="unSelectAllRow"
+                            type="primary"
+                            :class="header.align"
+                        ></m-checkbox>
+                    </template>
+                    <template v-else>
+                        <el-tooltip
+                            v-if="header.fullName"
+                            effect="dark"
+                            :content="header.fullName"
+                            placement="bottom-start"
                         >
-                            <el-tooltip effect="dark" content="Chỉnh sửa" placement="bottom-start">
-                                <div
-                                    class="table--icon table--icon-pencil"
-                                    @click="this.showDetail(index, data.id)"
-                                ></div>
-                            </el-tooltip>
-                            <el-tooltip effect="dark" content="Xóa" placement="bottom-start">
-                                <div
-                                    class="table--icon table--icon-delete"
-                                    @click="this.duplicateRow(index)"
-                                ></div>
-                            </el-tooltip>
+                            <div :class="header.align">{{ header.name }}</div>
+                        </el-tooltip>
+                        <div v-else :class="header.align">
+                            {{ header.name }}
                         </div>
-                    </div>
-                    <div class="table__fixed--sumary"></div>
-                </div>
-                <div class="scroll-bar-y" ref="tableScroll" @scroll="scrollHandler">
-                    <div class="scroll-bar-content" :style="{ height: `${this.scrollBarContentHeight}px` }"></div>
+                    </template>
                 </div>
             </div>
-
-            <!-- <div class="table--content-fixed">
-                <div class="fixed-header"></div>
-                <div class="fixed-body"></div>
-            </div> -->
+            <div class="table__content--body" ref="contentBody" @scroll="scrollHandler($event)">
+                <div
+                    v-for="(data, index) in this.dataRender"
+                    :key="data.Id"
+                    :class="{
+                        'row-selected': isSelected(data.PropertyId),
+                        'row-hovered': this.hoveredRowIndex === data.PropertyId,
+                    }"
+                    @click="clickOnRowTable(index, data.PropertyId, $event)"
+                    class="table__content--row"
+                    @mouseenter="handleMouseOver(data.PropertyId)"
+                    @mouseleave="handleMouseOut"
+                    @dblclick="showDetail(index, data.PropertyId)"
+                >
+                    <div class="text-align-center cell--item cell--item--checkbox" style="minWidth: 50px">
+                        <m-checkbox
+                            :ref="`checkbox-${data.PropertyId}`"
+                            @checkedCheckbox="checkedCheckbox"
+                            @uncheckedCheckbox="uncheckedCheckbox"
+                            :id="data.PropertyId"
+                        ></m-checkbox>
+                    </div>
+                    <div class="text-align-center cell--item" style="minWidth: 50px">{{ index + 1 }}</div>
+                    <div class="text-align-left cell--item" style="minWidth: 150px">{{ data.PropertyCode }}</div>
+                    <div class="text-align-left cell--item" style="minWidth: 300px">{{ data.PropertyName }}</div>
+                    <div class="text-align-left cell--item" style="minWidth: 250px">
+                        {{ data.PropertyTypeName }}
+                    </div>
+                    <div class="text-align-left cell--item" style="minWidth: 250px">{{ data.DepartmentName }}</div>
+                    <div class="text-align-right cell--item" style="minWidth: 160px">
+                        {{ this.formatedMoney(data.Quantity) }}
+                    </div>
+                    <div class="text-align-right cell--item" style="minWidth: 150px">
+                        {{ this.formatedMoney(data.OriginalPrice) }}
+                    </div>
+                    <div class="text-align-right cell--item" style="minWidth: 150px">
+                        {{ this.formatedMoney(data.WearRateValue) }}
+                    </div>
+                    <div class="text-align-right cell--item" style="minWidth: 150px">
+                        {{ this.formatedMoney(data.OriginalPrice - data.WearRateValue) }}
+                    </div>
+                    <div class="table-list-icons cell--item stay-right" style="minWidth: 120px"></div>
+                </div>
+            </div>
+            <div class="table__content--sumary">
+                <div class="text-align-center cell--item" style="minWidth: 50px"></div>
+                <div style="minWidth: 50px"></div>
+                <div style="minWidth: 150px"></div>
+                <div style="minWidth: 300px"></div>
+                <div style="minWidth: 250px"></div>
+                <div style="minWidth: 250px"></div>
+                <div style="minWidth: 160px; font-weight: bold; padding: 0px 16px" class="text-align-right">
+                    {{ this.formatedMoney(this.totalProperties['Quantity']) }}
+                </div>
+                <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
+                    {{ this.formatedMoney(this.totalProperties['OriginalPrice']) }}
+                </div>
+                <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
+                    {{ this.formatedMoney(this.totalProperties['WearRateValue']) }}
+                </div>
+                <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
+                    {{
+                        this.formatedMoney(
+                            this.totalProperties['OriginalPrice'] - this.totalProperties['WearRateValue'],
+                        )
+                    }}
+                </div>
+                <div style="minWidth: 120px"></div>
+            </div>
+            <!-- <el-skeleton :rows="5" animated style="width: 100% !important"/> -->
+        </div>
+        <div class="table__fixed">
+            <div class="table__fixed--header">Chức năng</div>
+            <div class="table__fixed--body" ref="fixedBody" @scroll="scrollHandler($event)">
+                <div
+                    v-for="(data, index) in this.dataRender"
+                    :key="index"
+                    :class="{
+                        'row-selected': isSelected(data.PropertyId),
+                        'row-hovered': this.hoveredRowIndex === data.PropertyId,
+                    }"
+                    class="table-list-icons cell--item"
+                    @mouseover="handleMouseOver(data.PropertyId)"
+                    @mouseout="handleMouseOut"
+                    @click="clickOnRowTable(index, data.PropertyId, $event)"
+                >
+                    <!-- <el-tooltip effect="dark" content="Chỉnh sửa" placement="bottom-start"> -->
+                    <div class="table--icon table--icon-pencil" @click="this.showDetail(index, data.id)"></div>
+                    <!-- </el-tooltip> -->
+                    <!-- <el-tooltip effect="dark" content="Xóa" placement="bottom-start"> -->
+                    <div class="table--icon table--icon-comment"></div>
+                    <!-- </el-tooltip> -->
+                </div>
+            </div>
+            <div class="table__fixed--sumary"></div>
         </div>
         <div class="table__paging paging">
             <m-pagination
-            :dataSelect="this.numberOfRecordsPerPage"
-            :numberPages="this.pageNumber * 10"
-            @changeCurrentPage="changeCurrentPage"
-            :pageSize="this.pageSize"
-            :totalRecords="this.totalRecords"
-            @changePageSize="changePageSize"
-        ></m-pagination>
+                :dataSelect="this.numberOfRecordsPerPage"
+                :numberPages="this.pageNumber * 10"
+                @changeCurrentPage="changeCurrentPage"
+                :pageSize="this.pageSize"
+                :totalRecords="this.totalRecords"
+                @changePageSize="changePageSize"
+            ></m-pagination>
         </div>
-        <div class="paging" style="display: none">
-            <!-- <div class="table__paging-total">
-                Tổng số:&nbsp;&nbsp;<b>{{ this.totalRecords }}</b> bản ghi
-            </div>
-            <div class="table__paging-numberrecords">
-                <m-combo-box
-                    class="combo-box--small"
-                    style="height: 32px !important; border: none !important"
-                    :dataSelect="this.numberOfRecordsPerPage"
-                    v-model="pageSize"
-                ></m-combo-box>
-            </div> -->
+        <div class="table__content--empty" v-if="isShowEmptyRecord"></div>
+        <!-- <div class="scroll-bar-y" ref="tableScroll" @scroll="scrollHandler">
+            <div class="scroll-bar-content" :style="{ height: `${this.scrollBarContentHeight}px` }"></div>
+        </div> -->
+        <div v-if="this.isLoadingData" class="grid-loading-container">
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+        </div>
 
-            
-        </div>
         <m-modal v-if="this.isShowDeleteDialog">
             <m-dialog
                 :text="this.textDialog"
@@ -246,32 +254,28 @@
                 "
             ></m-dialog>
         </m-modal>
-        <!-- <div v-show="this.isLoadingData" class="table--loading"><font-awesome-icon icon="fa-solid fa-spinner" /></div> -->
     </div>
     <PropertyAdd
         v-if="isShowAddProperty"
-        @hideAddProperty="hideAddProperty"
         @addNewProperty="addNewProperty"
-        @showToastSuccess="showToastSuccess"
         @updateValueRow="updateValueRowSelected"
+        @hideAddProperty="hideAddProperty"
         :selectedRow="this.selectedData"
         @resetSelectedRow="this.resetSelectedRow"
         :departmentCodes="this.departmentCodes"
         :propertyTypeCodes="this.propertyTypeCodes"
     ></PropertyAdd>
-    <m-toast
-        :label="this.labelToastSuccess"
-        icon="icon--success"
-        v-if="isShowToastSuccess"
-        @showToastSuccess="showToastSuccess"
-    ></m-toast>
+    <m-toast :label="this.labelToastSuccess" icon="icon--success" v-if="isShowToastSuccess"></m-toast>
+    <m-toast :label="this.labelToastError" icon="icon--error" v-if="isShowToastError"></m-toast>
 </template>
 
 <script scoped>
 import { formatMoney } from '@/common/common';
 import PropertyAdd from './PropertyAdd.vue';
 import instance from '@/common/instance';
-
+import request from '@/common/api';
+import debounce from 'lodash/debounce';
+import { MISAResource } from '@/common/resource';
 export default {
     name: 'EstateList',
     components: {
@@ -279,66 +283,9 @@ export default {
     },
     data() {
         return {
+            MISAResource: MISAResource,
             scrollBarContentHeight: 0,
-            listHeader: [
-                {
-                    name: 'checkbox',
-                    width: '50px',
-                    align: "text-align-center",
-                },
-                {
-                    name: 'STT',
-                    width: '50px',
-                    fullName: 'Số thứ tự',
-                    align: "text-align-center",
-                },
-                {
-                    name: 'Mã tài sản',
-                    width: '150px',
-                    align: "text-align-left",
-                },
-                {
-                    name: 'Tên tài sản',
-                    width: '300px',
-                    align: "text-align-left",
-                },
-                {
-                    name: 'Loại tài sản',
-                    width: '300px',
-                    align: "text-align-left",
-                },
-                {
-                    name: 'Bộ phận sử dụng',
-                    width: '300px',
-                    align: "text-align-left",
-                },
-                {
-                    name: 'Số lượng',
-                    width: '160px',
-                    align: "text-align-right",
-                },
-                {
-                    name: 'Nguyên giá',
-                    width: '200px',
-                    align: "text-align-right",
-                },
-                {
-                    name: 'HM/ KH lũy kế',
-                    width: '300px',
-                    fullName: 'Hao mòn/ Khấu hao lũy kế',
-                    align: "text-align-right",
-                },
-                {
-                    name: 'Giá trị còn lại',
-                    width: '150px',
-                    align: "text-align-right",
-                },
-                {
-                    name: 'Chức năng',
-                    width: '120px',
-                    align: "text-align-right",
-                },
-            ],
+            listHeader: [],
 
             // giá trị ô lọc mã tài sản
             propertyTypeFilter: '',
@@ -357,8 +304,10 @@ export default {
 
             isShowDetail: false,
             isShowToastSuccess: false,
+            isShowToastError: false,
 
             labelToastSuccess: '',
+            labelToastError: '',
 
             isShowAddProperty: false,
             isShowDeleteDialog: false,
@@ -375,11 +324,15 @@ export default {
             totalRecords: 0,
             currentPage: 1,
             pageNumber: 0,
-            isLoadingData: true,
+            isLoadingData: false,
             totalProperties: {}, // lưu giá trị của tổng các cột
             dataTable: [],
             dataRender: [],
             hoveredRowIndex: -1,
+
+            // show khi không có bản ghi nào
+            isShowEmptyRecord: false,
+
             numberOfRecordsPerPage: [
                 {
                     label: 20,
@@ -395,13 +348,15 @@ export default {
                 },
             ],
             // Đánh dấu hàng đầu tiên được chọn khi dùng sự kiện shift + click
-            firstClickRow: '',
+            firstClickRow: 0,
             secondClickRow: '',
         };
     },
     async created() {
-        this.getAllProperty();
+        // Lấy ra list header
+        this.listHeader = this.MISAResource['vn-VI'].listHeader;
 
+        this.getAllProperty();
         // Lấy ra danh sách phòng ban để đưa vào combo box
         this.getAllDepartments();
 
@@ -411,13 +366,12 @@ export default {
         await this.getPropertyWithFilter();
 
         this.calculateNumberPage();
-        
+
         // Tính lại độ dài thanh scroll custom
         if (this.totalRecords) {
             if (this.totalRecords <= this.pageSize) {
                 this.scrollBarContentHeight = this.totalRecords * 48;
-            }
-            else {
+            } else {
                 this.scrollBarContentHeight = this.pageSize * 48;
             }
         }
@@ -430,7 +384,7 @@ export default {
             this.getPropertyWithFilter();
 
             // Reset hết các giá trị đang được checked
-            for (let i = 0 ; i < this.selectedRow.length; i++) {
+            for (let i = 0; i < this.selectedRow.length; i++) {
                 this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = false;
             }
             this.$refs['checkbox-all'][0].isChecked = false;
@@ -438,74 +392,112 @@ export default {
 
             // tính toán lại giá trị thanh scroll
             if (this.totalRecords) {
-            if (this.totalRecords <= newValue) {
-                this.scrollBarContentHeight = this.totalRecords * 48;
+                if (this.totalRecords <= newValue) {
+                    this.scrollBarContentHeight = this.totalRecords * 48;
+                } else {
+                    this.totalRecords = newValue * 48;
+                }
             }
-            else {
-                this.totalRecords = newValue * 48;
+
+            for (let i = 0; i < this.selectedRow.length; i++) {
+                this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = true;
             }
-        }
+            this.checkFullChecked();
         },
-        currentPage: function () {
-            this.getPropertyWithFilter();
+        currentPage: async function () {
+            this.dataRender.forEach((data) => {
+                this.dataTable.push(data);
+            });
+            await this.getPropertyWithFilter();
+
+            for (let i = 0; i < this.dataRender.length; i++) {
+                if (
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`] &&
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0]
+                ) {
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0].isChecked = false;
+                }
+            }
+            for (let i = 0; i < this.selectedRow.length; i++) {
+                if (this.$refs[`checkbox-${this.selectedRow[i]}`] && this.$refs[`checkbox-${this.selectedRow[i]}`][0]) {
+                    this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = true;
+                }
+            }
+
+            this.checkFullChecked();
         },
-        propertyTypeFilter: async function (newValue) {
-            const params = new URLSearchParams();
-            if (newValue) {
-                params.append('PropertyType', newValue);
-            }
-            if (this.departmentUseFilter) {
-                params.append('DepartmentUse', this.departmentUseFilter);
-            }
-            await instance
-                .get(`property?${params}`)
-                .then((response) => {
-                    this.dataTable = response.data;
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+        propertyTypeFilter: async function () {
+            await this.getPropertyWithFilter();
+
             this.calculateNumberPage();
 
-            this.getPropertyWithFilter();
+            for (let i = 0; i < this.dataRender.length; i++) {
+                if (
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`] &&
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0]
+                ) {
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0].isChecked = false;
+                }
+            }
+
+            this.selectedRow = [];
+
+            this.checkFullChecked();
         },
-        departmentUseFilter: async function (newValue) {
-            const params = new URLSearchParams();
-            if (newValue) {
-                params.append('DepartmentUse', newValue);
-            }
-            if (this.propertyTypeFilter) {
-                params.append('PropertyType', this.propertyTypeFilter);
-            }
-            await instance
-                .get(`property?${params}`)
-                .then((response) => {
-                    this.dataTable = response.data;
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+        departmentUseFilter: async function () {
+            await this.getPropertyWithFilter();
+
             this.calculateNumberPage();
 
-            this.getPropertyWithFilter();
+            for (let i = 0; i < this.dataRender.length; i++) {
+                if (
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`] &&
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0]
+                ) {
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0].isChecked = false;
+                }
+            }
+
+            this.selectedRow = [];
         },
-        searchInput: function () {
-            this.getPropertyWithFilter();
-        },
-        dataTable: function () {
+        searchInput: debounce(async function () {
+            await this.getPropertyWithFilter();
             this.calculateNumberPage();
-        },
+
+            for (let i = 0; i < this.dataRender.length; i++) {
+                if (
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`] &&
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0]
+                ) {
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0].isChecked = false;
+                }
+            }
+
+            this.selectedRow = [];
+        }, 1000),
         dataRender: function () {
             this.calculateTotal(['Quantity', 'OriginalPrice', 'WearRateValue', 'ResidualValue']);
-        }
+        },
+        selectedRow: function () {
+            for (let i = 0; i < this.dataRender.length; i++) {
+                if (
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`] &&
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0]
+                ) {
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0].isChecked = false;
+                }
+            }
+            for (let i = 0; i < this.selectedRow.length; i++) {
+                if (this.$refs[`checkbox-${this.selectedRow[i]}`] && this.$refs[`checkbox-${this.selectedRow[i]}`][0]) {
+                    this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = true;
+                }
+            }
+
+            this.checkFullChecked();
+        },
     },
     methods: {
-        handleMouseWheel() {
-    //   this.$refs.contentBody.scrollTop += event.deltaY;
-    //   this.$refs.fixedBody.scrollTop += this.$refs.contentBody.scrollTop;
-    //   this.$refs.tableScroll.scrollTop += event.deltaY;
-    },
-        changePageSize: function(newValue) {
+        changePageSize: function (newValue) {
             this.pageSize = newValue;
         },
         /*
@@ -513,8 +505,8 @@ export default {
          * Author: BATUAN (14/06/2023)
          */
         async getAllDepartments() {
-            await instance
-                .get('Department')
+            await request
+                .getRecord('Department')
                 .then((response) => {
                     this.Departments = response.data;
                 })
@@ -535,8 +527,8 @@ export default {
          * Author: BATUAN (14/06/2023)
          */
         async getAllPropertyTypes() {
-            await instance
-                .get('PropertyType')
+            await request
+                .getRecord('PropertyType')
                 .then((response) => {
                     this.PropertyTypes = response.data;
                 })
@@ -558,8 +550,8 @@ export default {
          */
         async getPropertyWithFilter() {
             this.isLoadingData = true;
-            await instance
-                .get(
+            await request
+                .getRecord(
                     `Property/filter?pageNumber=${this.currentPage}&pageSize=${this.pageSize}&searchInput=${this.searchInput}&propertyType=${this.propertyTypeFilter}&departmentName=${this.departmentUseFilter}`,
                 )
                 .then((response) => {
@@ -570,15 +562,23 @@ export default {
                     console.error(error);
                 });
 
-            this.isLoadingData = false;
+            setTimeout(() => {
+                this.isLoadingData = false;
+            }, 500);
+
+            if (this.dataRender.length === 0) {
+                this.isShowEmptyRecord = true;
+            } else {
+                this.isShowEmptyRecord = false;
+            }
         },
         /*
          * Lấy dữ liệu tất cả bản ghi trong db
          * Author: BATUAN (08/06/2023)
          */
         async getAllProperty() {
-            await instance
-                .get('Property')
+            await request
+                .getRecord('Property')
                 .then((response) => {
                     this.dataTable = response.data;
                 })
@@ -598,19 +598,10 @@ export default {
          * Author: BATUAN (27/05/2023)
          */
         showDetail(index, id) {
-            this.isShowAddProperty = true;
+            this.showAddProperty();
             this.selectedData = this.dataRender[index];
             this.seletedRowIndex = index;
             this.idSelectedData = id;
-        },
-        /*
-         * Nhân đôi hàng được chọn
-         * Author: BATUAN (01/06/2023)
-         */
-        duplicateRow(index) {
-            const row = this.dataTable[index];
-            const duplicateRow = { ...row };
-            this.dataTable.splice(index + 1, 0, duplicateRow);
         },
         /*
          * Ẩn trang chi tiết
@@ -620,7 +611,7 @@ export default {
             this.isShowDetail = false;
         },
         /*
-         * Show toast hiển thị lưu dữ liệu thành công
+         * Show toast hiển thị thành công
          * Author: BATUAN (27/05/2023)
          */
         showToastSuccess(label) {
@@ -629,7 +620,19 @@ export default {
             // Ẩn sau 3s
             setTimeout(() => {
                 this.isShowToastSuccess = false;
-            }, 3000);
+            }, 4000);
+        },
+        /*
+         * Show toast hiển thị hành động thất bại
+         * Author: BATUAN (27/05/2023)
+         */
+        showToastError(label) {
+            this.isShowToastError = true;
+            this.labelToastError = label;
+            // Ẩn sau 3s
+            setTimeout(() => {
+                this.isShowToastError = false;
+            }, 4000);
         },
         /*
          * Hiển thị trang thêm tài sản
@@ -637,6 +640,7 @@ export default {
          */
         showAddProperty() {
             this.isShowAddProperty = true;
+            this.$store.commit('toggleMaskElement');
         },
         /*
          * Ẩn trang thêm tài sản
@@ -650,80 +654,115 @@ export default {
          * Author: BATUAN (27/05/2023)
          */
         async updateValueRowSelected(newValue) {
+            let isSuccess = false;
             // update giá trị trên db
-            await instance
-                .put(`Property/${newValue.PropertyId}`, newValue)
-                .then((res) => console.log(res))
+            await request
+                .updateRecord(`Property/${newValue.PropertyId}`, newValue)
+                .then(() => {
+                    isSuccess = true;
+                })
                 .catch((err) => {
-                    console.log(err);
+                    this.showToastError(err.response.data.UserMessage);
                 });
-            // cập nhật lại bảng
-            this.getPropertyWithFilter();
+
+            if (isSuccess) {
+                this.hideAddProperty();
+                this.showToastSuccess(this.MISAResource['vn-VI'].updatePropertySuccess);
+                this.getPropertyWithFilter();
+            }
         },
         /*
          * Sự kiện click vào hàng của table
          * Author: BATUAN (12/06/2023)
          */
-        clickOnRowTable(index, event) {
+        clickOnRowTable(index, id, event) {
             if (event.ctrlKey) {
-                
-                if (!this.selectedRow.includes(index)) {
-                    this.selectedRow.push(index);
-                    this.$refs[`checkbox-${index}`][0].isChecked = true;
-                    if (this.selectedRow.length == this.dataRender.length) {
-                        this.$refs['checkbox-all'].isChecked = true;
+                if (!this.selectedRow.includes(id)) {
+                    this.selectedRow.push(id);
+
+                    for (let i = 0; i < this.dataRender.length; i++) {
+                        if (
+                            this.$refs[`checkbox-${this.dataRender[i].PropertyId}`] &&
+                            this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0]
+                        ) {
+                            this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0].isChecked = false;
+                        }
                     }
+                    for (let i = 0; i < this.selectedRow.length; i++) {
+                        if (
+                            this.$refs[`checkbox-${this.selectedRow[i]}`] &&
+                            this.$refs[`checkbox-${this.selectedRow[i]}`][0]
+                        ) {
+                            this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = true;
+                        }
+                    }
+
+                    this.checkFullChecked();
                 } else {
                     this.selectedRow = this.selectedRow.filter((num) => {
-                        if (num == index) {
-                            this.$refs[`checkbox-${num}`][0].isChecked = false;
-                            this.$refs['checkbox-all'].isChecked = false;
-                        }
-                        return num != index;
+                        return num != id;
                     });
+                    console.log(this.selectedRow);
                 }
             } else if (event.shiftKey) {
                 if (this.firstClickRow || this.firstClickRow === 0) {
                     this.secondClickRow = index;
-                    let saveRow = [];
                     if (this.secondClickRow > this.firstClickRow) {
                         for (let i = this.firstClickRow; i <= this.secondClickRow; i++) {
-                            saveRow.push(i);
-                            if (!this.selectedRow.includes(i)) {
-                                this.selectedRow.push(i);
+                            const propertyId = this.dataRender[i].PropertyId;
+                            if (!this.selectedRow.includes(propertyId)) {
+                                this.selectedRow.push(propertyId);
                             }
-                            this.$refs[`checkbox-${i}`][0].isChecked = true;
+
+                            for (let i = 0; i < this.dataRender.length; i++) {
+                                if (
+                                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`] &&
+                                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0]
+                                ) {
+                                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0].isChecked = false;
+                                }
+                            }
+                            for (let i = 0; i < this.selectedRow.length; i++) {
+                                if (
+                                    this.$refs[`checkbox-${this.selectedRow[i]}`] &&
+                                    this.$refs[`checkbox-${this.selectedRow[i]}`][0]
+                                ) {
+                                    this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = true;
+                                }
+                            }
+
+                            this.checkFullChecked();
                         }
                     } else {
                         for (let i = this.secondClickRow; i <= this.firstClickRow; i++) {
-                            saveRow.push(i);
-                            if (!this.selectedRow.includes(i)) {
-                                this.selectedRow.push(i);
+                            const propertyId = this.dataRender[i].PropertyId;
+                            if (!this.selectedRow.includes(propertyId)) {
+                                this.selectedRow.push(propertyId);
                             }
-                            this.$refs[`checkbox-${i}`][0].isChecked = true;
+
+                            for (let i = 0; i < this.dataRender.length; i++) {
+                                if (
+                                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`] &&
+                                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0]
+                                ) {
+                                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0].isChecked = false;
+                                }
+                            }
+                            for (let i = 0; i < this.selectedRow.length; i++) {
+                                if (
+                                    this.$refs[`checkbox-${this.selectedRow[i]}`] &&
+                                    this.$refs[`checkbox-${this.selectedRow[i]}`][0]
+                                ) {
+                                    this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = true;
+                                }
+                            }
+
+                            this.checkFullChecked();
                         }
-                    }
-                    this.selectedRow = this.selectedRow.filter((element) => saveRow.includes(element));
-                    for (let i = 0; i < this.dataRender.length; i++) {
-                        if (!this.selectedRow.includes(i)) {
-                            this.$refs[`checkbox-${i}`][0].isChecked = false;
-                        }
-                    }
-                    if (this.selectedRow.length == this.dataRender.length) {
-                        this.$refs['checkbox-all'].isChecked = true;
-                    } else {
-                        this.$refs['checkbox-all'].isChecked = false;
-                    }
-                } else {
-                    this.firstClickRow = index;
-                    if (!this.selectedRow.includes(index)) {
-                        this.selectedRow.push(index);
-                        this.$refs[`checkbox-${index}`][0].isChecked = true;
                     }
                 }
-            }
-            else {
-                this.handleClickOnRow(index);
+            } else {
+                this.handleClickOnRow(index, id);
             }
         },
         /*
@@ -731,17 +770,21 @@ export default {
          * Author: BATUAN (14/06/2023)
          */
         async addNewProperty(newProperty) {
-            await instance
-                .post('Property', newProperty)
-                .then((res) => console.log(res))
+            let isSuccess = false;
+            await request
+                .insertRecord('Property', newProperty)
+                .then(() => (isSuccess = true))
                 .catch((err) => {
-                    console.log(err);
+                    this.showToastError(err.response.data.UserMessage);
                 });
 
-            // this.getAllProperty();
-            await this.getPropertyWithFilter();
-
-            this.calculateNumberPage();
+            if (isSuccess) {
+                this.hideAddProperty();
+                this.showToastSuccess(this.MISAResource['vn-VI'].addPropertySuccess);
+                await this.getPropertyWithFilter();
+                this.checkForCheckbox();
+                this.calculateNumberPage();
+            }
         },
         /*
          * Format giá trị tiền
@@ -750,6 +793,10 @@ export default {
         formatedMoney(value) {
             return formatMoney(value);
         },
+        /*
+         * Reset các giá trị của các hàng đã chọn
+         * Author: BATUAN (14/06/2023)
+         */
         resetSelectedRow() {
             this.selectedData = null;
         },
@@ -757,29 +804,73 @@ export default {
          * Sự kiện khi ô checkbox được check
          * Author: BATUAN (08/06/2023)
          */
-        checkedCheckbox(index) {
-            this.selectedRow.push(index);
-            if (this.selectedRow.length == this.dataRender.length) {
-                this.$refs['checkbox-all'].isChecked = true;
+        checkedCheckbox(id) {
+            this.selectedRow.push(id);
+
+            for (let i = 0; i < this.dataRender.length; i++) {
+                if (
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`] &&
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0]
+                ) {
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0].isChecked = false;
+                }
+            }
+            for (let i = 0; i < this.selectedRow.length; i++) {
+                if (this.$refs[`checkbox-${this.selectedRow[i]}`] && this.$refs[`checkbox-${this.selectedRow[i]}`][0]) {
+                    this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = true;
+                }
+            }
+
+            this.checkFullChecked();
+        },
+        /*
+         * Kiểm tra xem tất cả các hàng trong 1 trang table có được chọn hay không
+         * Author: BATUAN (28/06/2023)
+         */
+        checkFullChecked() {
+            let check = true;
+            this.dataRender.forEach((data) => {
+                if (!this.selectedRow.includes(data.PropertyId)) {
+                    check = false;
+                }
+            });
+
+            if (check == true) {
+                this.$refs['checkbox-all'][0].isChecked = true;
+            } else {
+                this.$refs['checkbox-all'][0].isChecked = false;
             }
         },
         /*
          * Sự kiện khi ô checkbox uncheck
          * Author: BATUAN (08/06/2023)
          */
-        uncheckedCheckbox(index) {
-            this.selectedRow = this.selectedRow.filter((item) => item !== index);
-            this.$refs['checkbox-all'].isChecked = false;
+        uncheckedCheckbox(id) {
+            this.selectedRow = this.selectedRow.filter((item) => item !== id);
         },
-        isSelected(index) {
+        /*
+         * Check xem 1 hàng có đang được chọn hay không
+         * Author: BATUAN (14/06/2023)
+         */
+        isSelected(id) {
             if (this.selectedRow) {
-                return this.selectedRow.includes(index);
+                return this.selectedRow.includes(id);
             }
             return false;
         },
-        handleMouseOver(index) {
-            this.hoveredRowIndex = index;
+        /*
+         * Sự kiện khi hover vào 1 hàng
+         * Author: BATUAN (14/06/2023)
+         */
+        handleMouseOver(id) {
+            setTimeout(() => {
+                this.hoveredRowIndex = id;
+            }, 50);
         },
+        /*
+         * Sự kiện khi thoát hover khỏi 1 hàng
+         * Author: BATUAN (14/06/2023)
+         */
         handleMouseOut() {
             this.hoveredRowIndex = -1;
         },
@@ -791,12 +882,9 @@ export default {
             let targetRef = [];
             if (this.dataRender) {
                 for (let i = 0; i < this.dataRender.length; i++) {
-                    if (!this.selectedRow.includes(i)) {
-                        this.selectedRow.push(i);
-                        this.selectedRow.sort(function (a, b) {
-                            return a - b;
-                        });
-                        targetRef.push(`checkbox-${i}`);
+                    if (!this.selectedRow.includes(this.dataRender[i].PropertyId)) {
+                        this.selectedRow.push(this.dataRender[i].PropertyId);
+                        targetRef.push(`checkbox-${this.dataRender[i].PropertyId}`);
                     }
                 }
             }
@@ -809,16 +897,9 @@ export default {
          * Author: BATUAN (08/06/2023)
          */
         unSelectAllRow() {
-            this.selectedRow = [];
-            let targetRef = [];
-            if (this.dataRender) {
-                for (let i = 0; i < this.dataRender.length; i++) {
-                    targetRef.push(`checkbox-${i}`);
-                }
-            }
-            targetRef.forEach((targetRef) => {
-                this.$refs[targetRef][0].isChecked = false;
-            });
+            this.selectedRow = this.selectedRow.filter(
+                (item) => !this.dataRender.some((obj) => obj.PropertyId === item),
+            );
         },
         /*
          * Sự kiện khi click vào biểu tượng xóa
@@ -832,19 +913,24 @@ export default {
 
             if (this.selectedRow.length <= 0) {
                 this.isShowWarnDialog = true;
-                this.textDialog = 'Vui lòng chọn ít nhất 1 bản ghi!';
+                this.textDialog = this.MISAResource['vn-VI'].chooseAtLeastOne;
             } else {
                 this.isShowDeleteDialog = true;
                 if (this.selectedRow.length == 1) {
-                    this.textDialog = 'Bạn có muốn xóa tài sản';
-                    this.deleteMsg = `<<${this.dataRender[this.selectedRow[0]].PropertyCode}-${
-                        this.dataRender[this.selectedRow[0]].PropertyName
-                    }>>`;
+                    this.textDialog = this.MISAResource['vn-VI'].confirm;
+
+                    let record = this.dataTable.find((data) => {
+                        return data.PropertyId == this.selectedRow[0];
+                    });
+                    let code = record.PropertyCode;
+                    let name = record.PropertyName;
+
+                    this.deleteMsg = `${code}-${name}`;
                 } else {
                     this.deleteMsg = '';
                     this.beginText =
-                        this.selectedRow.length > 10 ? this.selectedRow.length : `0${this.selectedRow.length}`;
-                    this.textDialog = ' tài sản đã được chọn. Bạn có muốn xóa các tài sản này khỏi danh sách?';
+                        this.selectedRow.length >= 10 ? this.selectedRow.length : `0${this.selectedRow.length}`;
+                    this.textDialog = this.MISAResource['vn-VI'].deleteMultipleMessage;
                 }
             }
         },
@@ -862,7 +948,7 @@ export default {
         async deleteRow() {
             const idsToDelete = [];
             this.selectedRow.forEach((item) => {
-                idsToDelete.push(this.dataRender[item].PropertyId);
+                idsToDelete.push(item);
             });
 
             //Xóa các bản ghi
@@ -876,8 +962,9 @@ export default {
             // Hiện toast message thông báo thành công
             this.showToastSuccess('Xóa thành công');
             // Reset list các hàng được chọn
-            for (let i = 0 ; i < this.selectedRow.length; i++) {
-                this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = false;
+            for (let i = 0; i < this.selectedRow.length; i++) {
+                if (this.$refs[`checkbox-${this.selectedRow[i]}`] && this.$refs[`checkbox-${this.selectedRow[i]}`][0])
+                    this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = false;
             }
             this.selectedRow = [];
 
@@ -894,11 +981,6 @@ export default {
          */
         changeCurrentPage(newPage) {
             this.currentPage = newPage;
-
-            for (let i = 0 ; i < this.selectedRow.length; i++) {
-                this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = false;
-            }
-            this.selectedRow = [];
         },
         /**
          * Tính toán tổng các giá trị của các hàng trong bảng (Số lượng, Nguyên giá
@@ -916,30 +998,68 @@ export default {
                 console.log(e);
             }
         },
-
-        scrollHandler:(function() {
-            this.$refs.contentBody.scrollTop = this.$refs.tableScroll.scrollTop;
-            this.$refs.fixedBody.scrollTop = this.$refs.tableScroll.scrollTop;
-        }),
-
-        handleClickOnRow(index) {
+        /*
+         * Sự kiện khi scroll trong body của table
+         * Author: BATUAN (14/06/2023)
+         */
+        scrollHandler: function (event) {
+            const fixedBody = this.$refs.fixedBody;
+            const contentBody = this.$refs.contentBody;
+            if (event.target == fixedBody) {
+                contentBody.scrollTop = fixedBody.scrollTop;
+            } else {
+                fixedBody.scrollTop = contentBody.scrollTop;
+            }
+        },
+        /*
+         * Sự kiện khi click vào 1 hàng trong table
+         * Author: BATUAN (14/06/2023)
+         */
+        handleClickOnRow(index, id) {
             // cập nhật lại con trỏ trỏ tới vị trí đầu tiên khi dùng Shift + Click
             this.firstClickRow = index;
 
-            for (let i = 0 ; i < this.selectedRow.length; i++) {
-                this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = false;
-            }
-            this.selectedRow = [];
+            if (this.selectedRow.length == 1 && this.selectedRow[0] == id) {
+                this.selectedRow = this.selectedRow.filter(
+                    (item) => !this.dataRender.some((obj) => obj.PropertyId === item),
+                );
+            } else {
+                // for (let i = 0; i < this.selectedRow.length; i++) {
+                //     this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = false;
+                // }
+                this.selectedRow = this.selectedRow.filter(
+                    (item) => !this.dataRender.some((obj) => obj.PropertyId === item),
+                );
 
-            this.selectedRow.push(index);
-            this.$refs[`checkbox-${index}`][0].isChecked = true;
-            this.$refs["checkbox-all"][0].isChecked = false;
-        }
+                this.selectedRow.push(id);
+            }
+        },
+        /*
+         * Phương thức liên quan đến sự kiện check cho các ô check box khi các  hàng được chọn thay đổi
+         * Author: BATUAN (29/06/2023)
+         */
+        checkForCheckbox() {
+            for (let i = 0; i < this.dataRender.length; i++) {
+                if (
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`] &&
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0]
+                ) {
+                    this.$refs[`checkbox-${this.dataRender[i].PropertyId}`][0].isChecked = false;
+                }
+            }
+            for (let i = 0; i < this.selectedRow.length; i++) {
+                if (this.$refs[`checkbox-${this.selectedRow[i]}`] && this.$refs[`checkbox-${this.selectedRow[i]}`][0]) {
+                    this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = true;
+                }
+            }
+
+            this.checkFullChecked();
+        },
     },
 };
 </script>
 
 <style>
-@import url('../../css/elementui/el-select.css');
+@import url(../../css/elementui/el-select.css);
 @import url(../../css/components/tooltip.css);
 </style>

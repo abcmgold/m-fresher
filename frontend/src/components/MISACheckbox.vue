@@ -1,5 +1,5 @@
 <template>
-    <div class = "checkbox" :class = '{"checked": isChecked}' @click="handleCheckboxChange">
+    <div @click.stop class="checkbox" :class="{ checked: isChecked }" @click="handleCheckboxChange">
         <!-- <input type="checkbox" v-model="isChecked" @change="handleCheckboxChange" /> -->
     </div>
 </template>
@@ -12,7 +12,7 @@ export default {
         uncheckedCheckbox: Function,
         selectAllRow: Function,
         unSelectAllRow: Function,
-        index: Number,
+        id: String,
         type: String,
     },
     data() {
@@ -21,22 +21,26 @@ export default {
         };
     },
     methods: {
+        /*
+         * Sự kiện khi toggle ô checkbox
+         * Author: BATUAN (14/06/2023)
+         */
         handleCheckboxChange() {
             // Xử lý khi checkbox được chọn
             if (!this.isChecked) {
-                this.isChecked = true;
                 if (this.type == 'primary') {
+                    this.isChecked = true;
                     this.$emit('selectAllRow');
                 } else {
-                    this.$emit('checkedCheckbox', this.index);
+                    this.$emit('checkedCheckbox', this.id);
                 }
             } else {
                 // Xử lý khi checkbox bị bỏ chọn
-                this.isChecked = false;
                 if (this.type == 'primary') {
+                    this.isChecked = false;
                     this.$emit('unSelectAllRow');
                 } else {
-                    this.$emit('uncheckedCheckbox', this.index);
+                    this.$emit('uncheckedCheckbox', this.id);
                 }
             }
         },

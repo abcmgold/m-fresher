@@ -41,11 +41,11 @@
 }
 
 .router-link-active {
-    background-color: #1aa4c8;
+    background-color: #31b9e2;
 }
 
 .sidebar__item:hover {
-    background-color: #2393af;
+    background-color: #31b9e2;
     cursor: pointer;
 }
 
@@ -177,7 +177,6 @@
     margin-left: 12px;
     color: #869ab8;
     flex: 1;
-    transition: all 3s ease-in-out;
 }
 
 .sidebar--small {

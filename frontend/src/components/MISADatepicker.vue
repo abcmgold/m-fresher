@@ -6,6 +6,8 @@
         auto-apply
         text-input
         :state="this.notError"
+        :day-names="this.MISAResource['vn-VI'].dayInDatePicker"
+        locale="vi"
         @blur="onBlurFunction"
         @focus="onFocusFunction"
     ></VueDatePicker>
@@ -14,6 +16,7 @@
 <script scoped>
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
+import {MISAResource} from "../common/resource"
 export default {
     name: 'MISADatepicker',
     props: {
@@ -28,6 +31,7 @@ export default {
         return {
             notError: true,
             modelValue: new Date().toLocaleDateString(),
+            MISAResource: MISAResource
         };
     },
     components: {
@@ -39,6 +43,10 @@ export default {
         },
     },
     methods: {
+         /*
+         * Sự kiện khi blur khỏi components
+         * Author: BATUAN (14/06/2023)
+         */
         onBlurFunction() {
             if (!this.modelValue) {
                 this.notError = false;
@@ -47,6 +55,10 @@ export default {
                 // }
             }
         },
+        /*
+         * Sự kiện khi giá trị thay đổi
+         * Author: BATUAN (14/06/2023)
+         */
         onFocusFunction() {
             this.notError = true;
             // if (this.$parent) {
