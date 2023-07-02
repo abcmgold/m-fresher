@@ -1,5 +1,6 @@
 const MISAResource = {
     'vn-VI': {
+        nameApp: "MISA QLTS",
         yes: "Đồng ý",
         no: "Không",
         cancel: "Hủy",
@@ -54,9 +55,8 @@ const MISAResource = {
             propertyTypeCodeError: 'Mã loại tài sản không được phép để trống',
             propertyTypeCodeType: 'Nhập mã loại tài sản',
 
-            propertyTypeType: 'Tên loại tài sản',
-            propertyTypeTypeError: 'Tên loại tài sản không được phép để trống',
-            propertyTypeTypeType: 'Nhập tên loại tài sản',
+            propertyTypeName: 'Tên loại tài sản',
+            propertyTypeNameError: 'Tên loại tài sản không được phép để trống',
 
             quantity: 'Số lượng',
             quantityError: 'Số lượng không được phép để trống',
@@ -142,6 +142,27 @@ const MISAResource = {
                 align: 'text-align-right',
             },
         ],
+
+        overview: "Tổng quan",
+        propertyText: "Tài sản",
+        propertyHt: "Tài sản HT-ĐB",
+        propertyHtFull:"Tài sản hợp thành",
+
+        tool: "Công cụ dụng cụ",
+        menu: "Danh mục",
+        search: "Tra cứu",
+        report: "Báo cáo",
+        exportExcel: "Xuất file excel",
+        delete: "Xóa",
+        notification: "Thông báo",
+        setup: "Cài đặt",
+        help: "Hỏi đáp",
+        profile: "Thông tin cá nhân",
+        departmentOfFinance:"Sở tài chính",
+        year: "Năm",
+        propertyList: "Danh sách tài sản",
+        edit: "Chỉnh sửa",
+        
     }
 }
 

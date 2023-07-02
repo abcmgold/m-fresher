@@ -78,7 +78,9 @@
                     <div class="popup__row-col-6">
                         <div class="popup__item">
                             <div class="input-group">
-                                <div class="input__text--label">{{this.MISAResource['vn-VI'].property.departmentName}}</div>
+                                <div class="input__text--label">
+                                    {{ this.MISAResource['vn-VI'].property.departmentName }}
+                                </div>
                                 <m-text-input
                                     v-model="property.DepartmentName"
                                     :isRequired="true"
@@ -110,7 +112,9 @@
                     <div class="popup__row-col-6">
                         <div class="popup__item">
                             <div class="input-group">
-                                <div class="input__text--label">{{this.MISAResource['vn-VI'].property.propertyTypeName}}</div>
+                                <div class="input__text--label">
+                                    {{ this.MISAResource['vn-VI'].property.propertyTypeName }}
+                                </div>
                                 <m-text-input
                                     v-model="property.PropertyTypeName"
                                     :isRequired="true"
@@ -123,7 +127,11 @@
                 <div class="popup__row">
                     <div class="popup__row-col-3">
                         <div class="popup__item popup__item-force">
-                            <m-group-input :text="this.MISAResource['vn-VI'].property.quantity" :isForce="true" :message="this.MISAResource['vn-VI'].property.quantityError">
+                            <m-group-input
+                                :text="this.MISAResource['vn-VI'].property.quantity"
+                                :isForce="true"
+                                :message="this.MISAResource['vn-VI'].property.quantityError"
+                            >
                                 <m-money-input
                                     ref="quantityInput"
                                     v-model="property.Quantity"
@@ -212,7 +220,7 @@
                         <div class="popup__item">
                             <div class="input-group">
                                 <div class="input__text--label">
-                                    {{this.MISAResource['vn-VI'].property.followYear}}
+                                    {{ this.MISAResource['vn-VI'].property.followYear }}
                                     <div class="popup__item-icon-force">*</div>
                                 </div>
                                 <m-text-input
@@ -229,7 +237,7 @@
                     <div class="popup__row-col-3">
                         <div class="popup__item popup__item-force">
                             <div class="popup__item-label text__label">
-                                {{this.MISAResource['vn-VI'].property.purchaseDate}}
+                                {{ this.MISAResource['vn-VI'].property.purchaseDate }}
                                 <div class="popup__item-icon-force">*</div>
                             </div>
                             <m-date-picker
@@ -243,7 +251,7 @@
                     <div class="popup__row-col-3">
                         <div class="popup__item popup__item-force">
                             <div class="popup__item-label text__label">
-                                {{this.MISAResource['vn-VI'].property.useDate}}
+                                {{ this.MISAResource['vn-VI'].property.useDate }}
                                 <div class="popup__item-icon-force">*</div>
                             </div>
 
@@ -295,7 +303,7 @@
 </template>
 
 <script scoped>
-import { formatCurrentDate } from '@/common/common';
+import { formatCurrentDate, formatRatio } from '@/common/common';
 import ENUM from '@/common/enum';
 import { MISAResource } from '@/common/resource';
 import instance from '@/common/instance';
@@ -406,32 +414,7 @@ export default {
             await instance
                 .get('Property/GetLastestCode')
                 .then((res) => {
-                    // Tách phần chữ
-                    let textPart = res.data.match(/[A-Za-z]+/)[0];
-
-                    if (!res.data.match(/\d+/)) {
-                        let newPropertyCode = textPart + '1';
-                        this.propertyCodeSample = newPropertyCode;
-                    } else {
-                        // Tách phần số từ chuỗi mã
-                        let numberPart = res.data.match(/\d+/)[0];
-                        // tính độ dài của phần số trong đoạn mã
-                        let length = numberPart.length;
-                        // chuyển phần số thành 1 số nguyên
-                        let number = parseInt(numberPart);
-                        // tăng giá trị lên 1
-                        number++;
-                        // chuyển lại về string
-                        number = number.toString();
-                        // gắn thêm các số 0 ở trước cho đủ độ dài ban đâu
-                        let preZero = '';
-                        for (let i = 0; i < length - number.length; i++) {
-                            preZero = preZero + '0';
-                        }
-                        // giá trị sau khi được tăng
-                        let newPropertyCode = textPart + preZero + number;
-                        this.propertyCodeSample = newPropertyCode;
-                    }
+                    this.propertyCodeSample = res.data;
                 })
                 .catch((err) => {
                     console.log(err);
@@ -452,7 +435,6 @@ export default {
                         this.property.ResidualValue = this.property.OriginalValue - this.property.WearRateValue;
                         // sửa tài sản
                         this.$emit('updateValueRow', this.property);
-                      
                     }
                     // Thêm tài sản
                     else {
@@ -551,6 +533,13 @@ export default {
          */
         formatedCurrentDate() {
             return formatCurrentDate();
+        },
+        /*
+         * Format tỷ lệ
+         * Author: BATUAN (29/05/2023)
+         */
+        formatedRatio() {
+            return formatRatio();
         },
         /*
          * Ẩn dialog cancel và đóng form thêm tài sản

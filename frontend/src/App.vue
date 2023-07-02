@@ -26,5 +26,5 @@ export default {
 
 <style>
 @import url(@/css/main.css);
-@import url(@/css/variables.css);
+@import url(@/css/variables.css);   
 </style>

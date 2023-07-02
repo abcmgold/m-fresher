@@ -55,3 +55,18 @@ export function formatCurrentDate() {
 
     return `${year}-${formattedMonth}-${formattedDay}`
 }
+
+/**
+ * Format tỷ lệ
+ * Author: BATUAN (29/05/2023) 
+ */
+export function formatRatio(number) {
+    if (!number) {
+        return 0;
+    }
+    let formatted_number = new Intl.NumberFormat('vi-VN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(number);
+    return formatted_number
+}

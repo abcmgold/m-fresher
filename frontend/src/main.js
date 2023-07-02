@@ -3,11 +3,14 @@ import App from './App.vue'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import mitt from 'mitt'
+
+import VueTippy from "vue-tippy";
+import 'tippy.js/dist/tippy.css' // optional for styling
 /* import the fontawesome core */
-import { library } from '@fortawesome/fontawesome-svg-core'
+import {library} from '@fortawesome/fontawesome-svg-core'
 
 /* import font awesome icon component */
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
 
 
 import MISAButton from './components/MISAButton.vue'
@@ -31,8 +34,11 @@ import vueRouter from './router';
 
 import store from './store'
 
+import {VTooltip} from 'v-tooltip'
+
+
 /* import specific icons */
-import { faUserSecret, faSpinner, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
+import {faUserSecret, faSpinner, faCircleCheck} from '@fortawesome/free-solid-svg-icons'
 /* add icons to the library */
 library.add(faUserSecret, faSpinner, faCircleCheck)
 
@@ -54,12 +60,23 @@ app.component('m-validate-text', MISAValidateText)
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.component('m-group-input', MISAGroupInput)
 app.component('m-money-input', MISAMoneyInput)
+app.component('m-tooltip', VTooltip)
+
 
 // add directive
-app.directive('esc',pressEscEvent);
+app.directive('esc', pressEscEvent);
 
 // add store
 app.use(store)
+
+app.use(
+    VueTippy,
+    // optional
+    {
+      directive: 'tippy', // => v-tippy
+      component: 'tippy', // => <tippy/>
+    }
+  )
 
 const emitter = mitt();
 app.config.globalProperties.$emitter = emitter;

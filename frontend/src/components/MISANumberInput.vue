@@ -23,6 +23,7 @@
 </template>
 
 <script>
+import { formatRatio } from '@/common/common';
 export default {
     name: 'MISANumberInput',
     props: {
@@ -41,26 +42,43 @@ export default {
     data() {
         return {
             error: false,
-            currentvalue: null,
+            currentvalue: 0,
         };
     },
     created() {
-        this.currentvalue = this.modelValue;
+        if (this.modelValue) {
+            this.currentvalue = this.formattedRatio(this.modelValue);
+        }
+        else {
+            this.currentvalue = 0;
+        }
     },
+    mouted() {},   
     watch: {
         currentvalue: function (newValue) {
+            if (newValue) {
+                newValue = parseFloat(newValue.replace(",", "."));
+            }
             this.$emit('update:modelValue', newValue);
+            this.currentvalue = this.formattedRatio(this.modelValue);
             this.error = false;
             if (this.$parent.hideErrorMessage) {
                 this.$parent.hideErrorMessage();
             }
         },
         modelValue: function (newValue) {
-            this.currentvalue = newValue;
+            this.currentvalue = this.formattedRatio(newValue);
         },
     },
     emit: ['update:modelValue'],
     methods: {
+         /*
+         * Hàm format tỷ lệ
+         * Author: BATUAN (14/06/2023)
+        */
+        formattedRatio(value) {
+            return formatRatio(value);
+        },
          /*
          * Sự kiện ngăn chặn người dùng nhập các ksi tự không hợp lệ vào ô input number
          * Author: BATUAN (14/06/2023)

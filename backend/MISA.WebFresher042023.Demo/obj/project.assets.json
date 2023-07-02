@@ -346,11 +346,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.csproj",
+      "projectUniqueName": "C:\\Users\\Admin\\Desktop\\qlts\\backend\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.csproj",
       "projectName": "MISA.WebFresher042023.Demo",
-      "projectPath": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.csproj",
+      "projectPath": "C:\\Users\\Admin\\Desktop\\qlts\\backend\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.csproj",
       "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo\\obj\\",
+      "outputPath": "C:\\Users\\Admin\\Desktop\\qlts\\backend\\MISA.WebFresher042023.Demo\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",

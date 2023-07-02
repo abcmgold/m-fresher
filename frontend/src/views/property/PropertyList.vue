@@ -57,10 +57,10 @@
                 :individualClass="'btn--primary'"
                 @click="this.showAddProperty"
             ></m-button>
-            <el-tooltip effect="dark" content="Xuất file excel" placement="bottom-start">
+            <el-tooltip effect="dark" :content="MISAResource['vn-VI'].exportExcel" placement="bottom-start">
                 <m-button :individualClass="' btn--single btn--combo-excel'"></m-button>
             </el-tooltip>
-            <el-tooltip effect="dark" content="Xóa" placement="bottom-start">
+            <el-tooltip effect="dark" :content="MISAResource['vn-VI'].delete" placement="bottom-start">
                 <m-button
                     :individualClass="' btn--single'"
                     :icon="'icon--delete'"
@@ -155,18 +155,18 @@
                 <div style="minWidth: 250px"></div>
                 <div style="minWidth: 250px"></div>
                 <div style="minWidth: 160px; font-weight: bold; padding: 0px 16px" class="text-align-right">
-                    {{ this.formatedMoney(this.totalProperties['Quantity']) }}
+                    {{ this.formatedMoney(this.totalSummary.TotalQuantity) }}
                 </div>
                 <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
-                    {{ this.formatedMoney(this.totalProperties['OriginalPrice']) }}
+                    {{ this.formatedMoney(this.totalSummary.TotalOriginalPrice) }}
                 </div>
                 <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
-                    {{ this.formatedMoney(this.totalProperties['WearRateValue']) }}
+                    {{ this.formatedMoney(this.totalSummary.TotalWearRateValue) }}
                 </div>
                 <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
                     {{
                         this.formatedMoney(
-                            this.totalProperties['OriginalPrice'] - this.totalProperties['WearRateValue'],
+                            this.totalSummary.TotalOriginalPrice - this.totalSummary.TotalWearRateValue,
                         )
                     }}
                 </div>
@@ -189,12 +189,9 @@
                     @mouseout="handleMouseOut"
                     @click="clickOnRowTable(index, data.PropertyId, $event)"
                 >
-                    <!-- <el-tooltip effect="dark" content="Chỉnh sửa" placement="bottom-start"> -->
-                    <div class="table--icon table--icon-pencil" @click="this.showDetail(index, data.id)"></div>
-                    <!-- </el-tooltip> -->
-                    <!-- <el-tooltip effect="dark" content="Xóa" placement="bottom-start"> -->
-                    <div class="table--icon table--icon-comment"></div>
-                    <!-- </el-tooltip> -->
+                    <div v-tippy="this.MISAResource['vn-VI'].edit" class="table--icon table--icon-pencil" @click="this.showDetail(index, data.id)"></div>
+                    <div v-tippy="this.MISAResource['vn-VI'].delete" class="table--icon table--icon-comment"
+                    ></div>
                 </div>
             </div>
             <div class="table__fixed--sumary"></div>
@@ -210,9 +207,6 @@
             ></m-pagination>
         </div>
         <div class="table__content--empty" v-if="isShowEmptyRecord"></div>
-        <!-- <div class="scroll-bar-y" ref="tableScroll" @scroll="scrollHandler">
-            <div class="scroll-bar-content" :style="{ height: `${this.scrollBarContentHeight}px` }"></div>
-        </div> -->
         <div v-if="this.isLoadingData" class="grid-loading-container">
             <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
             <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
@@ -276,10 +270,17 @@ import instance from '@/common/instance';
 import request from '@/common/api';
 import debounce from 'lodash/debounce';
 import { MISAResource } from '@/common/resource';
+
+import { directive } from 'vue-tippy'
+
+
 export default {
     name: 'EstateList',
     components: {
         PropertyAdd,
+    },
+    directives: {
+      tippy: directive,
     },
     data() {
         return {
@@ -308,7 +309,7 @@ export default {
 
             labelToastSuccess: '',
             labelToastError: '',
-
+            isMultipleDelete: true,
             isShowAddProperty: false,
             isShowDeleteDialog: false,
             isShowWarnDialog: false,
@@ -322,6 +323,7 @@ export default {
             idSelectedData: -1,
             pageSize: 20,
             totalRecords: 0,
+            totalSummary: {},
             currentPage: 1,
             pageNumber: 0,
             isLoadingData: false,
@@ -475,9 +477,7 @@ export default {
 
             this.selectedRow = [];
         }, 1000),
-        dataRender: function () {
-            this.calculateTotal(['Quantity', 'OriginalPrice', 'WearRateValue', 'ResidualValue']);
-        },
+
         selectedRow: function () {
             for (let i = 0; i < this.dataRender.length; i++) {
                 if (
@@ -556,7 +556,8 @@ export default {
                 )
                 .then((response) => {
                     this.dataRender = response.data.Data;
-                    this.totalRecords = response.data.NumberRecords;
+                    this.totalRecords = response.data.Total[0].TotalRecord;
+                    this.totalSummary = response.data.Total[0];
                 })
                 .catch((error) => {
                     console.error(error);
@@ -784,6 +785,8 @@ export default {
                 await this.getPropertyWithFilter();
                 this.checkForCheckbox();
                 this.calculateNumberPage();
+                this.$refs[`checkbox-${this.dataRender[0].PropertyId}`][0].isChecked = true;
+                this.selectedRow.push(this.dataRender[0].PropertyId);
             }
         },
         /*
@@ -835,7 +838,7 @@ export default {
                 }
             });
 
-            if (check == true) {
+            if (check == true && this.dataRender.length > 0) {
                 this.$refs['checkbox-all'][0].isChecked = true;
             } else {
                 this.$refs['checkbox-all'][0].isChecked = false;
@@ -902,7 +905,7 @@ export default {
             );
         },
         /*
-         * Sự kiện khi click vào biểu tượng xóa
+         * Sự kiện khi click vào biểu tượng xóa nhiều
          * Author: BATUAN (08/06/2023)
          */
         deleteRowOnClickIcon() {
@@ -933,6 +936,30 @@ export default {
                     this.textDialog = this.MISAResource['vn-VI'].deleteMultipleMessage;
                 }
             }
+            this.isMultipleDelete = true;
+        },
+        /*
+         * Sự kiện khi click vào biểu tượng xóa ở hàng của table
+         * Author: BATUAN (08/06/2023)
+         */
+         deleteOneRow() {
+            // reset giá trị trong dialog
+            this.textDialog = '';
+            this.beginText = '';
+            this.endText = '';
+            
+            this.isShowDeleteDialog = true;
+            this.textDialog = this.MISAResource['vn-VI'].confirm;
+
+            let record = this.dataTable.find((data) => {
+                return data.PropertyId == this.selectedRow[0];
+            });
+            let code = record.PropertyCode;
+            let name = record.PropertyName;
+
+            this.deleteMsg = `${code}-${name}`;
+
+            this.isMultipleDelete = false;
         },
         /*
          * Đóng dialog thông báo xóa
@@ -982,22 +1009,7 @@ export default {
         changeCurrentPage(newPage) {
             this.currentPage = newPage;
         },
-        /**
-         * Tính toán tổng các giá trị của các hàng trong bảng (Số lượng, Nguyên giá
-         * HM/KH lũy kế, Giá trị còn lại)
-         * Author: BATUAN (08/06/2023)
-         */
-        calculateTotal(cols) {
-            try {
-                cols.forEach((col) => {
-                    this.totalProperties[col] = this.dataRender.reduce((total, item) => {
-                        return total + item[col];
-                    }, 0);
-                });
-            } catch (e) {
-                console.log(e);
-            }
-        },
+        
         /*
          * Sự kiện khi scroll trong body của table
          * Author: BATUAN (14/06/2023)
@@ -1019,11 +1031,24 @@ export default {
             // cập nhật lại con trỏ trỏ tới vị trí đầu tiên khi dùng Shift + Click
             this.firstClickRow = index;
 
-            if (this.selectedRow.length == 1 && this.selectedRow[0] == id) {
+            let isMultipleSelect = false;
+            let count = 0;
+            for (let i = 0; i < this.dataRender.length; i++) {
+                if (this.selectedRow.includes(this.dataRender[i].PropertyId)) {
+                    count++;
+                    if (count >=2) {
+                        isMultipleSelect = true;
+                        break;
+                    }
+                } 
+            }
+
+            if (!isMultipleSelect && this.selectedRow.includes(id)) {
                 this.selectedRow = this.selectedRow.filter(
                     (item) => !this.dataRender.some((obj) => obj.PropertyId === item),
                 );
             } else {
+                
                 // for (let i = 0; i < this.selectedRow.length; i++) {
                 //     this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = false;
                 // }

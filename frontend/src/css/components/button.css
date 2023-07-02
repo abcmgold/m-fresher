@@ -39,7 +39,7 @@
 }
 
 .btn--primary:hover {
-    background-color: var(--hover-color);
+    background-color: #1688a6;
     cursor:pointer;
 }
 
