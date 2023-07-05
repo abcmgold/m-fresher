@@ -117,7 +117,7 @@ const MISAResource = {
             },
             {
                 name: 'Số lượng',
-                width: '160px',
+                width: '100px',
                 align: 'text-align-right',
             },
             {
@@ -154,6 +154,7 @@ const MISAResource = {
         report: "Báo cáo",
         exportExcel: "Xuất file excel",
         delete: "Xóa",
+        duplicate: "Nhân bản",
         notification: "Thông báo",
         setup: "Cài đặt",
         help: "Hỏi đáp",

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Admin\\Desktop\\qlts\\backend\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.csproj": {}
+    "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Admin\\Desktop\\qlts\\backend\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.csproj": {
+    "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Core\\MISA.WebFresher042023.Demo.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Admin\\Desktop\\qlts\\backend\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.csproj",
-        "projectName": "MISA.WebFresher042023.Demo",
-        "projectPath": "C:\\Users\\Admin\\Desktop\\qlts\\backend\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.csproj",
+        "projectUniqueName": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Core\\MISA.WebFresher042023.Demo.Core.csproj",
+        "projectName": "MISA.WebFresher042023.Demo.Core",
+        "projectPath": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Core\\MISA.WebFresher042023.Demo.Core.csproj",
         "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Admin\\Desktop\\qlts\\backend\\MISA.WebFresher042023.Demo\\obj\\",
+        "outputPath": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Core\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -28,6 +28,163 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "dependencies": {
+            "AutoMapper": {
+              "target": "Package",
+              "version": "[12.0.1, )"
+            },
+            "AutoMapper.Extensions.Microsoft.DependencyInjection": {
+              "target": "Package",
+              "version": "[12.0.1, )"
+            },
+            "Dapper": {
+              "target": "Package",
+              "version": "[2.0.123, )"
+            },
+            "Microsoft.AspNetCore.Http.Abstractions": {
+              "target": "Package",
+              "version": "[2.2.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Infrastructure\\MISA.WebFresher042023.Demo.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Infrastructure\\MISA.WebFresher042023.Demo.Infrastructure.csproj",
+        "projectName": "MISA.WebFresher042023.Demo.Infrastructure",
+        "projectPath": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Infrastructure\\MISA.WebFresher042023.Demo.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Infrastructure\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {
+              "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Core\\MISA.WebFresher042023.Demo.Core.csproj": {
+                "projectPath": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Core\\MISA.WebFresher042023.Demo.Core.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net6.0": {
+          "targetAlias": "net6.0",
+          "dependencies": {
+            "Dapper": {
+              "target": "Package",
+              "version": "[2.0.123, )"
+            },
+            "Microsoft.AspNetCore.Mvc.Core": {
+              "target": "Package",
+              "version": "[2.2.5, )"
+            },
+            "Microsoft.Extensions.Configuration.Abstractions": {
+              "target": "Package",
+              "version": "[7.0.0, )"
+            },
+            "MySqlConnector": {
+              "target": "Package",
+              "version": "[2.2.6, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.202\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.csproj",
+        "projectName": "MISA.WebFresher042023.Demo",
+        "projectPath": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.csproj",
+        "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net6.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net6.0": {
+            "targetAlias": "net6.0",
+            "projectReferences": {
+              "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Core\\MISA.WebFresher042023.Demo.Core.csproj": {
+                "projectPath": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Core\\MISA.WebFresher042023.Demo.Core.csproj"
+              },
+              "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Infrastructure\\MISA.WebFresher042023.Demo.Infrastructure.csproj": {
+                "projectPath": "C:\\Users\\Admin\\Desktop\\about\\web202304\\batuan\\aspnetcore\\MISA.WebFresher042023.Demo\\MISA.WebFresher042023.Demo.Infrastructure\\MISA.WebFresher042023.Demo.Infrastructure.csproj"
+              }
+            }
           }
         },
         "warningProperties": {

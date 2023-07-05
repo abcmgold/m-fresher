@@ -5,7 +5,11 @@ VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MISA.WebFresher042023.Demo", "MISA.WebFresher042023.Demo\MISA.WebFresher042023.Demo.csproj", "{7EDD8333-ADCC-4F65-AB0E-53E78B5623DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MISA.WEBFresher042023.Demo.UnitTests", "MISA.WEBFresher042023.Demo.UnitTests\MISA.WEBFresher042023.Demo.UnitTests.csproj", "{B2C73824-BEE3-4841-B9DF-671C7AA019A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MISA.WEBFresher042023.Demo.UnitTests", "MISA.WEBFresher042023.Demo.UnitTests\MISA.WEBFresher042023.Demo.UnitTests.csproj", "{B2C73824-BEE3-4841-B9DF-671C7AA019A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MISA.WebFresher042023.Demo.Core", "MISA.WebFresher042023.Demo.Core\MISA.WebFresher042023.Demo.Core.csproj", "{332B9074-1521-4ED1-A1ED-CDC3A8D1964E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MISA.WebFresher042023.Demo.Infrastructure", "MISA.WebFresher042023.Demo.Infrastructure\MISA.WebFresher042023.Demo.Infrastructure.csproj", "{D1111FFF-F82D-4157-87B0-296AE295D12A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{B2C73824-BEE3-4841-B9DF-671C7AA019A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2C73824-BEE3-4841-B9DF-671C7AA019A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2C73824-BEE3-4841-B9DF-671C7AA019A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{332B9074-1521-4ED1-A1ED-CDC3A8D1964E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{332B9074-1521-4ED1-A1ED-CDC3A8D1964E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{332B9074-1521-4ED1-A1ED-CDC3A8D1964E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{332B9074-1521-4ED1-A1ED-CDC3A8D1964E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1111FFF-F82D-4157-87B0-296AE295D12A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1111FFF-F82D-4157-87B0-296AE295D12A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1111FFF-F82D-4157-87B0-296AE295D12A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1111FFF-F82D-4157-87B0-296AE295D12A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

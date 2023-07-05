@@ -4,7 +4,7 @@
 }
 
 .el-select.back-ground__icon {
-    width: 260px !important;
+    width: 200px !important;
 }
 
 .el-input__wrapper {
@@ -19,18 +19,6 @@ body .el-select .el-input.is-focus .el-input__wrapper {
     border-color: var(--primary-color) !important;
 }
 
-.el-select .el-icon.el-select__caret.el-select__icon {
-    /* background-image: url(../../assets/icon/qlts-icon.svg);
-    background-repeat: no-repeat;
-    background-position: -72px -338px;
-    width: 8px;
-    height: 5px; */
-}
-
-.el-select .el-icon.el-select__caret.el-select__icon svg {
-    /* display: none !important; */
-    /* margin-right: 20px !important; */
-}
 .el-select .el-input .el-select__caret.el-icon {
     height: 5px !important;
 }

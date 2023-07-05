@@ -1,6 +1,5 @@
 <template>
     <div @click.stop class="checkbox" :class="{ checked: isChecked }" @click="handleCheckboxChange">
-        <!-- <input type="checkbox" v-model="isChecked" @change="handleCheckboxChange" /> -->
     </div>
 </template>
 

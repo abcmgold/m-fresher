@@ -1,0 +1,61 @@
+﻿using MISA.WebFresher042023.Demo.Core.Entities;
+using MISA.WebFresher042023.Demo.Core.Interface.Repository;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace MISA.WEBFresher042023.Demo.UnitTests.Core
+{
+    public class FakePropertyRepository : IPropertyRepository
+    {
+        public Guid ActualId { get; set; }
+
+        public Task<Property> checkDuplicateProeprtyCode(string propertyCode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<int> DeleteMultiAsync(string id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<Property>> GetAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Property> GetByIdAsync(Guid id)
+        {
+            ActualId = id;
+
+            var property = new Property()
+            {
+                PropertyId = id
+            };
+            return Task.FromResult<Property>(property);
+        }
+
+        public Task<object> GetByPagingAsync(int pageNumber, int pageSize, string? searchInput, string? propertyType, string? departmentName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string> GetLastestCodeAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<int> InsertPropertyAsync(Property property)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<int> UpdatePropertyAsync(Guid propertyId, Property property)
+        {
+            throw new NotImplementedException();
+        }
+    }
+}

@@ -38,7 +38,20 @@
     color:#2fb0d1;;
 }
 
+.btn--noborder:focus,
+.btn--sub:focus {
+    border: 1px solid #2fb0d1;;
+    background-color: transparent;
+    cursor: pointer;
+    color:#2fb0d1;;
+}
+
 .btn--primary:hover {
+    background-color: #1688a6;
+    cursor:pointer;
+}
+
+.btn--primary:focus {
     background-color: #1688a6;
     cursor:pointer;
 }

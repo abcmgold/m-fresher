@@ -69,18 +69,17 @@ Sửa: Xóa <<,>> ở confirm xóa 1 bản ghi : DONE
      Bug khi chọn 1 bản ghi khi đã filter: DONE	
 
 Ngày (29/06/2023)
-     Bỏ border dọc
      Responsive cho màn hình nhỏ: 1366x768 hoặc 1024x768
      Lỗi check trùng nên để thành required giống như lỗi input trống
-     Summary tổng tất cả các bản ghi
+     Summary tổng tất cả các bản ghi: XONG
      màn thêm ngắn lại, các input cũng ngắn lại (70%) : XONG
-     Cột số lượng cho nhỏ lại
+     Cột số lượng cho nhỏ lại : xong
      lỗi các dòng trong form đang bị lệch (Mã loại tài sản) : DONE
      Check trùng khi autoId (Tự sinh mã mới luôn) : DONE
      mũi tên trỏ xuống chỗ số 20(page size) cách ra khoảng 3px : DONE
      Cho loading dịch lên (không che sumary và paging) : XONG
      Focus vào dòng đầu của table khi thêm mới thành công : XONG
-     Style tool tip (tham khảo trang mẫu)
+     Style tool tip (tham khảo trang mẫu) : xong
      
 client : F8, F10, F11, Shift F11, call stack, watch, console, console.trace
 server: F5, F10, F11, Shift F11, Shift F9, call stack, watch, ctrl alt + {I,O,E,P}

@@ -6,7 +6,7 @@ namespace MISA.WebFresher042023.Demo.Core.Entities
     /// Thực thể của Mã tài sản
     /// </summary>
     /// Created by: BATUAN (13/06/2023)
-    public class PropertyType 
+    public class PropertyType : BaseEntity
     {
         /// <summary>
         /// Id
@@ -27,21 +27,5 @@ namespace MISA.WebFresher042023.Demo.Core.Entities
         [Required]
         [MaxLength(20)]
         public string PropertyTypeName { get; set; }
-        /// <summary>
-        /// Ngày tạo
-        /// </summary>
-        public DateTime? CreatedDate { get; set; }
-        /// <summary>
-        /// Người tạo
-        /// </summary>
-        public string? CreatedBy { get; set; }
-        /// <summary>
-        /// Ngày sửa đổi
-        /// </summary>
-        public DateTime? ModifiedDate { get; set; }
-        /// <summary>
-        /// Người sửa đổi
-        /// </summary>
-        public string? ModifiedBy { get; set; }
     }
 }

@@ -1,7 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
-using MISA.WebFresher042023.Demo.Middleware;
-using MISA.WebFresher042023.Demo.HandleException;
+using MISA.WebFresher042023.Demo.Core.HandleException;
 using System.Text.Json;
+using MISA.WebFresher042023.Demo.Core.Service;
+using MISA.WebFresher042023.Demo.Infrastructure.Repository;
+using MISA.WebFresher042023.Demo.Middleware;
+using MISA.WebFresher042023.Demo.Core.Interface.Repository;
+using MISA.WebFresher042023.Demo.Core.Interface.Service;
+using MISA.WebFresher042023.Demo.Core.Entities;
 
 WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 
@@ -18,8 +23,8 @@ builder.Services.AddControllers()
             return new BadRequestObjectResult(new BaseException()
             {
                 ErrorCode = StatusCodes.Status400BadRequest,
-                UserMessage = "L?i t? ng??i dùng",
-                DevMessage = "L?i t? ng??i dùng",
+                UserMessage = "",
+                DevMessage = "",
                 TraceId = "",
                 MoreInfo = "",
                 Errors = errors
@@ -32,7 +37,20 @@ builder.Services.AddControllers()
 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen();   
+
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+builder.Services.AddScoped<IPropertyService, PropertyService>();
+builder.Services.AddScoped<IPropertyRepository, PropertyRepository>();
+
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+
+builder.Services.AddScoped<IPropertyTypeService, PropertyTypeService>();
+builder.Services.AddScoped<IPropertyTypeRepository, PropertyTypeRepository>();
+
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
 {
     build.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();

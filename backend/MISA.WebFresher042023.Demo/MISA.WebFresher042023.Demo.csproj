@@ -14,7 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
+    <ProjectReference Include="..\MISA.WebFresher042023.Demo.Core\MISA.WebFresher042023.Demo.Core.csproj" />
+    <ProjectReference Include="..\MISA.WebFresher042023.Demo.Infrastructure\MISA.WebFresher042023.Demo.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

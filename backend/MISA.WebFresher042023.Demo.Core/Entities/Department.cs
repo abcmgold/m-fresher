@@ -6,7 +6,7 @@ namespace MISA.WebFresher042023.Demo.Core.Entities
     /// Thực thể của Department
     /// </summary>
     /// Created by: BATUAN (13/06/2023)
-    public class Department
+    public class Department : BaseEntity
     {
         /// <summary>
         /// Id department
@@ -27,21 +27,5 @@ namespace MISA.WebFresher042023.Demo.Core.Entities
         [Required]
         [MaxLength(20)]
         public string DepartmentName { get; set;}
-        /// <summary>
-        /// Ngày tạo
-        /// </summary>
-        public DateTime? CreatedDate { get; set; }
-        /// <summary>
-        /// Người tạo
-        /// </summary>
-        public string? CreatedBy { get; set; }
-        /// <summary>
-        /// Ngày sửa đổi
-        /// </summary>
-        public DateTime? ModifiedDate { get; set; }
-        /// <summary>
-        /// Người sửa đổi
-        /// </summary>
-        public string? ModifiedBy { get; set; }
     }
 }

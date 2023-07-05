@@ -10,9 +10,11 @@
             <div class="popup__header">
                 <div class="popup__header__title">{{ this.title }}</div>
                 <div id="btnCloseModalAdd" class="popup__header__close" @click="$emit('hideAddProperty')">
-                    <el-tooltip effect="dark" :content="this.MISAResource['vn-VI'].close" placement="bottom-start">
-                        <div class="icon--close"></div>
-                    </el-tooltip>
+                    <div
+                        :content="this.MISAResource['vn-VI'].close"
+                        v-tippy="{ placement: 'bottom' }"
+                        class="icon--close"
+                    ></div>
                 </div>
             </div>
             <div class="popup__container">
@@ -320,6 +322,7 @@ export default {
             type: Array,
             default: null,
         },
+        formMode: Number,
     },
     data() {
         return {
@@ -339,31 +342,33 @@ export default {
         };
     },
     async created() {
-        if (!this.selectedRow) {
-            // tính giá trị code mới được gợi ý
-            await this.generateSampleCode();
-            this.title = this.MISAResource['vn-VI'].addProperty;
-        }
-        // gán các giá trị mặc định
-        this.property.PropertyCode = this.propertyCodeSample;
-        this.property.Quantity = 1;
-        this.property.OriginalPrice = 0;
-        this.property.NumberYearUse = 0;
-        this.property.WearRate = 0;
-        this.property.WearRateValue = 0;
-        this.property.FollowYear = new Date().getFullYear().toString();
-        this.property.PurchaseDate = this.formatedCurrentDate();
-        this.property.FollowDate = this.formatedCurrentDate();
-
-        if (this.selectedRow) {
-            this.property = { ...this.selectedRow };
+        switch (this.formMode) {
+            case this.enum.formAdd:
+                await this.generateSampleCode();
+                this.title = this.MISAResource['vn-VI'].addProperty;
+                // gán các giá trị mặc định
+                this.property.PropertyCode = this.propertyCodeSample;
+                this.property.Quantity = 1;
+                this.property.OriginalPrice = 0;
+                this.property.NumberYearUse = 0;
+                this.property.WearRate = 0;
+                this.property.WearRateValue = 0;
+                this.property.FollowYear = new Date().getFullYear().toString();
+                this.property.PurchaseDate = this.formatedCurrentDate();
+                this.property.FollowDate = this.formatedCurrentDate();
+                break;
+            case this.enum.formUpdate:
+                this.title = this.MISAResource['vn-VI'].updateProperty;
+                this.property = { ...this.selectedRow };
+                break;
+            case this.enum.formDuplicate:
+                this.title = this.MISAResource['vn-VI'].addProperty;
+                this.property = { ...this.selectedRow };
+                break;
+            default:
+                break;
         }
         this.compareProperty = { ...this.property };
-    },
-    beforeMount() {
-        if (this.selectedRow) {
-            this.title = this.MISAResource['vn-VI'].updateProperty;
-        }
     },
     unmounted() {
         this.$emit('resetSelectedRow');
@@ -430,18 +435,27 @@ export default {
             if (this.validateData().validate) {
                 if (this.validateMajor()) {
                     // Sửa dữ liệu
-                    if (this.selectedRow) {
-                        //tính toán lại giá trị còn lại
-                        this.property.ResidualValue = this.property.OriginalValue - this.property.WearRateValue;
-                        // sửa tài sản
-                        this.$emit('updateValueRow', this.property);
-                    }
-                    // Thêm tài sản
-                    else {
-                        //tính toán lại giá trị còn lại
-                        this.property.ResidualValue = this.property.OriginalValue - this.property.WearRateValue;
-                        // thêm tài sản mới
-                        this.$emit('addNewProperty', this.property);
+                    switch (this.formMode) {
+                        case this.enum.formAdd:
+                            //tính toán lại giá trị còn lại
+                            this.property.ResidualValue = this.property.OriginalValue - this.property.WearRateValue;
+                            // thêm tài sản mới
+                            this.$emit('addNewProperty', this.property);
+                            break;
+                        case this.enum.formUpdate:
+                            //tính toán lại giá trị còn lại
+                            this.property.ResidualValue = this.property.OriginalValue - this.property.WearRateValue;
+                            // sửa tài sản
+                            this.$emit('updateValueRow', this.property);
+                            break;
+                        case this.enum.formDuplicate:
+                            //tính toán lại giá trị còn lại
+                            this.property.ResidualValue = this.property.OriginalValue - this.property.WearRateValue;
+                            // sửa tài sản
+                            this.$emit('addNewProperty', this.property);
+                            break;
+                        default:
+                            break;
                     }
                 } else {
                     this.isShowDialogValidate = true;

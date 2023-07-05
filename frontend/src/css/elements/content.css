@@ -53,6 +53,17 @@
 }
 
 
+@media (max-width: 1366px) {
+    .content__btn--reload span{
+        display: none;
+    }
+    .content__btn--reload {
+        min-width: 0 !important;
+        width: 36px !important;
+        padding: 0px !important;
+    }
+}
+
 
 
 

@@ -57,17 +57,17 @@
                 :individualClass="'btn--primary'"
                 @click="this.showAddProperty"
             ></m-button>
-            <el-tooltip effect="dark" :content="MISAResource['vn-VI'].exportExcel" placement="bottom-start">
-                <m-button :individualClass="' btn--single btn--combo-excel'"></m-button>
-            </el-tooltip>
-            <el-tooltip effect="dark" :content="MISAResource['vn-VI'].delete" placement="bottom-start">
-                <m-button
-                    :individualClass="' btn--single'"
-                    :icon="'icon--delete'"
-                    @click="this.deleteRowOnClickIcon"
-                    data-title="Xóa"
-                ></m-button>
-            </el-tooltip>
+            <m-button
+                v-tippy="MISAResource['vn-VI'].exportExcel"
+                :individualClass="' btn--single btn--combo-excel'"
+            ></m-button>
+            <m-button
+                v-tippy="MISAResource['vn-VI'].delete"
+                :individualClass="' btn--single'"
+                :icon="'icon--delete'"
+                @click="this.deleteRowOnClickIcon"
+                data-title="Xóa"
+            ></m-button>
         </div>
     </div>
     <div class="content__body">
@@ -132,7 +132,7 @@
                         {{ data.PropertyTypeName }}
                     </div>
                     <div class="text-align-left cell--item" style="minWidth: 250px">{{ data.DepartmentName }}</div>
-                    <div class="text-align-right cell--item" style="minWidth: 160px">
+                    <div class="text-align-right cell--item" style="minWidth: 100px">
                         {{ this.formatedMoney(data.Quantity) }}
                     </div>
                     <div class="text-align-right cell--item" style="minWidth: 150px">
@@ -154,7 +154,7 @@
                 <div style="minWidth: 300px"></div>
                 <div style="minWidth: 250px"></div>
                 <div style="minWidth: 250px"></div>
-                <div style="minWidth: 160px; font-weight: bold; padding: 0px 16px" class="text-align-right">
+                <div style="minWidth: 100px; font-weight: bold; padding: 0px 16px" class="text-align-right">
                     {{ this.formatedMoney(this.totalSummary.TotalQuantity) }}
                 </div>
                 <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
@@ -165,9 +165,7 @@
                 </div>
                 <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
                     {{
-                        this.formatedMoney(
-                            this.totalSummary.TotalOriginalPrice - this.totalSummary.TotalWearRateValue,
-                        )
+                        this.formatedMoney(this.totalSummary.TotalOriginalPrice - this.totalSummary.TotalWearRateValue)
                     }}
                 </div>
                 <div style="minWidth: 120px"></div>
@@ -189,8 +187,16 @@
                     @mouseout="handleMouseOut"
                     @click="clickOnRowTable(index, data.PropertyId, $event)"
                 >
-                    <div v-tippy="this.MISAResource['vn-VI'].edit" class="table--icon table--icon-pencil" @click="this.showDetail(index, data.id)"></div>
-                    <div v-tippy="this.MISAResource['vn-VI'].delete" class="table--icon table--icon-comment"
+                    <div
+                        v-tippy="this.MISAResource['vn-VI'].edit"
+                        class="table--icon table--icon-pencil"
+                        @click="this.showDetail(index, data.id)"
+                    ></div>
+                    <div
+                        @click.stop
+                        v-tippy="this.MISAResource['vn-VI'].delete"
+                        class="table--icon table--icon-duplicate"
+                        @click="this.showDuplicate(index, data.id)"
                     ></div>
                 </div>
             </div>
@@ -258,6 +264,7 @@
         @resetSelectedRow="this.resetSelectedRow"
         :departmentCodes="this.departmentCodes"
         :propertyTypeCodes="this.propertyTypeCodes"
+        :formMode="this.formMode"
     ></PropertyAdd>
     <m-toast :label="this.labelToastSuccess" icon="icon--success" v-if="isShowToastSuccess"></m-toast>
     <m-toast :label="this.labelToastError" icon="icon--error" v-if="isShowToastError"></m-toast>
@@ -270,9 +277,8 @@ import instance from '@/common/instance';
 import request from '@/common/api';
 import debounce from 'lodash/debounce';
 import { MISAResource } from '@/common/resource';
-
-import { directive } from 'vue-tippy'
-
+import ENUM from '@/common/enum';
+import { directive } from 'vue-tippy';
 
 export default {
     name: 'EstateList',
@@ -280,10 +286,14 @@ export default {
         PropertyAdd,
     },
     directives: {
-      tippy: directive,
+        tippy: directive,
     },
     data() {
         return {
+            MISAEnum: ENUM,
+
+            formMode: null,
+
             MISAResource: MISAResource,
             scrollBarContentHeight: 0,
             listHeader: [],
@@ -510,8 +520,8 @@ export default {
                 .then((response) => {
                     this.Departments = response.data;
                 })
-                .catch((error) => {
-                    console.log(error.message);
+                .catch((err) => {
+                    this.showToastError(err);
                 });
 
             this.Departments.forEach((department) => {
@@ -532,8 +542,8 @@ export default {
                 .then((response) => {
                     this.PropertyTypes = response.data;
                 })
-                .catch((error) => {
-                    console.log(error.message);
+                .catch((err) => {
+                    this.showToastError(err);
                 });
 
             this.PropertyTypes.forEach((propertyType) => {
@@ -559,8 +569,8 @@ export default {
                     this.totalRecords = response.data.Total[0].TotalRecord;
                     this.totalSummary = response.data.Total[0];
                 })
-                .catch((error) => {
-                    console.error(error);
+                .catch((err) => {
+                    this.showToastError(err);
                 });
 
             setTimeout(() => {
@@ -583,8 +593,8 @@ export default {
                 .then((response) => {
                     this.dataTable = response.data;
                 })
-                .catch((error) => {
-                    console.error(error);
+                .catch((err) => {
+                    this.showToastError(err);
                 });
         },
         /*
@@ -599,10 +609,24 @@ export default {
          * Author: BATUAN (27/05/2023)
          */
         showDetail(index, id) {
-            this.showAddProperty();
+            this.formMode = this.MISAEnum.formUpdate;
+            this.isShowAddProperty = true;
             this.selectedData = this.dataRender[index];
             this.seletedRowIndex = index;
             this.idSelectedData = id;
+            this.$store.commit('toggleMaskElement');
+        },
+        /*
+         * Hiển thị trang chi tiết(nhân bản)
+         * Author: BATUAN (27/05/2023)
+         */
+        showDuplicate(index, id) {
+            this.formMode = this.MISAEnum.formDuplicate;
+            this.isShowAddProperty = true;
+            this.selectedData = this.dataRender[index];
+            this.seletedRowIndex = index;
+            this.idSelectedData = id;
+            this.$store.commit('toggleMaskElement');
         },
         /*
          * Ẩn trang chi tiết
@@ -640,6 +664,7 @@ export default {
          * Author: BATUAN (27/05/2023)
          */
         showAddProperty() {
+            this.formMode = this.MISAEnum.formAdd;
             this.isShowAddProperty = true;
             this.$store.commit('toggleMaskElement');
         },
@@ -663,7 +688,7 @@ export default {
                     isSuccess = true;
                 })
                 .catch((err) => {
-                    this.showToastError(err.response.data.UserMessage);
+                    this.showToastError(err);
                 });
 
             if (isSuccess) {
@@ -677,6 +702,9 @@ export default {
          * Author: BATUAN (12/06/2023)
          */
         clickOnRowTable(index, id, event) {
+            if (event.detail == 2) {
+                return;
+            }
             if (event.ctrlKey) {
                 if (!this.selectedRow.includes(id)) {
                     this.selectedRow.push(id);
@@ -772,13 +800,14 @@ export default {
          */
         async addNewProperty(newProperty) {
             let isSuccess = false;
-            await request
+            let res = await request
                 .insertRecord('Property', newProperty)
                 .then(() => (isSuccess = true))
                 .catch((err) => {
-                    this.showToastError(err.response.data.UserMessage);
+                    this.showToastError(err);
                 });
 
+            console.log(res);
             if (isSuccess) {
                 this.hideAddProperty();
                 this.showToastSuccess(this.MISAResource['vn-VI'].addPropertySuccess);
@@ -868,7 +897,7 @@ export default {
         handleMouseOver(id) {
             setTimeout(() => {
                 this.hoveredRowIndex = id;
-            }, 50);
+            }, 70);
         },
         /*
          * Sự kiện khi thoát hover khỏi 1 hàng
@@ -942,12 +971,12 @@ export default {
          * Sự kiện khi click vào biểu tượng xóa ở hàng của table
          * Author: BATUAN (08/06/2023)
          */
-         deleteOneRow() {
+        deleteOneRow() {
             // reset giá trị trong dialog
             this.textDialog = '';
             this.beginText = '';
             this.endText = '';
-            
+
             this.isShowDeleteDialog = true;
             this.textDialog = this.MISAResource['vn-VI'].confirm;
 
@@ -982,7 +1011,7 @@ export default {
             await instance
                 .delete(`Property/${idsToDelete.join(', ')}`)
                 .then((res) => console.log(res))
-                .catch((err) => console.log(err));
+                .catch((err) => this.showToastError(err));
 
             // Ẩn dialog thông báo xóa
             this.isShowDeleteDialog = false;
@@ -1009,7 +1038,7 @@ export default {
         changeCurrentPage(newPage) {
             this.currentPage = newPage;
         },
-        
+
         /*
          * Sự kiện khi scroll trong body của table
          * Author: BATUAN (14/06/2023)
@@ -1036,11 +1065,11 @@ export default {
             for (let i = 0; i < this.dataRender.length; i++) {
                 if (this.selectedRow.includes(this.dataRender[i].PropertyId)) {
                     count++;
-                    if (count >=2) {
+                    if (count >= 2) {
                         isMultipleSelect = true;
                         break;
                     }
-                } 
+                }
             }
 
             if (!isMultipleSelect && this.selectedRow.includes(id)) {
@@ -1048,7 +1077,6 @@ export default {
                     (item) => !this.dataRender.some((obj) => obj.PropertyId === item),
                 );
             } else {
-                
                 // for (let i = 0; i < this.selectedRow.length; i++) {
                 //     this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = false;
                 // }

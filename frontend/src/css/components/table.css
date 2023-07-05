@@ -59,10 +59,10 @@
     background-position: -196px -195px;
 }
 
-.table--icon-comment {
+.table--icon-duplicate {
     background-image: url(../../assets/icon/qlts-icon.svg);
     background-repeat: no-repeat;
-    background-position: -459px -107px;
+    background-position: -238px -106px;
 }
 
 .table--icon-delete {
@@ -122,7 +122,6 @@
 }
 
 .table__content--header {
-    width: 1666px;
     display: flex;
 }
 
