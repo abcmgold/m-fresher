@@ -25,6 +25,7 @@
     "vue": "^3.2.13",
     "vue-router": "^4.2.2",
     "vue-tippy": "^6.2.0",
+    "vuetify": "^3.3.9",
     "vuex": "^4.0.2"
   },
   "devDependencies": {

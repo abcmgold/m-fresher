@@ -1,24 +1,30 @@
 import axios from 'axios'
-const instance = axios.create({baseURL: 'https://localhost:7005/api/v1/', timeout: 1000});
+import {MISAResource} from './resource';
+import ENUM from './enum';
+// import store from '@/store';
+const instance = axios.create({baseURL: 'https://localhost:7005/api/v1/'});
 
 instance.interceptors.response.use((response) => {
     return response
 }, (error) => {
-    console.log(error)
     if (!error.response) {
-        return Promise.reject("Server sập")
+        return Promise.reject({message: MISAResource['vn-VI'].serverNotResponse, statusCode: ENUM.statusCode.serverError})
+        // store.commit('toggleMaskElementShow')
+        // console.log('Server error: ' + store.getters.getMaskElementShow)
     } else {
         if (error.response.data.Errors) {
-            let listError = "";
+            let listError = [];
             error.response.data.Errors.forEach((err) => {
-                listError += err.ErrorMessage;
+                listError.push(err.Errors[err.Errors.length - 1].ErrorMessage);
             })
-            return Promise.reject(listError);
+            return Promise.reject({message: listError, statusCode: error.response.status});
         } else {
-            return Promise.reject(error.response.data.UserMessage);
+            let listError = [];
+            listError.push(error.response.data.UserMessage);
+            console.log(error);
+            return Promise.reject({message: listError, statusCode: error.response.status, errorField: error.response.data.ErrorField, documentInfo: error.response.data.DocumentInfo});
         }
     }
-
 })
 
 export default instance;

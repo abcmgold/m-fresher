@@ -43,19 +43,41 @@ namespace MISA.WebFresher042023.Demo.Middleware
                         }.ToString() ?? ""
                     );;
             }
-            if (ex is ExistedPropertyCodeException)
+            else if (ex is ExistedPropertyCodeException)
             {
                 context.Response.StatusCode = StatusCodes.Status409Conflict;
                 await context.Response.WriteAsync(
                         text: new BaseException()
                         {
-                            ErrorCode = context.Response.StatusCode,
+                            ErrorCode = 409,
                             UserMessage = ResourceVN.DuplicateDepartmentCode,
                             DevMessage = ex.Message,
                             TraceId = context.TraceIdentifier,
                             MoreInfo = ex.HelpLink
                         }.ToString() ?? ""
                     );
+            }
+            else if (ex is UserException)
+            {
+                UserException userException = (UserException)ex;
+                string userMessage = userException.Message;
+                string? errorField = userException.ErrorField;
+                int errorCode = userException.ErrorCode;
+                var documentInfo = userException.DocumentInfo;
+
+                context.Response.StatusCode = errorCode;
+                await context.Response.WriteAsync(
+                       text: new BaseException()
+                       {
+                           ErrorCode = context.Response.StatusCode,
+                           UserMessage = userMessage,
+                           DevMessage = ex.Message,
+                           TraceId = context.TraceIdentifier,
+                           MoreInfo = ex.HelpLink,
+                           ErrorField = errorField,
+                           DocumentInfo = documentInfo
+                       }.ToString() ?? ""
+                   );;
             }
             else
             {

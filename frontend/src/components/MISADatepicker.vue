@@ -16,7 +16,7 @@
 <script scoped>
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
-import {MISAResource} from "../common/resource"
+import { MISAResource } from '../common/resource';
 export default {
     name: 'MISADatepicker',
     props: {
@@ -31,7 +31,7 @@ export default {
         return {
             notError: true,
             modelValue: new Date().toLocaleDateString(),
-            MISAResource: MISAResource
+            MISAResource: MISAResource,
         };
     },
     components: {
@@ -40,19 +40,22 @@ export default {
     watch: {
         modelValue: function () {
             this.notError = true;
+            if (this.$parent.hideErrorMessage) {
+                this.$parent.hideErrorMessage();
+            }
         },
     },
     methods: {
-         /*
+        /*
          * Sự kiện khi blur khỏi components
          * Author: BATUAN (14/06/2023)
          */
         onBlurFunction() {
             if (!this.modelValue) {
                 this.notError = false;
-                // if (this.$parent) {
-                //     this.$parent.showErrorMessage();
-                // }
+                if (this.$parent) {
+                    this.$parent.showErrorMessage();
+                }
             }
         },
         /*
@@ -61,9 +64,13 @@ export default {
          */
         onFocusFunction() {
             this.notError = true;
-            // if (this.$parent) {
-            //     this.$parent.hideErrorMessage();
-            // }
+        },
+        /*
+         * Sự kiện tự động focus vào ô input
+         * Author: BATUAN (14/06/2023)
+         */
+        autoFocus() {
+            this.$refs.myDatePicker.openMenu();
         },
     },
 };

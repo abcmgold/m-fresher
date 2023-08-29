@@ -10,10 +10,11 @@ export const updateRecord = async(url, record) => {
     return res;
 }
 
-export const deleteRecord = async(url) => {
-    let res = await instance.delete(url)
+export const deleteRecord = async(url, listId) => {
+    let res = await instance.delete(url, listId)
     return res;
 }
+
 
 export const insertRecord = async(url, record) =>  {
     let res = await instance.post(url,record)

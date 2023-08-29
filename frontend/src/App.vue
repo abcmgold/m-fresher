@@ -1,12 +1,12 @@
 <template>
-    <div class="container">
+    <div class="container" v-leftclick="this.$store.commit('hideContextMenu')">
         <TheSidebar></TheSidebar>
         <div class="main">
-            <div v-if="this.$store.state.maskElementShow" class="mask-element"></div>
             <TheHeader></TheHeader>
             <TheContent></TheContent>
         </div>
     </div>
+    <div v-if="this.$store.getters.getMaskElementShow" class="mask-element"></div>
 </template>
 
 <script>

@@ -1,5 +1,5 @@
 .dialog {
-    width: 350px;
+    width: 400px;
     background-color: #FFF;
     border-radius: var(--border-radius);
     display: block;
@@ -26,7 +26,7 @@
 .dialog__discription {
     display: flex;
     align-items: center;
-    padding: 36px 24px 36px 24px;
+    padding: 36px 24px 12px 24px;
     column-gap: 12px;
 }
 
@@ -43,4 +43,21 @@
 
 .dialog__list-btns :not(:last-child) {
     margin-right: 8px;
+}
+
+.dialog__discription--text {
+    min-width: 268px;
+    word-wrap: break-word;
+}
+
+.dialog__info {
+    padding-left: 72px;
+    margin-bottom: 16px;
+}
+
+.detail-btn {
+    color: #1688a6;
+    cursor: pointer;
+    height:24px;
+    /* margin-bottom: 16px; */
 }

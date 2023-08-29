@@ -9,6 +9,9 @@ namespace MISA.WebFresher042023.Demo.Core.Entities
     /// CreatedBy: BATUAN (14/06/2023)
     public class Property : BaseEntity
     {
+        public Property() { 
+            PropertyId = Guid.NewGuid();
+        }
         /// <summary>
         /// Id tài sản
         /// </summary>

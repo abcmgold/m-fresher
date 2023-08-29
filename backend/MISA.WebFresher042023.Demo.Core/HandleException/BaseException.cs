@@ -34,6 +34,14 @@ namespace MISA.WebFresher042023.Demo.Core.HandleException
         /// Lỗi trả về
         /// </summary>
         public object? Errors { get; set; }
+        /// <summary>
+        /// Ô dữ liệu bị lỗi từ phía front-end
+        /// </summary>
+        public string? ErrorField { get; set; }
+        /// <summary>
+        /// Thông tin chứng từ trả về nếu có l
+        /// </summary>
+        public List<string> DocumentInfo { get; set; }
         #endregion
 
         #region Methods

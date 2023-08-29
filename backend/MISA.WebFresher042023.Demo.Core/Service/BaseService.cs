@@ -3,6 +3,7 @@ using MISA.WebFresher042023.Demo.Core.Dto;
 using MISA.WebFresher042023.Demo.Core.HandleException;
 using MISA.WebFresher042023.Demo.Core.Interface.Repository;
 using MISA.WebFresher042023.Demo.Core.Interface.Service;
+using MISA.WebFresher042023.Demo.Infrastructure.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,18 +16,31 @@ namespace MISA.WebFresher042023.Demo.Core.Service
     {
         protected readonly IBaseRepository<TEntity> _baseRepository;
         protected readonly IMapper _mapper;
+        protected readonly IUnitOfWork _unitOfWork;
 
-        protected BaseService(IBaseRepository<TEntity> baseRepository, IMapper mapper)
+        protected BaseService(IBaseRepository<TEntity> baseRepository, IMapper mapper, IUnitOfWork unitOfWork)
         {
             _baseRepository = baseRepository;
             _mapper = mapper;
+            _unitOfWork = unitOfWork;
         }
-
-        public async Task<int> DeleteMultiAsync(string id)
+        public virtual async Task<int> DeleteAsync(List<Guid> listId)
         {
-            var res = await _baseRepository.DeleteMultiAsync(id);
+            string concatenatedIds = string.Join(", ", listId);
+            try
+            {
+                _unitOfWork.BeginTransaction();
 
-            return res;
+                var res = await _baseRepository.DeleteAsync(concatenatedIds);
+
+                _unitOfWork.Commit();
+                return res;
+            }
+            catch (Exception)
+            {
+                _unitOfWork.Rollback();
+                throw;
+            }
         }
 
         public async Task<List<TEntityDto>> GetAsync()
@@ -58,23 +72,24 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             return entityDto;
         }
 
-        public virtual async Task<int> InsertAsync(TEntityCreateDto entityCreate)
+        public virtual async Task<int> InsertAsync(List<TEntityCreateDto> entityCreates)
         {
+            List<TEntity> entities = _mapper.Map<List<TEntity>>(entityCreates);
 
-            var entity = _mapper.Map<TEntity>(entityCreate);
-
-            var result = await _baseRepository.InsertAsync(entity);
+            var result = await _baseRepository.InsertAsync(entities);
 
             return result;
         }
 
-        public virtual async Task<int> UpdateAsync(Guid id, TEntityUpdateDto entityUpdate)
+        public virtual async Task<int> UpdateAsync(List<TEntityUpdateDto> entityUpdate)
         {
-            var entity = _mapper.Map<TEntity>(entityUpdate);
+            List<TEntity> entities = _mapper.Map<List<TEntity>>(entityUpdate);
 
-            var result = await _baseRepository.UpdateAsync(id, entity);
+            var result = await _baseRepository.UpdateAsync(entities);
 
             return result;
         }
+
+
     }
 }

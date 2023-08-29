@@ -70,12 +70,12 @@ namespace MISA.WebFresher042023.Demo.Controllers
         /// <returns></returns>
         /// Created by: BATUAN (16/06/2023)
         [HttpGet]
-        [Route("filter")]
-        public async Task<ActionResult> GetByPaging(int pageNumber, int pageSize, string? searchInput, string? propertyType, string? departmentName)
+        [Route("Filter")]
+        public async Task<ActionResult> GetByPaging(int pageNumber, int pageSize, string? searchInput, string? propertyType, string? departmentName, string? excludeIds)
         {
-            var res = await _propertyService.GetByPagingAsync(pageNumber, pageSize, searchInput, propertyType, departmentName);
+            var res = await _propertyService.GetByPagingAsync(pageNumber, pageSize, searchInput, propertyType, departmentName, excludeIds);
 
-            return Ok(res);
+            return Ok(value: res);
         }
         /// <summary>
         /// Lấy mã code mới được thêm vào gần nhất

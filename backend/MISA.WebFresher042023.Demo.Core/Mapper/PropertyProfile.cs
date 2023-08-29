@@ -20,7 +20,6 @@ namespace MISA.WebFresher042023.Demo.Core.Mapper
             CreateMap<Property, PropertyDto>();
             CreateMap<PropertyCreateDto, Property>();
             CreateMap<PropertyUpdateDto, Property>();
-
         }
     }
 }

@@ -24,7 +24,7 @@ export function formatMoney(money) {
 export function unformatMoney(money) {
     try {
         if (money) {
-            var value = parseInt(money.replaceAll('.', ''));
+            var value = parseInt(money.toString().replaceAll('.', ''));
             return value;
         } else {
             return '';
@@ -38,22 +38,23 @@ export function unformatMoney(money) {
  * Format ngày tháng
  * Author: BATUAN (29/05/2023) 
  */
-export function formatCurrentDate() {
-    const currentDate = new Date();
-    const day = currentDate.getDate();
+export function formatCurrentDate(date) {
+    var dateObject = new Date(date);
+
+    const day = dateObject.getDate();
     const formattedDay = day.toLocaleString('en-US', {
         minimumIntegerDigits: 2,
         useGrouping: false
     });
 
-    const month = currentDate.getMonth() + 1;
+    const month = dateObject.getMonth() + 1;
     const formattedMonth = month.toLocaleString('en-US', {
         minimumIntegerDigits: 2,
         useGrouping: false
     });
-    const year = currentDate.getFullYear();
+    const year = dateObject.getFullYear();
 
-    return `${year}-${formattedMonth}-${formattedDay}`
+    return `${formattedDay}-${formattedMonth}-${year}`
 }
 
 /**
@@ -69,4 +70,8 @@ export function formatRatio(number) {
         maximumFractionDigits: 2
     }).format(number);
     return formatted_number
+}
+
+export function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

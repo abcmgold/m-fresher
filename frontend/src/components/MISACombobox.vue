@@ -1,7 +1,7 @@
 <template>
     <el-select
+        v-scrolloutside="scrollOutSide"
         ref="myComboBox"
-        :disabled="disabled"
         v-model="selectedPropertyTypeName"
         :class="{ 'el-select--error': error }"
         class="combo-box"
@@ -9,11 +9,6 @@
         v-on:blur="onBlurFunction"
         v-on:change="onChangeFunction"
         :placeholder="placeholder"
-        v-on:focus="() => {
-            if (this.$parent.hideErrorMessage) {
-                this.$parent.hideErrorMessage();
-            }
-        }"
         :filterable="this.filterable"
         :value="modelValue"
         @change="
@@ -26,6 +21,7 @@
         "
     >
         <el-option
+            class="select"
             v-for="code in this.dataSelect"
             :key="code.value"
             :label="code.label"
@@ -47,16 +43,15 @@ export default {
         placeholder: String,
         errorMsg: String,
         type: String,
-        filterable: Boolean
+        filterable: Boolean,
     },
     mounted() {
         this.selectedPropertyTypeName = this.modelValue;
     },
-    watch: {
-    },
+    watch: {},
     methods: {
-         /*
-         * Sự kiện khi blur khỏ ô input
+        /*
+         * Sự kiện khi blur khỏi ô input
          * Author: BATUAN (14/06/2023)
          */
         onBlurFunction() {
@@ -70,7 +65,7 @@ export default {
                 }
             }
         },
-         /*
+        /*
          * Sự kiện khi ô input thay đổi
          * Author: BATUAN (14/06/2023)
          */
@@ -80,8 +75,24 @@ export default {
                 this.$parent.hideErrorMessage();
             }
         },
+        /*
+         * Sự kiện tự động focus vào ô input
+         * Author: BATUAN (14/06/2023)
+         */
+        autoFocus() {
+            this.$refs.myComboBox.focus();
+            // this.$refs.myComboBox.blur();
+        },
+        /*
+         * Sự kiện khi scroll ở ngoài combobox
+         * Author: BATUAN (14/06/2023)
+         */
+        scrollOutSide() {
+            this.$refs.myComboBox.blur();
+            console.log("scroll")
+        },
     },
-    emit: ['update:modelValue'],
+    emits: ['update:modelValue'],
 };
 </script>
 

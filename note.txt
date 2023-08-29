@@ -69,8 +69,7 @@ Sửa: Xóa <<,>> ở confirm xóa 1 bản ghi : DONE
      Bug khi chọn 1 bản ghi khi đã filter: DONE	
 
 Ngày (29/06/2023)
-     Responsive cho màn hình nhỏ: 1366x768 hoặc 1024x768
-     Lỗi check trùng nên để thành required giống như lỗi input trống
+     Responsive cho màn hình nhỏ: 1366x768 hoặc 1024x768 : xong
      Summary tổng tất cả các bản ghi: XONG
      màn thêm ngắn lại, các input cũng ngắn lại (70%) : XONG
      Cột số lượng cho nhỏ lại : xong

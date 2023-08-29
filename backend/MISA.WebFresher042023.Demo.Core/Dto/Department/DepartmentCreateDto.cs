@@ -8,17 +8,11 @@ using System.Threading.Tasks;
 namespace MISA.WebFresher042023.Demo.Core.Dto.Department
 {
     /// <summary>
-    /// Lớp đại diện cho dữ liệu department trả về
+    /// Lớp đại diện cho dữ liệu phòng ban để tạo mới
     /// </summary>
     /// CreateBy: BATUAN(20/06/2023)
     public class DepartmentCreateDto
     {
-        /// <summary>
-        /// Id Department
-        /// </summary>
-        [Required]
-        [MaxLength(36)]
-        public Guid DepartmentId { get; set; }
 
         /// <summary>
         /// Mã phòng ban

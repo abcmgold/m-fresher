@@ -17,11 +17,12 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Service
         Task<List<TEntityDto>> GetAsync();
 
         /// <summary>
-        /// Delete records
+        /// Xóa 1 hoặc nhiều bản ghi
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: BATUAN (19/06/2023)
-        Task<int> DeleteMultiAsync(string id);
+        Task<int> DeleteAsync(List<Guid> listId); 
+
 
         /// <summary>
         /// Get one record by id
@@ -34,14 +35,14 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Service
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: BATUAN (19/06/2023)
-        Task<int> UpdateAsync(Guid id, TEntityUpdateDto entity);
+        Task<int> UpdateAsync(List<TEntityUpdateDto> entity);
 
         /// <summary>
         /// Thêm mới bản ghi
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: BATUAN (19/06/2023)
-        Task<int> InsertAsync(TEntityCreateDto entity);
+        Task<int> InsertAsync(List<TEntityCreateDto> entityCreates);
 
     }
 }

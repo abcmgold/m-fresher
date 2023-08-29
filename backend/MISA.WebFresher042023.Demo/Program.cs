@@ -7,6 +7,8 @@ using MISA.WebFresher042023.Demo.Middleware;
 using MISA.WebFresher042023.Demo.Core.Interface.Repository;
 using MISA.WebFresher042023.Demo.Core.Interface.Service;
 using MISA.WebFresher042023.Demo.Core.Entities;
+using MISA.WebFresher042023.Demo.Infrastructure.Interface;
+using MISA.WebFresher042023.Demo.Infrastructure.UnitOfWork;
 
 WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 
@@ -51,7 +53,17 @@ builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddScoped<IPropertyTypeService, PropertyTypeService>();
 builder.Services.AddScoped<IPropertyTypeRepository, PropertyTypeRepository>();
 
-builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
+builder.Services.AddScoped<ITransferAssetService, TransferAssetService>();
+builder.Services.AddScoped<ITransferAssetRepository, TransferAssetRepository>();
+
+builder.Services.AddScoped<ITransferAssetDetailService, TransferAssetDetailService>();
+builder.Services.AddScoped<ITransferAssetDetailRepository, TransferAssetDetailRepository>();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+
+
+builder.Services.AddCors(p => p.AddPolicy("corspolicy", configurePolicy: build =>
 {
     build.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
 }));

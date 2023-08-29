@@ -8,7 +8,7 @@
 <script>
 export default {
     name: 'MISAButton',
-    props: {
+    props: {    
         label: String,
         individualClass: String,
         icon: String,

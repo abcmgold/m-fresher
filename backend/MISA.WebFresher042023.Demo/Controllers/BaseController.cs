@@ -44,10 +44,10 @@ namespace MISA.WebFresher042023.Demo.Controllers
         /// <param name="id">id bản ghi</param>
         /// <returns></returns>
         /// CreatedBy: BATUAN (20/06/2023)
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(String id)
+        [HttpDelete]
+        public async Task<IActionResult> Delete(List<Guid> listId)
         {
-            var res = await _baseService.DeleteMultiAsync(id);
+            int res = await _baseService.DeleteAsync(listId);
 
             return StatusCode(200, res);
 
@@ -75,7 +75,7 @@ namespace MISA.WebFresher042023.Demo.Controllers
         /// CreatedBy: BATUAN (14/06/2023)
         // POST api/<PropertiesController>
         [HttpPost]
-        public async Task<ActionResult> Post(TEntityCreateDto property)
+        public virtual async Task<ActionResult> Post(List<TEntityCreateDto> property)
         {
 
             var res = await _baseService.InsertAsync(property);
@@ -89,10 +89,10 @@ namespace MISA.WebFresher042023.Demo.Controllers
         /// <returns></returns>
         /// CreatedBy: BATUAN (14/06/2023)
         // PUT api/<PropertiesController>/5
-        [HttpPut("{id}")]
-        public async Task<ActionResult> Update(Guid id, TEntityUpdateDto property)
+        [HttpPut]
+        public async Task<ActionResult> Update(List<TEntityUpdateDto> property)
         {
-            var res = await _baseService.UpdateAsync(id, property);
+            var res = await _baseService.UpdateAsync(property);
 
             return StatusCode(200, res);
 

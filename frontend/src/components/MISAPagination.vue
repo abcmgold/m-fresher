@@ -15,7 +15,6 @@
                 @current-change="handleCurrentChange(this.currentPage)"
             />
         </div>
-        <!-- <m-number-input :isRequired="false"></m-number-input> -->
     </div>
 </template>
 
@@ -26,9 +25,10 @@ export default {
     props: {
         numberPages: Number,
         dataSelect: Array,
-        pageSize: Number,
+        pageSize: String,
         totalRecords: Number,
     },
+    emits: ['changeCurrentPage', 'changePageSize'],
     data() {
         return {
             currentPage: 1,
@@ -43,10 +43,6 @@ export default {
         size: function (newValue) {
             this.$emit('changePageSize', newValue);
         },
-        currentPage: function (newValue, oldValue) {
-            console.log(newValue);
-            console.log(oldValue);
-        }
     },
     methods: {
          /*
@@ -55,7 +51,6 @@ export default {
          */
         handleCurrentChange() {
             if (this.currentPage > 0) {
-                console.log(123)
                 this.$emit('changeCurrentPage', this.currentPage);
             }
           

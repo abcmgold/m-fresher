@@ -1,0 +1,52 @@
+.choosen-form__table .table__content--body{
+    height: 250px;
+    flex: none;
+}
+
+.choosen-from .choosen-form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 500;
+    height: 56px;
+    border-bottom: 1px solid rgba(0,0,0,.16);
+}
+
+.choosen-form__table {
+    margin-top: 16px;
+}
+
+.choosen-input {
+    border-top: 1px solid rgba(0,0,0,.16);
+    border-bottom: 1px solid rgba(0,0,0,.16);
+    padding: 16px 0px;
+}
+
+.choosen-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+}
+
+.choosen-action__left {
+    display: flex;
+    align-items: center;
+}
+
+.choosen-action__right {
+    display: flex;
+    align-items: center;
+    column-gap: 12px;
+}
+
+.choosen-actions .btn--noborder {
+    font-weight: 600;
+    color: var(--primary-color)
+}
+
+.choosen-actions .btn--noborder:hover {
+    background-color: transparent;
+}

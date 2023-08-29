@@ -5,6 +5,9 @@ using MISA.WebFresher042023.Demo.Core.Entities;
 using MISA.WebFresher042023.Demo.Core.HandleException;
 using MISA.WebFresher042023.Demo.Core.Interface.Repository;
 using MISA.WebFresher042023.Demo.Core.Interface.Service;
+using MISA.WebFresher042023.Demo.Core.Manager;
+using MISA.WebFresher042023.Demo.Infrastructure.Interface;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace MISA.WebFresher042023.Demo.Core.Service
@@ -15,9 +18,14 @@ namespace MISA.WebFresher042023.Demo.Core.Service
     public class PropertyService : BaseService<Property, PropertyDto, PropertyUpdateDto, PropertyCreateDto>, IPropertyService
     {
         private readonly IPropertyRepository _propertyRepository;
-        public PropertyService(IPropertyRepository propertyRepository, IMapper mapper) : base(propertyRepository, mapper)
+        private readonly ITransferAssetRepository _transferAssetRepository;
+
+        private readonly PropertyManager propertyManager;
+        public PropertyService(IPropertyRepository propertyRepository, ITransferAssetRepository transferAssetRepository, IMapper mapper, IUnitOfWork unitOfWork) : base(propertyRepository, mapper, unitOfWork)
         {
             _propertyRepository = propertyRepository;
+            _transferAssetRepository = transferAssetRepository;
+            propertyManager = new PropertyManager(_propertyRepository, _transferAssetRepository);
         }
 
         public async Task<bool> CheckDuplicatePropertyCode(string propertyCode)
@@ -26,24 +34,22 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
             if (res != null)
             {
-                throw new ExistedPropertyCodeException();
+                throw new UserException(Resources.ResourceVN.DuplicateDepartmentCode, 409, "propertyCodeInput");
             }
 
             return true;
         }
 
-        public async Task<Object> GetByPagingAsync(int pageNumber, int pageSize, string? searchInput, string? propertyType, string? departmentName)
+        public async Task<Object> GetByPagingAsync(int pageNumber, int pageSize, string? searchInput, string? propertyType, string? departmentName, string? excludeIds)
         {
-            var property = await _propertyRepository.GetByPagingAsync(pageNumber, pageSize, searchInput, propertyType, departmentName);
+            var property = await _propertyRepository.GetByPagingAsync(pageNumber, pageSize, searchInput, propertyType, departmentName, excludeIds);
 
             return property;
         }
 
         public async Task<string> GetAutoIdAsync()
         {
-
             var id = await _propertyRepository.GetAutoIdAsync();
-
             while (await this._propertyRepository.CheckDuplicatePropertyCode(id) != null)
             {
 
@@ -73,43 +79,99 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
         }
 
-        public override async Task<int> InsertAsync(PropertyCreateDto propertyCreate)
+        public override async Task<int> InsertAsync(List<PropertyCreateDto> propertyCreate)
         {
-            var res = await _propertyRepository.CheckDuplicatePropertyCode(propertyCreate.PropertyCode);
+            var propertyInsertDto = propertyCreate[0];
 
-            if (res != null)
+            var property = _mapper.Map<List<Property>>(propertyCreate);
+
+            // Check trùng code hay không
+            var checkDuplicateCode = await propertyManager.CheckDuplicateInsertPropertyCode(propertyInsertDto);
+
+            if (checkDuplicateCode == false)
             {
-                throw new ExistedPropertyCodeException();
+                throw new UserException(Resources.ResourceVN.DuplicateDepartmentCode, 409, "propertyCodeInput");
             }
-            var property = _mapper.Map<Property>(propertyCreate);
+
+            // Check nghiệp vụ
+            var checkMajor = propertyManager.CheckMajor(property[0]);
+
+            if (checkMajor != null)
+            {
+                throw new UserException(checkMajor.Error, 400, checkMajor.ErrorField);
+
+            }
+
+            // OK Insert thôi nào
 
             var result = await _propertyRepository.InsertAsync(property);
 
             return result;
         }
 
-        public override async Task<int> UpdateAsync(Guid propertyId, PropertyUpdateDto propertyUpdateDto)
+        public override async Task<int> UpdateAsync(List<PropertyUpdateDto> propertyUpdateDtos)
         {
-            var checkProperty = await _propertyRepository.CheckDuplicatePropertyCode(propertyUpdateDto.PropertyCode);
 
-            if (checkProperty != null && checkProperty.PropertyId != propertyId)
-            {
-                throw new ExistedPropertyCodeException();
-            }
+            var propertyUpdateDto = propertyUpdateDtos[0];
 
-            var pro = await _propertyRepository.GetByIdAsync(propertyId);
+            var property = _mapper.Map<List<Property>>(propertyUpdateDtos);
+
+            // check có tồn tại hay không
+            var pro = await _propertyRepository.GetByIdAsync(propertyUpdateDto.PropertyId);
 
             if (pro == null)
             {
                 throw new NotFoundException();
             }
 
-            var property = _mapper.Map<Property>(propertyUpdateDto);
+            // Check trùng code hay không
+            var checkDuplicateCode = await propertyManager.CheckDuplicateUpdatePropertyCode(propertyUpdateDto);
 
-            var res = await _propertyRepository.UpdateAsync(propertyId, property);
+            if (checkDuplicateCode == true)
+            {
+                throw new UserException(Resources.ResourceVN.DuplicateDepartmentCode, 409, "propertyCodeInput");
+            }
+
+            // Check nghiệp vụ
+            var checkMajor = propertyManager.CheckMajor(property[0]);
+
+            if (checkMajor != null)
+            {
+                throw new UserException(checkMajor.Error, 400, checkMajor.ErrorField);
+
+            }
+
+            // OK. Update thôi nào
+            var res = await _propertyRepository.UpdateAsync(property);
 
             return res;
+        }
 
+        public override async Task<int> DeleteAsync(List<Guid> propertyId)
+        {
+            foreach(var id in propertyId)
+            {
+                await propertyManager.CheckExistInTransferAsset(id);
+            }
+
+            string concatenatedIds = string.Join(", ", propertyId);
+
+            try
+            {
+                _unitOfWork.BeginTransaction();
+
+                await _propertyRepository.DeleteAsync(concatenatedIds);
+
+                _unitOfWork.Commit();
+
+                return 1;
+            }
+            catch (Exception)
+            {
+                _unitOfWork.Rollback();
+
+                throw;
+            }
         }
     }
 }

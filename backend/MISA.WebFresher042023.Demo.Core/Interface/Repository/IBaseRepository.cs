@@ -32,21 +32,21 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: BATUAN (19/06/2023)
-        Task<int> DeleteMultiAsync(string id);
+        Task<int> DeleteAsync(string id);
 
         /// <summary>
-        /// Chỉ sửa bản ghi
+        /// Chỉnh sửa bản ghi
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: BATUAN (19/06/2023)
-        Task<int> UpdateAsync(Guid id, TEntity entity);
+        Task<int> UpdateAsync(List<TEntity> entity);
 
         /// <summary>
         /// Thêm mới bản ghi
         /// </summary>
         /// <returns></returns>
         /// CreatedBy: BATUAN (19/06/2023)
-        Task<int> InsertAsync(TEntity entity);
+        Task<int> InsertAsync(List<TEntity> entity);
 
     }
 }

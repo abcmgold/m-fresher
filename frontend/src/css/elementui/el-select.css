@@ -31,6 +31,9 @@ body .el-select .el-input.is-focus .el-input__wrapper {
 
 .el-input__inner {
     color: black !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 body .el-select .el-input__wrapper.is-focus {
@@ -38,14 +41,12 @@ body .el-select .el-input__wrapper.is-focus {
 }
 
 .el-select-dropdown__item.selected {
-    /* background-color: var(--primary-color); */
     color: var(--primary-color) !important;
 }
 
 .el-select-dropdown__item {
-    padding-left: 30px !important;
+    padding: 0px 20px !important;
 }
-
 
 .el-select--error .el-input__wrapper {
     border-color: red !important;
@@ -55,10 +56,28 @@ body .el-select .el-input__wrapper.is-focus {
     color: black !important;
 }
 
-.el-input__suffix-inner>:first-child {
+.el-input__suffix-inner > :first-child {
     margin-left: 0px !important;
 }
 
 .pagination-block .el-input__wrapper {
     height: 32px !important;
+}
+
+.el-select-dropdown__list {
+    width: 100% !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+.el-select-dropdown {
+    max-width: 200px;
+}
+
+@media (max-width: 1024px) {
+    .el-select.back-ground__icon {
+        width: 160px !important;
+    }
 }

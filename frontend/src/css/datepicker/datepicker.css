@@ -12,6 +12,13 @@
 .dp__input_icon {
     right: 0px !important;
     left: calc(100% - 40px) !important;
+    background: url(../../assets/icon/qlts-icon.svg) no-repeat -275px -62px;
+	width: 18px;
+	height: 18px;
+}
+
+.dp__input_icon path {
+    display: none !important;
 }
 
 .dp__icon.dp__clear_icon.dp__input_icons {
@@ -54,4 +61,10 @@
 
 .dp__input_valid {
     box-shadow: none !important;
+}
+
+@media (width: 1024px) {
+    .dp__menu {
+        transform: translate(-33%, -100%) !important;
+    }
 }
