@@ -302,6 +302,7 @@
 import { formatCurrentDate, formatRatio } from '@/common/common';
 import ENUM from '@/common/enum';
 import { MISAResource } from '@/common/resource';
+import exception from '@/common/exception';
 export default {
     name: 'PropertyAdd',
     props: {
@@ -456,7 +457,7 @@ export default {
                             break;
                     }
                 } else {
-                    this.$emit('showDialog', 'warning', this.textDialog, 3);
+                    this.$emit('showDialog', this.textDialog);
                 }
             } else {
                 // Gọi hàm blur của các ô input
@@ -637,6 +638,13 @@ export default {
                     event.preventDefault();
                 }
             }
+        },
+           /*
+         * Xử lý mã lỗi backend trả về
+         * Author: BATUAN (29/06/2023)
+         */
+         handleException(statusCode, message, documentInfo, showDialog) {
+            exception(statusCode, message, documentInfo, showDialog);
         },
     },
 };

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http.Features;
+using MISA.WebFresher042023.Demo.Core.Dto.Document;
 using MISA.WebFresher042023.Demo.Core.Dto.PropertyTransfer;
 using MISA.WebFresher042023.Demo.Core.Entities;
 using MISA.WebFresher042023.Demo.Core.HandleException;
@@ -7,11 +8,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace MISA.WebFresher042023.Demo.Core.Manager
 {
+    /// <summary>
+    /// Lớp check nghiệp vụ khi thao tác với chứng từ điều chuyển tài sản
+    /// </summary>
     public class TransferAssetManager
     {
         private readonly ITransferAssetDetailRepository _transferAssetDetailRepository;
@@ -42,7 +48,6 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
 
                 foreach (var transferAssetDetail in transferAssetDetailList)
                 {
-                    // cái procedure này chưa sửa đâu
                     var res = await _transferAssetRepository.CheckExist(transferAssetDetail.PropertyId, transferAsset.TransactionDate);
 
                     var transferAssetCurrent = res.FirstOrDefault(t => t.TransferAssetId == transferAssetId);
@@ -94,6 +99,35 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
                 }
             }
             return true;
-        } 
+        }
+        /// <summary>
+        /// Kiểm tra mã tài sản có bị trùng hay không khi thêm mới
+        /// </summary>
+        /// <param name="code">Mã tài sản</param>
+        /// <returns></returns>
+        public async Task CheckDuplicateTransferAssetInsertCode(TransferAssetCreateDto transferAssetCreateDto)
+        {
+            var res = await _transferAssetRepository.GetTransferAssetByCodeAsync(transferAssetCreateDto.TransferAssetCode);
+
+            if (res != null)
+            {
+                throw new UserException("Mã chứng từ điều chuyển đã tồn tại!", 400, "transferAssetIdInput");
+            }
+        }
+
+        /// <summary>
+        /// Kiểm tra mã tài sản có bị trùng hay không khi chỉnh sửa
+        /// </summary>
+        /// <param name="code">Mã tài sản</param>
+        /// <returns></returns>
+        public async Task CheckDuplicateTransferAssetUpdateCode(TransferAssetUpdateDto transferAssetUpdateDto)
+        {
+            var res = await _transferAssetRepository.GetTransferAssetByCodeAsync(transferAssetUpdateDto.TransferAssetCode);
+
+            if (res != null && res.TransferAssetId != transferAssetUpdateDto.TransferAssetId)
+            {
+                throw new UserException("Mã chứng từ điều chuyển đã tồn tại!", 400, "transferAssetIdInput");
+            }
+        }
     }
 }

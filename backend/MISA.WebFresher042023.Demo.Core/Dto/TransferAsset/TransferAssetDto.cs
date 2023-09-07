@@ -16,5 +16,7 @@ namespace MISA.WebFresher042023.Demo.Core.Dto.Document
         public DateTime TransactionDate { get; set; }
         public decimal OriginalPrice { get; set; }
         public string? Note { get; set; }
+        public decimal? ResidualPrice { get; set; }
+        public decimal? TotalResidualPrice { get; set; }
     }
 }

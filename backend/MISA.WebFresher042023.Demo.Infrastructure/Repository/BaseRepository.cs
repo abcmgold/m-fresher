@@ -35,26 +35,27 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
         public async Task<int> DeleteAsync(string id)
         {
             var tableName = typeof(TEntity).Name;
-            try
-            {
-                var idArray = id.Split(new[] { ", " }, options: StringSplitOptions.RemoveEmptyEntries);
-                var idList = string.Join(separator: ",", idArray.Select(x => "\"" + x + "\""));
 
-                var parameters = new DynamicParameters();
+            var idArray = id.Split(new[] { ", " }, options: StringSplitOptions.RemoveEmptyEntries);
+            var idList = string.Join(separator: ",", idArray.Select(x => "\"" + x + "\""));
 
-                parameters.Add("idList", idList);
+            var parameters = new DynamicParameters();
 
-                var res = await _unitOfWork.Connection.ExecuteAsync(sql: $"CALL Proc_{tableName}_MultiDelete(@idList)", parameters, transaction: _unitOfWork.Transaction);
+            parameters.Add("@idList", idList);
 
-                _unitOfWork.Commit();
+            var res = await _unitOfWork.Connection.ExecuteAsync(sql: $"CALL Proc_{tableName}_MultiDelete(@idList)", parameters, transaction: _unitOfWork.Transaction);
 
-                return res;
-            }
-            catch
-            {
-                _unitOfWork.Rollback();
-                throw;
-            }
+            return res;
+
+        }
+
+        public async Task<int> UpdateAsync(TEntity entity)
+        {
+            var listEntity = new List<TEntity>() { entity };
+
+            var result = await UpdateAsync(listEntity);
+
+            return result;
         }
 
         public async Task<int> UpdateAsync(List<TEntity> entity)

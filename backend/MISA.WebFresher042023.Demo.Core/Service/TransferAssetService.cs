@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http.Features;
 using MISA.WebFresher042023.Demo.Core.Dto.Document;
+using MISA.WebFresher042023.Demo.Core.Dto.Hanover;
 using MISA.WebFresher042023.Demo.Core.Dto.PropertyTransfer;
+using MISA.WebFresher042023.Demo.Core.DtoReadonly;
 using MISA.WebFresher042023.Demo.Core.Entities;
 using MISA.WebFresher042023.Demo.Core.Enum;
 using MISA.WebFresher042023.Demo.Core.HandleException;
@@ -10,6 +12,7 @@ using MISA.WebFresher042023.Demo.Core.Interface.Service;
 using MISA.WebFresher042023.Demo.Core.Manager;
 using MISA.WebFresher042023.Demo.Infrastructure.Interface;
 using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 
 namespace MISA.WebFresher042023.Demo.Core.Service
 {
@@ -17,15 +20,21 @@ namespace MISA.WebFresher042023.Demo.Core.Service
     {
         private readonly ITransferAssetRepository _transferAssetRepository;
         private readonly ITransferAssetDetailRepository _transferAssetDetailRepository;
+        private readonly IReceiverRepository _receiverRepository;
+        private readonly IPropertyRepository _propertyRepository;
         private readonly TransferAssetManager transferAssetManager;
         private readonly TransferAssetDetailManager transferAssetDetailManager;
+        private readonly PropertyManager propertyManager;
 
-        public TransferAssetService(ITransferAssetRepository transferAssetRepository, IMapper mapper, IUnitOfWork unitOfWork, ITransferAssetDetailRepository transferAssetDetailRepository) : base(transferAssetRepository, mapper, unitOfWork)
+        public TransferAssetService(ITransferAssetRepository transferAssetRepository, IMapper mapper, IUnitOfWork unitOfWork, ITransferAssetDetailRepository transferAssetDetailRepository, IReceiverRepository receiverRepository, IPropertyRepository propertyRepository) : base(transferAssetRepository, mapper, unitOfWork)
         {
             _transferAssetRepository = transferAssetRepository;
             _transferAssetDetailRepository = transferAssetDetailRepository;
+            _receiverRepository = receiverRepository;
+            _propertyRepository = propertyRepository;
             transferAssetManager = new TransferAssetManager(_transferAssetDetailRepository, _transferAssetRepository);
             transferAssetDetailManager = new TransferAssetDetailManager(_transferAssetDetailRepository, _transferAssetRepository);
+            propertyManager = new PropertyManager(_propertyRepository, _transferAssetRepository);
         }
 
         public async Task<object> GetByPaging(int pageNumber, int pageSize)
@@ -37,18 +46,20 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
         public async Task<int> AddDocumentAsync(TransferAssetCreateDto transferAssetCreateDto)
         {
-            // Check nghiệp vụ ở đây này 
-            if (transferAssetManager.ValidateTransferDate(transferAssetCreateDto.TransferDate, transferAssetCreateDto.TransactionDate) && transferAssetManager.ValidateNewDepartment(transferAssetCreateDto.TransferAssetDetailCreateList))
+            await transferAssetManager.CheckDuplicateTransferAssetInsertCode(transferAssetCreateDto);
+
+            if (transferAssetManager.ValidateTransferDate(transferAssetCreateDto.TransferDate, transferAssetCreateDto.TransactionDate) && transferAssetManager.ValidateNewDepartment(transferAssetCreateDto.TransferAssetDetailList))
             {
                 TransferAsset transferAsset = _mapper.Map<TransferAsset>(transferAssetCreateDto);
 
-                List<TransferAsset> transferAssetList = new List<TransferAsset>();
+                List<TransferAsset> transferAssetList = new()
+                {
+                    transferAsset
+                };
 
-                transferAssetList.Add(transferAsset);
+                List<TransferAssetDetail> transferAssetDetails = _mapper.Map<List<TransferAssetDetail>>(transferAssetCreateDto.TransferAssetDetailList);
 
-                List<TransferAssetDetail> transferAssetDetails = _mapper.Map<List<TransferAssetDetail>>(transferAssetCreateDto.TransferAssetDetailCreateList);
-
-                List<Receiver> receivers = _mapper.Map<List<Receiver>>(transferAssetCreateDto.ReceiverCreateList);
+                List<Receiver> receivers = _mapper.Map<List<Receiver>>(transferAssetCreateDto.ReceiverList);
 
                 Guid idTransfer = transferAsset.TransferAssetId;
 
@@ -60,6 +71,8 @@ namespace MISA.WebFresher042023.Demo.Core.Service
                 foreach (var receiver in receivers)
                 {
                     receiver.TransferAssetId = idTransfer; // Gán giá trị idDocument trong PropertyTransfer
+                    receiver.ReceiverId = Guid.NewGuid();
+                    receiver.CreatedDate = DateTime.Now;
                 }
 
                 try
@@ -69,6 +82,8 @@ namespace MISA.WebFresher042023.Demo.Core.Service
                     await _transferAssetRepository.InsertAsync(transferAssetList);
 
                     await _transferAssetDetailRepository.InsertAsync(transferAssetDetails);
+
+                    await _receiverRepository.InsertAsync(receivers);
 
                     _unitOfWork.Commit();
 
@@ -87,18 +102,22 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
         public async Task<int> UpdateDocumentAsync(TransferAssetUpdateDto transferAssetUpdateDto)
         {
+            // kiểm tra mã code có trùng hay không
+            await transferAssetManager.CheckDuplicateTransferAssetUpdateCode(transferAssetUpdateDto);
+            // Kiểm tra danh sách chi tiết chứng từ có cái nào mà phòng ban chuyển đi giống ban đầu không
+            transferAssetDetailManager.CheckListDeparment(transferAssetUpdateDto.TransferAssetDetailList);
             // phân loại các tài sản trong chứng từ vào 3 loại: thêm mới, update, xóa
             List<TransferAssetDetailUpdateDto> transferAssetDetailUpdatesChange = new List<TransferAssetDetailUpdateDto>();
 
-            List<TransferAssetDetailUpdateDto> transferAssetDetailUpdatesDelete = new List<TransferAssetDetailUpdateDto>();
+            List<TransferAssetDetailUpdateDto> transferAssetDetailUpdatesDelete = new();
 
-            List<TransferAssetDetailUpdateDto> transferAssetDetailUpdatesInsert = new List<TransferAssetDetailUpdateDto>();
+            List<TransferAssetDetailUpdateDto> transferAssetDetailUpdatesInsert = new();
 
 
 
-            foreach (TransferAssetDetailUpdateDto transfer in transferAssetUpdateDto.TransferAssetDetailUpdateList)
+            foreach (TransferAssetDetailUpdateDto transfer in transferAssetUpdateDto.TransferAssetDetailList)
             {
-                switch (transfer.StatusRerord)
+                switch (transfer.StatusRecord)
                 {
                     case StatusRecord.Update:
                         transferAssetDetailUpdatesChange.Add(transfer);
@@ -115,46 +134,108 @@ namespace MISA.WebFresher042023.Demo.Core.Service
                         break;
                 }
             }
+            // check các chi tiết chứng từ xóa với sửa có id nằm trong database hay không
+            await transferAssetDetailManager.CheckExistTransferAssetDetail(transferAssetDetailUpdatesChange, transferAssetDetailUpdatesDelete);
 
-            // tạo danh sách id các chứng từ bị xóa
+            // phân loại danh sách người nhận vào 3 loại: thêm mới, update, xóa
+
+            List<ReceiverUpdateDto> receverChange = new();
+
+            List<ReceiverUpdateDto> receverDelete = new();
+
+            List<ReceiverUpdateDto> receverInsert = new();
+
+
+            if (transferAssetUpdateDto.ReceiverList != null)
+            {
+                foreach (ReceiverUpdateDto receiver in transferAssetUpdateDto.ReceiverList)
+                {
+                    switch (receiver.StatusRecord)
+                    {
+                        case StatusRecord.Update:
+                            receverChange.Add(receiver);
+                            break;
+
+                        case StatusRecord.Insert:
+                            receverInsert.Add(receiver);
+                            break;
+
+                        case StatusRecord.Delete:
+                            receverDelete.Add(receiver);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            // Tạo danh sách id các chi tiết chứng từ bị xóa
             List<Guid> propertyIds = transferAssetDetailUpdatesDelete.Select(p => p.TransferAssetDetailId).ToList();
 
-            string concatenatedIds = string.Join(", ", propertyIds);
+            string transferAssetDetailDeleteIds = string.Join(", ", propertyIds);
+
+            // Tạo danh sách id người nhận bị xóa
+            List<Guid> receiverDeleteIds = receverDelete.Select(p => p.ReceiverId).ToList();
+
+            string receiverConcateDeleteIds = string.Join(", ", receiverDeleteIds);
 
             // map các entityDto sang entity
             TransferAsset transferAsset = _mapper.Map<TransferAsset>(transferAssetUpdateDto);
 
-            var transferAssetList = new List<TransferAsset>();
-
-            transferAssetList.Add(transferAsset);
+            var transferAssetList = new List<TransferAsset>
+            {
+                transferAsset
+            };
 
             List<TransferAssetDetail> transferAssetDetailChange = _mapper.Map<List<TransferAssetDetail>>(transferAssetDetailUpdatesChange);
 
             List<TransferAssetDetail> transferAssetDetailInsert = _mapper.Map<List<TransferAssetDetail>>(transferAssetDetailUpdatesInsert);
 
-            List<Receiver> receivers = _mapper.Map<List<Receiver>>(transferAssetUpdateDto.ReceiverUpdateList);
+            List<Receiver> receiverChange = _mapper.Map<List<Receiver>>(receverChange);
+
+            List<Receiver> receiverInsert = _mapper.Map<List<Receiver>>(receverInsert);
+
+            foreach (var transferAssetDetail in transferAssetDetailInsert)
+            {
+                transferAssetDetail.TransferAssetDetailId = Guid.NewGuid();
+            }
+
+            foreach (var receiver in receiverInsert)
+            {
+                receiver.ReceiverId = Guid.NewGuid();
+                receiver.TransferAssetId = transferAsset.TransferAssetId;
+            }
 
             // Check tài sản trong chứng từ có được phép xóa hay không
             foreach (var transferAssetDelete in transferAssetDetailUpdatesDelete)
             {
-                var res = await transferAssetDetailManager.CheckTransferAssetDetail(transferAssetDelete.TransferAssetDetailId, transferAsset.TransferAssetId);
-                if (res.Count > 0)
-                {
-                    throw new UserException("Tài sản đã phát sinh chứng từ, không thể xóa!", 400);
-                }
+                await propertyManager.CheckGreaterTransactionDate(transferAsset.TransferAssetId, transferAssetDelete.PropertyId);
             }
 
             try
             {
                 _unitOfWork.BeginTransaction();
 
-                await _transferAssetRepository.UpdateAsync(transferAssetList);
+                await _transferAssetRepository.UpdateAsync(entity: transferAssetList);
 
-                await _transferAssetDetailRepository.UpdateAsync(transferAssetDetailChange);
+                await _transferAssetDetailRepository.UpdateAsync(entity: transferAssetDetailChange);
 
-                await _transferAssetDetailRepository.InsertAsync(transferAssetDetailInsert);
+                await _transferAssetDetailRepository.InsertAsync(entity: transferAssetDetailInsert);
 
-                await _transferAssetDetailRepository.DeleteAsync(concatenatedIds);
+                await _receiverRepository.UpdateAsync(entity: receiverChange);
+
+                await _receiverRepository.InsertAsync(entity: receiverInsert);
+
+                if (transferAssetDetailDeleteIds.Length > 0)
+                {
+                    await _transferAssetDetailRepository.DeleteAsync(transferAssetDetailDeleteIds);
+                }
+
+                if (receiverConcateDeleteIds.Length > 0)
+                {
+                    await _receiverRepository.DeleteAsync(receiverConcateDeleteIds);
+
+                }
 
                 _unitOfWork.Commit();
 
@@ -176,7 +257,7 @@ namespace MISA.WebFresher042023.Demo.Core.Service
         public override async Task<int> DeleteAsync(List<Guid> transferAssetIdList)
         {
             // check xem trong các chứng từ có tài sản nào có chứng từ mới hơn không
-            foreach(var id in transferAssetIdList)
+            foreach (var id in transferAssetIdList)
             {
                 await transferAssetManager.CheckTransferAsset(id);
             }
@@ -191,14 +272,85 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
                 await _transferAssetRepository.DeleteAsync(concatenatedIds);
 
+                _unitOfWork.Commit();
+
                 return 1;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 _unitOfWork.Rollback();
 
                 throw;
             }
+        }
+
+        public async Task<TransferAssetReadonly> GetInfoTransferAsset(Guid transferAssetId)
+        {
+            var transferAsset = await _transferAssetRepository.GetByIdAsync(transferAssetId);
+
+            var listDetail = await _transferAssetDetailRepository.GetByTransferAssetId(transferAssetId);
+
+            var listReceiver = await _receiverRepository.GetByTransferAssetId(transferAssetId);
+
+            var listDetailDto = _mapper.Map<List<TransferAssetDetailDto>>(listDetail);
+
+            var listReceiverDto = _mapper.Map<List<ReceiverDto>>(listReceiver);
+
+            var transferAssetContainer = new TransferAssetReadonly
+            {
+                TransferAssetId = transferAssetId,
+                TransferAssetCode = transferAsset.TransferAssetCode,
+                TransferDate = transferAsset.TransferDate,
+                TransactionDate = transferAsset.TransactionDate,
+                OriginalPrice = transferAsset.OriginalPrice,
+                Note = transferAsset.Note,
+                TransferAssetDetailList = listDetailDto,
+                ReceiverList = listReceiverDto
+            };
+
+            return transferAssetContainer;
+        }
+
+        public async Task CheckDeleteOrNot(Guid transferAssetId, Guid propertyId)
+        {
+            await propertyManager.CheckGreaterTransactionDate(transferAssetId, propertyId);
+        }
+
+        public async Task CheckDeleteMultiOrNot(Guid transferAssetId, List<Guid> transferAssetIds)
+        {
+            foreach (var id in transferAssetIds)
+            {
+                await CheckDeleteOrNot(transferAssetId, id);
+            }
+        }
+
+        public async Task<string> GetAutoTransferAssetCode()
+        {
+            var code = await _transferAssetRepository.GetGreatestCode();
+
+            if (code == null) return "DC0001";
+
+            string numberPart = Regex.Match(input: code, @"\d+$").Value;
+
+            int lastIndex = code.LastIndexOf(numberPart);
+
+            string textPart = code.Substring(startIndex: 0, lastIndex);
+
+
+            if (string.IsNullOrEmpty(numberPart))
+            {
+                code = textPart + 1;
+            }
+            else
+            {
+                int number = int.Parse(numberPart) + 1;
+
+                string countedNumber = number.ToString("D" + numberPart.Length);
+
+                code = textPart + countedNumber;
+            }
+
+            return code;
         }
     }
 }

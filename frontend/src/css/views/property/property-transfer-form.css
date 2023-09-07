@@ -182,3 +182,30 @@
     background: #f1f1f1;
 }
 
+.number-select {
+    font-weight: 300;
+    font-size: 14px;
+}
+
+.general-navbar__right {
+    display: flex;
+    align-items: center;
+    column-gap: 12px;
+}
+
+.general-navbar__right .btn--sub.btn--unnormal{
+    color: #ec4141;
+    border-color: #ec4141;
+    min-width: 72px;
+}
+
+.general-navbar__right .btn--noborder {
+    background-color: #dff2ff;
+    color: var(--primary-color);
+    font-weight: 600;
+    padding: 0;
+    min-width: 0px;
+}
+.row-only-selected {
+    background-color: #d1edf4;
+}

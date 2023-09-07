@@ -126,19 +126,7 @@ export default {
                 {
                     name: 'Ghi giảm',
                     link: '/',
-                },
-                {
-                    name: 'Tính hao mòn',
-                    link: '/',
-                },
-                {
-                    name: 'Kiểm kê',
-                    link: '/',
-                },
-                {
-                    name: 'Khác',
-                    link: '/',
-                },
+                }
             ],
             selectedItems: ['property'],
             index: -1,

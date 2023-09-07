@@ -1,14 +1,17 @@
 <template>
     <div
         class="transfer-form"
-        v-esc="
+        ref="container"
+        tabindex="0"
+        @keydown.esc="
             () => {
                 this.$emit('hideTransferForm');
             }
         "
+        @keydown="handleSearchByKeyBoard"
     >
         <div class="transfer-form-header">
-            <div class="transfer-form__title">Thêm chứng từ điều chuyển</div>
+            <div class="transfer-form__title">{{ this.title }}</div>
             <div
                 class="icon--close"
                 @click="
@@ -31,6 +34,7 @@
                                     placeholder="Nhập mã chứng từ"
                                     :isRequired="true"
                                     type="text-field"
+                                    :maxLength="this.$_MISAEnum.maxLengthCode"
                                 ></m-text-input>
                             </m-group-input>
                         </div>
@@ -60,6 +64,7 @@
                                     v-model="this.transferAsset.Note"
                                     ref="propertyNameInput"
                                     type="text-field"
+                                    :maxLength="this.$_MISAEnum.maxLengthText"
                                 ></m-text-input>
                             </m-group-input>
                         </div>
@@ -70,7 +75,7 @@
                             <div>Chọn ban giao nhận</div>
                         </div>
                         <div class="delivery-checkbox" v-if="this.isShowMoreDeliveryOptions">
-                            <m-checkbox></m-checkbox>
+                            <m-checkbox ref="checkboxAddReceiver" @click="handleClickAddLastestReceiver"></m-checkbox>
                             <div>Thêm ban giao nhận từ lần nhập trước</div>
                         </div>
                     </div>
@@ -83,24 +88,41 @@
                             <div style="width: calc(25% - 36px)"></div>
                         </div>
                         <div class="delivery-detail__body">
-                            <div v-for="(user, index) in listDeliveryUsers" :key="index" class="delivery-detail__row">
+                            <div
+                                v-for="(user, index) in listReceiver"
+                                :key="user.ReceiverId"
+                                class="delivery-detail__row"
+                            >
                                 <div class="delivery__order" style="min-width: 36px; height: 36px">
-                                    {{ user.order }}
+                                    {{ index + 1 }}
                                 </div>
                                 <div style="width: 25%">
-                                    <m-text-input v-model="user.fullName"></m-text-input>
+                                    <m-text-input
+                                        v-model="user.FullName"
+                                        :maxLength="this.$_MISAEnum.maxLengthName"
+                                    ></m-text-input>
                                 </div>
-                                <div style="width: 25%"><m-text-input v-model="user.represent"></m-text-input></div>
-                                <div style="width: 25%"><m-text-input v-model="user.position"></m-text-input></div>
+                                <div style="width: 25%">
+                                    <m-text-input
+                                        v-model="user.Represent"
+                                        :maxLength="this.$_MISAEnum.maxLengthText"
+                                    ></m-text-input>
+                                </div>
+                                <div style="width: 25%">
+                                    <m-text-input
+                                        v-model="user.Position"
+                                        :maxLength="this.$_MISAEnum.maxLengthText"
+                                    ></m-text-input>
+                                </div>
                                 <div class="actions--btn" style="width: calc(25% - 36px)">
                                     <div
                                         class="icon--up--v2"
-                                        v-if="this.listDeliveryUsers.length != 1"
+                                        v-if="this.listReceiver.length != 1"
                                         @click="pushUpDeliveryInput(index)"
                                     ></div>
                                     <div
                                         class="icon--down--v2"
-                                        v-if="this.listDeliveryUsers.length != 1"
+                                        v-if="this.listReceiver.length != 1"
                                         @click="pushDownDeliveryInput(index)"
                                     ></div>
                                     <div class="icon--add-v2" @click="addDeliveryInput(index)"></div>
@@ -121,16 +143,32 @@
                         <div class="general-navbar__title">Thông tin tài sản điều chuyển</div>
                         <div class="genral-navbar__input">
                             <m-text-input
-                                v-model="this.searchInput"
+                                v-model="this.inputFilter"
                                 :placeholder="this.$_MISAResource['vn-VI'].searchProperty"
                                 individualClass="text__input-icon-start"
+                                ref="inputSearch"
                             ></m-text-input>
                         </div>
                     </div>
                     <div class="general-navbar__right">
+                        <div class="number-select" v-if="this.selectedRow.length">
+                            Đã chọn: <strong>{{ this.selectedRow.length }}</strong>
+                        </div>
+                        <m-button
+                            v-if="this.selectedRow.length"
+                            individualClass="btn--noborder"
+                            label="Bỏ chọn"
+                            @click="removeAllSelected"
+                        ></m-button>
+                        <m-button
+                            v-if="this.selectedRow.length"
+                            class="btn--unnormal"
+                            individualClass="btn--sub"
+                            label="Xóa"
+                            @click="checkDeleteRows"
+                        ></m-button>
                         <m-button
                             label="Chọn tài sản"
-                            class=""
                             :individualClass="'btn btn--sub'"
                             :icon="'icon--add-v2'"
                             @click="showChoosenForm"
@@ -170,11 +208,16 @@
                                 </template>
                             </div>
                         </div>
-                        <div class="table__content--body">
+                        <div class="table__content--body" @scroll="handleScrollBodyTable">
                             <div
                                 v-for="(data, index) in this.propertyTransferListPaging"
-                                :key="data.Id"
+                                :key="data.TransferAssetDetailId"
                                 class="table__content--row"
+                                :class="{
+                                    'row-selected': isSelected(data),
+                                    'row-only-selected': this.clickIndex == index,
+                                }"
+                                @click="clickOnRowTable(index, data.PropertyId, $event)"
                             >
                                 <div class="text-align-center cell--item cell--item--checkbox" style="width: 50px">
                                     <m-checkbox
@@ -185,23 +228,23 @@
                                 </div>
                                 <div class="text-align-center cell--item" style="width: 50px">{{ index + 1 }}</div>
                                 <div class="text-align-left cell--item" style="width: 150px">
-                                    {{ data.PropertyCode }}
+                                    <div class="text--surround">{{ data.PropertyCode }}</div>
                                 </div>
                                 <div class="text-align-left cell--item" style="width: 150px">
-                                    {{ data.PropertyName }}
+                                    <div class="text--surround">{{ data.PropertyName }}</div>
                                 </div>
                                 <div class="text-align-right cell--item" style="width: 150px">
-                                    {{ this.formatedMoney(data.OriginalPrice) }}
+                                    <div class="text--surround">{{ this.formatedMoney(data.OriginalPrice) }}</div>
                                 </div>
                                 <div class="text-align-right cell--item" style="width: 150px">
-                                    {{ this.formatedMoney(caculateResidualPrice(data)) }}
+                                    <div class="text--surround">{{ this.formatedMoney(data.ResidualPrice) }}</div>
                                 </div>
                                 <div class="text-align-left cell--item" style="width: 180px">
-                                    {{ data.DepartmentName }}
+                                    <div class="text--surround">{{ data.DepartmentName }}</div>
                                 </div>
                                 <div class="text-align-right cell--item" style="width: 220px">
                                     <m-combo-box
-                                        ref=""
+                                        ref="combobox"
                                         :isRequired="true"
                                         type="combo-box"
                                         :filterable="true"
@@ -210,28 +253,69 @@
                                     ></m-combo-box>
                                 </div>
                                 <div class="text-align-left cell--item" style="flex: 1">
-                                    <m-text-input ref="" v-model="data.Reason" type="text-field"></m-text-input>
+                                    <m-text-input
+                                        ref=""
+                                        v-model="data.Reason"
+                                        type="text-field"
+                                        :maxLength="this.$_MISAEnum.maxLengthText"
+                                    ></m-text-input>
                                 </div>
                                 <div class="table-list-icons cell--item" style="width: 100px">
                                     <div
                                         v-tippy="$_MISAResource['vn-VI'].delete"
                                         @click.stop
                                         class="table--icon table--icon-delete"
-                                        @click="this.showDuplicate(index, data.id)"
+                                        @click="this.checkDeleteRow(data)"
                                     ></div>
                                 </div>
                             </div>
                         </div>
-                        <div class="table__content--sumary" v-if="this.$store.getters.getIsShowSummary"></div>
-                        <div class="table__paging paging" v-if="this.$store.getters.getIsShowPaging">
+                        <div class="table__content--sumary">
+                            <div style="width: 50px"></div>
+                            <div style="width: 50px"></div>
+                            <div style="width: 150px"></div>
+                            <div style="width: 150px"></div>
+                            <div class="text-align-right cell--item" style="width: 150px; font-weight: bold">
+                                {{ this.formatedMoney(this.totalOriginalPrice) }}
+                            </div>
+                            <div class="text-align-right cell--item" style="width: 150px; font-weight: bold">
+                                {{ this.formatedMoney(this.totalResidualPrice) }}
+                            </div>
+                            <div style="width: 180px"></div>
+                            <div style="width: 220px"></div>
+                            <div style="flex: 1"></div>
+                            <div style="width: 100px"></div>
+                        </div>
+                        <div class="table__paging paging">
                             <m-pagination
                                 :dataSelect="this.numberOfRecordsPerPage"
-                                :numberPages="Math.ceil(this.propertyTransferList.length / pageSize) * 10"
+                                :numberPages="this.numberPages * 10"
                                 @changeCurrentPage="changeCurrentPage"
                                 :pageSize="this.pageSize"
-                                :totalRecords="this.propertyTransferList.length"
+                                :totalRecords="this.totalRecords"
                                 @changePageSize="changePageSize"
                             ></m-pagination>
+                        </div>
+                        <div v-if="this.propertyTransferListPaging.length == 0" class="table__content--empty">
+                            <div class="icon--empty"></div>
+                        </div>
+                        <div v-if="this.isLoadingData" class="grid-loading-container">
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
+                            <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
                         </div>
                     </div>
                 </div>
@@ -241,7 +325,7 @@
             <m-button
                 individualClass="btn--primary"
                 :label="this.$_MISAResource['vn-VI'].save"
-                @click="createNewTransferAsset"
+                @click="btnSaveAction"
             ></m-button>
             <m-button
                 individualClass="btn--noborder"
@@ -254,14 +338,12 @@
         v-if="isShowChoosenForm"
         @hideChoosenForm="this.hideChoosenForm"
         @updateListSelectedProperty="this.updateListSelectedProperty"
-        :listTransferId="this.listTransferId"
+        :excludedIds="this.excludedIds"
     ></ChoosenForm>
     <m-modal v-if="this.isShowDialog">
         <m-dialog
-            :type="this.typeDialog"
             :text="this.textDialog"
-            :status="this.statusDialog"
-            :documentInfo="this.documentInfoDialog"
+            :documentInfo="this.documentInfo"
             :dialogActions="this.dialogActions"
         ></m-dialog>
     </m-modal>
@@ -272,31 +354,37 @@ import request from '@/common/api';
 import ChoosenForm from './ChoosenForm.vue';
 import exception from '@/common/exception';
 import { formatMoney } from '@/common/common';
+import debounce from 'lodash/debounce';
+import { delay } from '@/common/common';
+
 export default {
     name: 'PropertyTransferFrom',
     components: {
         ChoosenForm,
     },
-    emits: ['hideTransferForm'],
+    props: {
+        formMode: Number,
+        transferAssetProps: Object,
+    },
+    emits: ['hideTransferForm', 'showToastSuccess', 'createdNewTransferAsset', 'updateTransferAsset'],
     data() {
         return {
             listHeaderUpdateTransfer: this.$_MISAResource['vn-VI'].listHeaderUpdateTranfer,
-            listTransferId: [],
             propertyTransferList: [],
             isShowChoosenForm: false,
             isShowMoreDeliveryOptions: false,
-            listDeliveryUsers: [],
+            listReceiver: [],
             pageNumber: 1,
-            pageSize: '5',
+            pageSize: '10',
             currentPage: 1,
             numberOfRecordsPerPage: [
                 {
-                    label: '5',
-                    value: '5',
-                },
-                {
                     label: '10',
                     value: '10',
+                },
+                {
+                    label: '15',
+                    value: '15',
                 },
                 {
                     label: '20',
@@ -305,101 +393,251 @@ export default {
             ],
             propertyTransferListPaging: [],
             selectedRow: [],
-            searchInput: '',
             transferAsset: {},
             departmentNames: [],
             isShowDialog: false,
             textDialog: '',
-            documentInfoDialog: [],
+            documentInfo: '',
             dialogActions: {},
+            excludedIds: [],
+            totalRecords: 0,
+            transferAssetDetailAdd: [],
+            transferAssetDetailDelete: [],
+            transferAssetDetailUpdate: [],
+            transferAssetDetailNochange: [],
+            listInitialTransferAssetDetail: [],
+            receiverAdd: [],
+            receiverDelete: [],
+            receiverUpdate: [],
+            receiverNochange: [],
+            listInitialReceiver: [],
+            clickIndex: -1,
+            inputFilter: '',
+            isLoadingData: false,
+            numberPages: 1,
+            listReceiverLastest: [],
+            totalResidualPrice: 0,
+            totalOriginalPrice: 0,
         };
     },
+    watch: {
+        inputFilter: debounce(function () {
+            this.paging();
+        }, 1000),
+    },
     async created() {
+        switch (this.formMode) {
+            case this.$_MISAEnum.formUpdate:
+                this.title = 'Sửa chứng từ điều chuyển';
+                this.transferAsset = { ...this.transferAssetProps };
+                this.totalRecords = this.transferAsset.TransferAssetDetailList.length;
+                this.calculateTotalResidualPrice();
+                this.calculateTotalOriginalPrice();
+                this.listInitialTransferAssetDetail = JSON.parse(
+                    JSON.stringify(this.transferAsset.TransferAssetDetailList),
+                );
+                this.listReceiver = JSON.parse(JSON.stringify(this.transferAsset.ReceiverList));
+                this.listInitialReceiver = JSON.parse(JSON.stringify(this.transferAsset.ReceiverList));
+                break;
+            case this.$_MISAEnum.formAdd:
+                this.title = 'Thêm chứng từ điều chuyển';
+                await this.generateDefaultValue();
+                break;
+            default:
+                break;
+        }
+
         this.paging();
 
         await this.getAllDepartments();
 
-        this.generateDefauleValue();
+        this.clickIndex = 0;
+
+        this.firstClickRow = this.clickIndex;
+    },
+    mounted() {
+        this.$refs.container.focus();
+    },
+    unmounted() {
+        if (this.$parent) {
+            this.$parent.$refs.container.focus()
+        }
     },
     methods: {
+        /*
+         * Gọi api lấy danh sách người nhận mới nhất
+         * Author: BATUAN (27/08/2023)
+         */
+        async getLastestReceiver() {
+            await request
+                .getRecord('Receiver')
+                .then((response) => (this.listReceiverLastest = response.data))
+                .catch((err) => {
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                });
+        },
+        /*
+         * Gọi api lấy mã code tự động
+         * Author: BATUAN (27/08/2023)
+         */
+        async getAutoTransferAssetcode() {
+            await request
+                .getRecord('TransferAsset/GetAutoCode')
+                .then((response) => (this.transferAsset.TransferAssetCode = response.data))
+                .catch((err) => {
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                });
+        },
         /*
          * khởi tạo một số giá trị mặc định
          * Author: BATUAN (07/06/2023)
          */
-        generateDefauleValue() {
+        async generateDefaultValue() {
+            await this.getAutoTransferAssetcode();
             this.transferAsset.TransactionDate = new Date();
             this.transferAsset.TransferDate = new Date();
         },
+        /*
+         * Ẩn form chọn tài sản
+         * Author: BATUAN (07/06/2023)
+         */
         hideChoosenForm() {
             this.isShowChoosenForm = false;
         },
+        /*
+         * Hiện form chọn tài sản
+         * Author: BATUAN (07/06/2023)
+         */
         showChoosenForm() {
             this.isShowChoosenForm = true;
+            this.excludedIds = [];
+            if (this.transferAsset.TransferAssetDetailList) {
+                this.transferAsset.TransferAssetDetailList.forEach((element) => {
+                    this.excludedIds.push(element.PropertyId);
+                });
+            }
         },
+        /*
+         * Cập nhật lại danh sách các tài sản điều chuyển ở form
+         * Author: BATUAN (07/06/2023)
+         */
         updateListSelectedProperty(newPropertyTransferList) {
-            this.propertyTransferList = this.propertyTransferList.concat(newPropertyTransferList);
+            if (this.transferAsset.TransferAssetDetailList) {
+                this.transferAsset.TransferAssetDetailList =
+                    this.transferAsset.TransferAssetDetailList.concat(newPropertyTransferList);
+            } else {
+                this.transferAsset.TransferAssetDetailList = [...newPropertyTransferList];
+            }
+
             this.paging();
+            this.calculateTotalResidualPrice();
+            this.calculateTotalOriginalPrice();
+            this.checkFullChecked();
+            this.totalRecords = this.transferAsset.TransferAssetDetailList.length;
         },
+        /*
+         * Sự kiện khi click vào icon thêm người nhận
+         * Author: BATUAN (07/06/2023)
+         */
         handleMoreDeliveryOptions() {
             if (this.$refs['checkbox-delivery'].isChecked) {
                 this.$refs['checkbox-delivery'].isChecked = false;
                 this.isShowMoreDeliveryOptions = false;
-                this.listDeliveryUsers = [];
+                this.listReceiver = [];
             } else {
-                this.$refs['checkbox-delivery'].isChecked = true;
-                this.isShowMoreDeliveryOptions = true;
-                this.listDeliveryUsers.push({
-                    order: 1,
-                });
+                if (this.formMode == this.$_MISAEnum.formAdd) {
+                    this.$refs['checkbox-delivery'].isChecked = true;
+                    this.isShowMoreDeliveryOptions = true;
+                    this.listReceiver.push({
+                        ReceiverOrder: 1,
+                    });
+                } else if (this.formMode == this.$_MISAEnum.formUpdate) {
+                    this.$refs['checkbox-delivery'].isChecked = true;
+                    this.isShowMoreDeliveryOptions = true;
+                    this.listReceiver = JSON.parse(JSON.stringify(this.transferAsset.ReceiverList));
+                }
             }
         },
+        /*
+         *Sự kiện khi click vào icon thêm trường người nhận
+         * Author: BATUAN (07/06/2023)
+         */
         addDeliveryInput(index) {
-            for (let i = 0; i < this.listDeliveryUsers.length; i++) {
-                if (this.listDeliveryUsers[i].order > index + 1) {
-                    this.listDeliveryUsers[i].order++;
+            for (let i = 0; i < this.listReceiver.length; i++) {
+                if (this.listReceiver[i].ReceiverOrder > index + 1) {
+                    this.listReceiver[i].ReceiverOrder++;
                 }
             }
-            this.listDeliveryUsers.push({
-                order: index + 2,
+            this.listReceiver.push({
+                ReceiverOrder: index + 2,
             });
-            this.listDeliveryUsers.sort((a, b) => a.order - b.order);
+            this.listReceiver.sort((a, b) => a.ReceiverOrder - b.ReceiverOrder);
         },
+        /*
+         * Sự kiện khi click vào icon xóa trường người nhận
+         * Author: BATUAN (07/06/2023)
+         */
         deleteDeliveryInput(index) {
-            this.listDeliveryUsers = this.listDeliveryUsers.filter((element) => {
-                return element.order != index + 1;
+            this.listReceiver = this.listReceiver.filter((element) => {
+                return element.ReceiverOrder != index + 1;
             });
-            for (let i = 0; i < this.listDeliveryUsers.length; i++) {
-                if (this.listDeliveryUsers[i].order > index + 1) {
-                    this.listDeliveryUsers[i].order--;
+            for (let i = 0; i < this.listReceiver.length; i++) {
+                if (this.listReceiver[i].ReceiverOrder > index + 1) {
+                    this.listReceiver[i].ReceiverOrder--;
                 }
             }
         },
+        /*
+         * Sự kiện khi click vào icon dịch chuyển dòng người nhận
+         * Author: BATUAN (07/06/2023)
+         */
         pushUpDeliveryInput(index) {
             if (index != 0) {
                 let tmp;
-                tmp = this.listDeliveryUsers[index - 1].order;
-                this.listDeliveryUsers[index - 1].order = this.listDeliveryUsers[index].order;
-                this.listDeliveryUsers[index].order = tmp;
+                tmp = this.listReceiver[index - 1].ReceiverOrder;
+                this.listReceiver[index - 1].ReceiverOrder = this.listReceiver[index].ReceiverOrder;
+                this.listReceiver[index].ReceiverOrder = tmp;
             }
-            this.listDeliveryUsers.sort((a, b) => a.order - b.order);
+            this.listReceiver.sort((a, b) => a.ReceiverOrder - b.ReceiverOrder);
         },
+        /*
+         * Sự kiện khi click vào icon dịch chuyển dòng người nhận
+         * Author: BATUAN (07/06/2023)
+         */
         pushDownDeliveryInput(index) {
-            if (index < this.listDeliveryUsers.length - 1) {
+            if (index < this.listReceiver.length - 1) {
                 let tmp;
-                tmp = this.listDeliveryUsers[index + 1].order;
-                this.listDeliveryUsers[index + 1].order = this.listDeliveryUsers[index].order;
-                this.listDeliveryUsers[index].order = tmp;
+                tmp = this.listReceiver[index + 1].ReceiverOrder;
+                this.listReceiver[index + 1].ReceiverOrder = this.listReceiver[index].ReceiverOrder;
+                this.listReceiver[index].ReceiverOrder = tmp;
             }
-            this.listDeliveryUsers.sort((a, b) => a.order - b.order);
+            this.listReceiver.sort((a, b) => a.ReceiverOrder - b.ReceiverOrder);
         },
-
-        paging() {
+        /*
+         * Phân trang dữ liệu phía client
+         * Author: BATUAN (07/06/2023)
+         */
+        async paging() {
+            this.isLoadingData = true;
             let beginIndex = (this.currentPage - 1) * this.pageSize;
             let endIndex = beginIndex + Number(this.pageSize);
-            console.log(beginIndex, endIndex);
-            this.propertyTransferListPaging = this.propertyTransferList.slice(beginIndex, endIndex);
+            if (this.transferAsset.TransferAssetDetailList) {
+                let transferAssetCopyList = [...this.transferAsset.TransferAssetDetailList];
+                if (this.inputFilter) {
+                    transferAssetCopyList = transferAssetCopyList.filter((element) => {
+                        return (
+                            element.PropertyId.toLowerCase().includes(this.inputFilter.trim().toLowerCase()) ||
+                            element.PropertyName.toLowerCase().includes(this.inputFilter.trim().toLowerCase())
+                        );
+                    });
+                }
+                this.propertyTransferListPaging = transferAssetCopyList.slice(beginIndex, endIndex);
+                this.numberPages = Math.ceil(transferAssetCopyList.length / this.pageSize);
+                this.totalRecords = transferAssetCopyList.length;
+            }
+            await delay(400);
+            this.isLoadingData = false;
         },
-
         /*
          * Sự kiện khi thay đổi giá trị của currentPage khi click sang trái hoặc phải ở phần paging
          * Author: BATUAN (07/06/2023)
@@ -416,6 +654,10 @@ export default {
             this.pageSize = newValue;
             this.paging();
         },
+        /*
+         * Sự kiện khi click vào ô checkbox all
+         * Author: BATUAN (07/06/2023)
+         */
         clickOnCheckBoxAll() {
             if (!this.$refs['checkbox-all'][0].isChecked) {
                 this.$refs['checkbox-all'][0].isChecked = true;
@@ -442,8 +684,11 @@ export default {
                 this.checkForCheckbox();
             }
         },
+        /*
+         * Sự kiện khi click vào ô checkbox
+         * Author: BATUAN (07/06/2023)
+         */
         clickOnCheckbox(index, id) {
-            console.log(index);
             const checkboxRef = this.$refs[`checkbox-${id}`][0];
             if (checkboxRef) {
                 if (checkboxRef.isChecked) {
@@ -488,9 +733,12 @@ export default {
                 this.$refs['checkbox-all'][0].isChecked = false;
             }
         },
+        /*
+         * Sự kiện khi click vào 1 hàng trong table
+         * Author: BATUAN (07/06/2023)
+         */
         handleClickOnRow(index) {
             this.firstClickRow = index;
-
             this.clickIndex = index;
         },
         /*
@@ -504,7 +752,11 @@ export default {
             }
             // Sự kiện Ctrl + Click
             if (event.ctrlKey) {
-                if (!this.selectedRow.includes(id)) {
+                if (
+                    !this.selectedRow.some((row) => {
+                        return row.PropertyId == id;
+                    })
+                ) {
                     this.selectedRow.push(this.propertyTransferListPaging[index]);
                 } else {
                     this.selectedRow = this.selectedRow.filter((row) => {
@@ -513,6 +765,9 @@ export default {
                 }
             } else if (event.shiftKey) {
                 if (this.firstClickRow || this.firstClickRow === 0) {
+                    this.selectedRow = this.selectedRow.filter((prop) => {
+                        return !this.propertyTransferListPaging.some((item) => item.PropertyId == prop.PropertyId);
+                    });
                     this.secondClickRow = index;
                     if (this.secondClickRow > this.firstClickRow) {
                         for (let i = this.firstClickRow; i <= this.secondClickRow; i++) {
@@ -520,8 +775,6 @@ export default {
                             if (!this.selectedRow.some((item) => item.PropertyId == property.PropertyId)) {
                                 this.selectedRow.push(property);
                             }
-                            // if (!this.selectedRow.includes(property)) {
-                            // }
                         }
                     } else {
                         for (let i = this.secondClickRow; i <= this.firstClickRow; i++) {
@@ -533,7 +786,7 @@ export default {
                     }
                 }
             } else {
-                this.handleClickOnRow(index, id);
+                this.handleClickOnRow(index);
             }
             this.checkForCheckbox();
             this.checkFullChecked();
@@ -543,17 +796,241 @@ export default {
          * Author: BATUAN (29/06/2023)
          */
         async createNewTransferAsset() {
-            if (this.validateData()) {
-                this.transferAsset.TransferAssetDetailCreateList = [...this.propertyTransferList];
+            if (this.validateData() && this.validateDataMajor()) {
                 this.transferAsset.OriginalPrice = 0;
-                for (let i = 0; i < this.propertyTransferList.length; i++) {
-                    this.transferAsset.OriginalPrice += this.propertyTransferList[i].OriginalPrice;
+                for (let i = 0; i < this.transferAsset.TransferAssetDetailList.length; i++) {
+                    this.transferAsset.OriginalPrice += this.transferAsset.TransferAssetDetailList[i].OriginalPrice;
                 }
-                await request
-                    .insertRecord('TransferAsset/Insert', this.transferAsset)
-                    .then((res) => console.log(res))
-                    .catch((err) => console.log(err));
+
+                this.transferAsset.ReceiverList = this.listReceiver;
+                this.$emit('createdNewTransferAsset', this.transferAsset);
             }
+        },
+        async btnSaveAction() {
+            // chuyển đổi lại id phòng ban chỉnh sửa
+            if (this.transferAsset && this.transferAsset.TransferAssetDetailList) {
+                this.transferAsset.TransferAssetDetailList.forEach((transferDetail) => {
+                    transferDetail.DepartmentTransferId = this.departmentNames.find((element) => {
+                        return element.label == transferDetail.DepartmentTransferName;
+                    }).value;
+                });
+            }
+
+            switch (this.formMode) {
+                case this.$_MISAEnum.formAdd:
+                    await this.createNewTransferAsset();
+                    break;
+                case this.$_MISAEnum.formUpdate:
+                    await this.handleUpdateTransferAsset();
+                    break;
+                default:
+                    break;
+            }
+        },
+        /*
+         * Gọi Api kiểm tra tài sản được phép xóa ở form thêm hay không
+         * Author: BATUAN (29/08/2023)
+         */
+        async checkDeleteRow(row) {
+            if (
+                this.listInitialTransferAssetDetail &&
+                this.listInitialTransferAssetDetail.some((transferAssetDetail) => {
+                    return transferAssetDetail.PropertyId == row.PropertyId;
+                })
+            ) {
+                let propertyIds = [];
+                propertyIds.push(row.PropertyId);
+                await request
+                    .insertRecord(
+                        `TransferAsset/CheckTransferAsset?transferAssetId=${this.transferAsset.TransferAssetId}`,
+                        propertyIds,
+                    )
+                    .then(() => {
+                        this.transferAsset.TransferAssetDetailList = this.transferAsset.TransferAssetDetailList.filter(
+                            (element) => {
+                                return element.PropertyId != row.PropertyId;
+                            },
+                        );
+                        this.paging();
+                        this.calculateTotalResidualPrice();
+                        this.calculateTotalOriginalPrice();
+                    })
+                    .catch((err) => {
+                        this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                    });
+            } else {
+                this.transferAsset.TransferAssetDetailList = this.transferAsset.TransferAssetDetailList.filter(
+                    (element) => {
+                        return element.PropertyId != row.PropertyId;
+                    },
+                );
+                this.paging();
+                this.calculateTotalResidualPrice();
+                this.calculateTotalOriginalPrice();
+            }
+        },
+        /*
+         * Gọi Api kiểm tra tài sản được phép xóa ở form thêm hay không khi thực hiện xóa nhiều
+         * Author: BATUAN (29/08/2023)
+         */
+        async checkDeleteRows() {
+            let propertyIds = [];
+            if (this.listInitialTransferAssetDetail) {
+                this.selectedRow.forEach((row) => {
+                    if (
+                        this.listInitialTransferAssetDetail.some((element) => {
+                            return element.PropertyId == row.PropertyId;
+                        })
+                    ) {
+                        propertyIds.push(row.PropertyId);
+                    }
+                });
+
+                await request
+                    .insertRecord(
+                        `TransferAsset/CheckTransferAsset?transferAssetId=${this.transferAsset.TransferAssetId}`,
+                        propertyIds,
+                    )
+                    .then(() => {
+                        this.transferAsset.TransferAssetDetailList = this.transferAsset.TransferAssetDetailList.filter(
+                            (element) => {
+                                return !JSON.Stringify(this.selectedRow).includes(JSON.Stringify(element));
+                            },
+                        );
+                        this.paging();
+                        this.calculateTotalResidualPrice();
+                        this.calculateTotalOriginalPrice();
+                    })
+                    .catch((err) => {
+                        this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                    });
+            } else {
+                this.transferAsset.TransferAssetDetailList = this.transferAsset.TransferAssetDetailList.filter(
+                    (element) => {
+                        return !JSON.Stringify(this.selectedRow).includes(JSON.Stringify(element));
+                    },
+                );
+                this.paging();
+                this.calculateTotalResidualPrice();
+                this.calculateTotalOriginalPrice();
+            }
+        },
+        /*
+         * Kiểm tra và phân loại các tài sản điều chuyển trong form sửa chứng từ
+         * Author: BATUAN (29/08/2023)
+         */
+        checkInforTransferAssetDetail() {
+            this.transferAssetDetailDelete = [];
+            this.transferAssetDetailUpdate = [];
+            this.transferAssetDetailNochange = [];
+            this.transferAssetDetailAdd = [];
+            let listTransferAssetCheck = [];
+            this.transferAsset.TransferAssetDetailList.forEach((transferAssetDetail) => {
+                if (
+                    this.listInitialTransferAssetDetail.some((assetDetail) => {
+                        return assetDetail.PropertyCode == transferAssetDetail.PropertyCode;
+                    })
+                ) {
+                    // kiểm tra xem 2 cái bằng nhau hay không
+                    if (
+                        !JSON.stringify(this.listInitialTransferAssetDetail).includes(
+                            JSON.stringify(transferAssetDetail),
+                        )
+                    ) {
+                        transferAssetDetail.StatusRecord = this.$_MISAEnum.statusRecord.update;
+                        this.transferAssetDetailUpdate.push(transferAssetDetail);
+                        listTransferAssetCheck.push(transferAssetDetail);
+                    } else {
+                        transferAssetDetail.StatusRecord = this.$_MISAEnum.statusRecord.noChange;
+                        this.transferAssetDetailNochange.push(transferAssetDetail);
+                        listTransferAssetCheck.push(transferAssetDetail);
+                    }
+                } else {
+                    transferAssetDetail.StatusRecord = this.$_MISAEnum.statusRecord.insert;
+                    this.transferAssetDetailAdd.push(transferAssetDetail);
+                }
+            });
+            if (listTransferAssetCheck.length == 0) {
+                this.listInitialTransferAssetDetail.forEach((element) => {
+                    element.StatusRecord = this.$_MISAEnum.statusRecord.delete;
+                    this.transferAssetDetailDelete.push(element);
+                });
+            } else if (listTransferAssetCheck.length != this.listInitialTransferAssetDetail.length) {
+                this.listInitialTransferAssetDetail.forEach((transferAssetDetail) => {
+                    if (
+                        !listTransferAssetCheck.some((element) => {
+                            return element.PropertyCode == transferAssetDetail.PropertyCode;
+                        })
+                    ) {
+                        transferAssetDetail.StatusRecord = this.$_MISAEnum.statusRecord.delete;
+                        this.transferAssetDetailDelete.push(transferAssetDetail);
+                    }
+                });
+            }
+
+            this.transferAsset.TransferAssetDetailList = [];
+            this.transferAssetDetailDelete.forEach((element) =>
+                this.transferAsset.TransferAssetDetailList.push(element),
+            );
+            this.transferAssetDetailUpdate.forEach((element) =>
+                this.transferAsset.TransferAssetDetailList.push(element),
+            );
+            this.transferAssetDetailNochange.forEach((element) =>
+                this.transferAsset.TransferAssetDetailList.push(element),
+            );
+            this.transferAssetDetailAdd.forEach((element) => {
+                element.TransferAssetId = this.transferAsset.TransferAssetId;
+                this.transferAsset.TransferAssetDetailList.push(element);
+            });
+        },
+        /*
+         * Kiểm tra và phân loại danh sách người nhận
+         * Author: BATUAN (29/08/2023)
+         */
+        checkInforReceiver() {
+            this.listReceiver.forEach((receiver) => {
+                if (receiver.ReceiverId == undefined || receiver.ReceiverId == '00000000-0000-0000-0000-000000000000') {
+                    receiver.StatusRecord = this.$_MISAEnum.statusRecord.insert;
+                    this.receiverAdd.push(receiver);
+                } else if (JSON.stringify(this.listInitialReceiver).includes(JSON.stringify(receiver))) {
+                    receiver.StatusRecord = this.$_MISAEnum.statusRecord.noChange;
+                    this.receiverNochange.push(receiver);
+                } else {
+                    receiver.StatusRecord = this.$_MISAEnum.statusRecord.update;
+                    this.receiverUpdate.push(receiver);
+                }
+            });
+
+            this.listInitialReceiver.forEach((receiver) => {
+                if (
+                    !this.listReceiver.some((element) => {
+                        return element.ReceiverId == receiver.ReceiverId;
+                    })
+                ) {
+                    receiver.StatusRecord = this.$_MISAEnum.statusRecord.delete;
+                    this.receiverDelete.push(receiver);
+                }
+            });
+
+            this.transferAsset.receiverList = [];
+            this.receiverDelete.forEach((element) => this.transferAsset.receiverList.push(element));
+            this.receiverUpdate.forEach((element) => this.transferAsset.receiverList.push(element));
+            this.receiverNochange.forEach((element) => this.transferAsset.receiverList.push(element));
+            this.receiverAdd.forEach((element) => {
+                element.TransferAssetId = this.transferAsset.TransferAssetId;
+                this.transferAsset.receiverList.push(element);
+            });
+        },
+        /*
+         * Hàm gọi emit update chứng từ
+         * Author: BATUAN (29/08/2023)
+         */
+        async handleUpdateTransferAsset() {
+            let listTransferAsset = [];
+            listTransferAsset.push(this.transferAsset);
+            this.checkInforTransferAssetDetail();
+            this.checkInforReceiver();
+            this.$emit('updateTransferAsset', listTransferAsset);
         },
         /*
          * Gọi Api lấy danh sách các phòng ban
@@ -565,7 +1042,6 @@ export default {
                 .then((response) => {
                     response.data.forEach((department) => {
                         this.departmentNames.push({
-                            // id: department.DepartmentId,
                             value: department.DepartmentId,
                             label: department.DepartmentName,
                         });
@@ -582,36 +1058,119 @@ export default {
         validateData() {
             let textDialog = '';
             let check = true;
-            let refErrorName = ''
-            if (this.transferAsset.TransferAssetCode == undefined || this.transferAsset.TransferAssetCode.trim().length == 0) {
+            let refErrorName = '';
+            if (
+                this.transferAsset.TransferAssetCode == undefined ||
+                this.transferAsset.TransferAssetCode.trim().length == 0
+            ) {
                 textDialog += 'Mã chứng từ không được phép trống !</br>';
-                check = false;
-                refErrorName = 'transferAssetCodeInput'
+                refErrorName = 'transferAssetCodeInput';
             }
             if (!this.transferAsset.TransferDate) {
                 textDialog += 'Ngày điều chuyển không được phép trống !<br>';
-                refErrorName = refErrorName ? refErrorName : 'transferDateInput'
-
+                refErrorName = refErrorName ? refErrorName : 'transferDateInput';
             }
             if (!this.transferAsset.TransactionDate) {
                 textDialog += 'Ngày chứng từ không được phép trống !<br>';
-                refErrorName = refErrorName ? refErrorName : 'transactionDateInput'
+                refErrorName = refErrorName ? refErrorName : 'transactionDateInput';
             }
-            this.showDialog(textDialog, {
-                thirdDialogBtnText: 'Đóng',
-                thirdBtnFunction: () => {
-                    this.hideDialog()
-                    this.focusOnErrorInput(refErrorName)
-                },
-            },);
+            if (this.$refs['checkbox-delivery'].isChecked) {
+                for (let i = 0; i < this.listReceiver.length; i++) {
+                    if (
+                        this.listReceiver[i].FullName == undefined ||
+                        this.listReceiver[i].FullName.trim() == '' ||
+                        this.listReceiver[i].Represent == undefined ||
+                        this.listReceiver[i].Represent.trim() == '' ||
+                        this.listReceiver[i].Position == undefined ||
+                        this.listReceiver[i].Position.trim() == ''
+                    ) {
+                        textDialog += 'Thông tin ban giao nhận không được để trống !<br>';
+                        break;
+                    }
+                }
+            }
+            if (!this.transferAsset.TransferAssetDetailList) {
+                textDialog += 'Danh sách tài sản điều chuyển không được để trống !<br>';
+            } else if (
+                this.transferAsset.TransferAssetDetailList &&
+                this.transferAsset.TransferAssetDetailList.length == 0
+            ) {
+                textDialog += 'Danh sách tài sản điều chuyển không được để trống !<br>';
+            }
+
+            if (textDialog) {
+                check = false;
+                this.showDialog(textDialog, '', {
+                    thirdDialogBtnText: 'Đóng',
+                    thirdBtnFunction: () => {
+                        this.hideDialog();
+                        this.focusOnErrorInput(refErrorName);
+                    },
+                });
+            }
+
             return check;
+        },
+        /*
+         * validate nghiệp vụ của chứng từ trước khi gửi lên server
+         * Author: BATUAN (29/06/2023)
+         */
+        validateDataMajor() {
+            let textDialog = '';
+            let check = true;
+            let refErrorName = '';
+            if (this.transferAsset.TransferDate < this.transferAsset.TransactionDate) {
+                textDialog = 'Ngày chứng từ phải nhỏ hơn ngày điều chuyển !<br>';
+                refErrorName = refErrorName ? refErrorName : 'transferDateInput';
+                check = false;
+            } else if (!this.checkDepartmentTransfer().check) {
+                textDialog = this.checkDepartmentTransfer().errorMessage;
+                refErrorName = '';
+                check = false;
+            }
+
+            if (textDialog) {
+                check = false;
+                this.showDialog(textDialog, '', {
+                    thirdDialogBtnText: 'Đóng',
+                    thirdBtnFunction: () => {
+                        this.hideDialog();
+                        this.focusOnErrorInput(refErrorName);
+                    },
+                });
+            }
+            return check;
+        },
+        /*
+         * Kiểm tra các phòng ban chuyển đi có khác phòng ban hiện tại không
+         * Author: BATUAN (29/06/2023)
+         */
+        checkDepartmentTransfer() {
+            let errorMessage = '';
+            let check = true;
+            for (let i = 0; i < this.transferAsset.TransferAssetDetailList.length; i++) {
+                if (
+                    this.transferAsset.TransferAssetDetailList[i].DepartmentId ==
+                    this.transferAsset.TransferAssetDetailList[i].DepartmentTransferId
+                ) {
+                    errorMessage = `Bộ phận chuyển đi phải khác bộ phận cũ (<strong>${this.transferAsset.TransferAssetDetailList[i].PropertyCode}</strong>) !`;
+                    check = false;
+                    break;
+                }
+            }
+            return {
+                errorMessage,
+                check,
+            };
         },
         /*
          * focus vào ô input lỗi nếu có
          * Author: BATUAN (29/06/2023)
          */
         focusOnErrorInput(errorField) {
-            this.$refs[errorField].autoFocus();
+            if (errorField) {
+                this.$refs[errorField].autoFocus();
+            }
         },
         /*
          * Hiển thị dialog
@@ -619,6 +1178,7 @@ export default {
          */
         showDialog(
             textDialog,
+            documentInfo,
             dialogActions = {
                 thirdDialogBtnText: 'Đóng',
                 thirdBtnFunction: this.hideDialog,
@@ -626,6 +1186,7 @@ export default {
         ) {
             this.isShowDialog = true;
             this.textDialog = textDialog;
+            this.documentInfo = documentInfo;
             this.dialogActions = dialogActions;
         },
         /*
@@ -639,8 +1200,8 @@ export default {
          * Xử lý mã lỗi backend trả về
          * Author: BATUAN (29/06/2023)
          */
-        handleException(statusCode, message, documentInfo, showToastError) {
-            exception(statusCode, message, documentInfo, showToastError);
+        handleException(statusCode, message, documentInfo, showDialog) {
+            exception(statusCode, message, documentInfo, showDialog);
         },
         /*
          * Format giá trị tiền
@@ -650,12 +1211,98 @@ export default {
             return formatMoney(value);
         },
         /*
-         * Tính toán giá trị còn lại của các tài sản
+         * Tính toán tổng giá trị còn lại của các tài sản
          * Author: BATUAN (30/08/2023)
          */
-        caculateResidualPrice(property) {
-            const currentDate = new Date();
-            return property.OriginalPrice - (currentDate.getFullYear() - property.FollowYear) * property.WearRateValue;
+        calculateTotalResidualPrice() {
+            this.totalResidualPrice = 0;
+            this.transferAsset.TransferAssetDetailList.forEach((element) => {
+                this.totalResidualPrice += element.ResidualPrice;
+            });
+        },
+        /*
+         * Tính toán tổng nguyên giá của các tài sản
+         * Author: BATUAN (30/08/2023)
+         */
+        calculateTotalOriginalPrice() {
+            this.totalOriginalPrice = 0;
+            this.transferAsset.TransferAssetDetailList.forEach((element) => {
+                this.totalOriginalPrice += element.OriginalPrice;
+            });
+        },
+        /*
+         * Loại bỏ hết các hàng đang chọn
+         * Author: BATUAN (07/06/2023)
+         */
+        removeAllSelected() {
+            this.selectedRow = [];
+            this.checkForCheckbox();
+            this.checkFullChecked();
+        },
+        /*
+         * Kiểm tra 1 hàng có đang được chọn hay không
+         * Author: BATUAN (14/06/2023)
+         */
+        isSelected(property) {
+            if (this.selectedRow) {
+                return this.selectedRow.some((prop) => prop.PropertyId == property.PropertyId);
+            }
+            return false;
+        },
+        /*
+         * Sự kiện click vào ô thêm người nhận gần nhất
+         * Author: BATUAN (14/06/2023)
+         */
+        async handleClickAddLastestReceiver() {
+            if (this.$refs.checkboxAddReceiver.isChecked == true) {
+                this.$refs.checkboxAddReceiver.isChecked = false;
+                this.listReceiver = this.listReceiver.filter((item) => !this.listReceiverLastest.includes(item));
+                if (this.listReceiver.length == 0) {
+                    this.listReceiver.push({
+                        ReceiverOrder: 1,
+                    });
+                }
+            } else {
+                this.$refs.checkboxAddReceiver.isChecked = true;
+                await this.getLastestReceiver();
+                if (
+                    this.listReceiver.length == 1 &&
+                    !this.listReceiver[0].FullName &&
+                    !this.listReceiver[0].Represent &&
+                    !this.listReceiver[0].Position
+                ) {
+                    this.listReceiver = [...this.listReceiverLastest];
+                } else {
+                    this.listReceiver = this.listReceiver.concat(this.listReceiverLastest);
+                }
+            }
+        },
+        /*
+         * Sự kiện khi scroll table để đóng combo-box
+         * Author: BATUAN (24/08/2023)
+         */
+        handleScrollBodyTable() {
+            for (let i = 0; i < this.$refs.combobox.length; i++) {
+                if (this.$refs.combobox[i].$refs.myComboBox.visible == true) {
+                    this.$refs.combobox[i].autoBlur();
+                }
+            }
+        },
+        /*
+         * Sự kiện Ctrl + F để tìm kiếm
+         * Author: BATUAN (24/08/2023)
+         */
+        handleSearchByKeyBoard(event) {
+            console.log(event)
+            if (event.key === 'f') {
+                {
+                    if (event.ctrlKey) {
+                        this.$refs.inputSearch.$el.focus();
+                        // Ngăn chặn hành vi mặc định của trình duyệt khi nhấn Ctrl + F
+                        event.preventDefault();
+                    }
+                }
+            }
         },
     },
 };

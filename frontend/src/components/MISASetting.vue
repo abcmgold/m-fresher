@@ -10,11 +10,6 @@
             ></div>
         </div>
         <div class="setting-menu__separate"></div>
-        <!-- <m-text-input
-            v-model="this.searchInput"
-            :placeholder="this.$_MISAResource['vn-VI'].find"
-            individualClass="text__input-icon-start"
-        ></m-text-input> -->
         <ul class="menu__items">
             <li class="menu__item">
                 <span>Phân trang</span>

@@ -1,6 +1,5 @@
 <template>
     <el-select
-        v-scrolloutside="scrollOutSide"
         ref="myComboBox"
         v-model="selectedPropertyTypeName"
         :class="{ 'el-select--error': error }"
@@ -11,6 +10,7 @@
         :placeholder="placeholder"
         :filterable="this.filterable"
         :value="modelValue"
+        :no-match-text="'Không có kết quả'"
         @change="
             $emit(
                 'update:modelValue',
@@ -84,12 +84,12 @@ export default {
             // this.$refs.myComboBox.blur();
         },
         /*
-         * Sự kiện khi scroll ở ngoài combobox
+         * Sự kiện tự động blur vào ô input
          * Author: BATUAN (14/06/2023)
          */
-        scrollOutSide() {
+         autoBlur() {
+            // this.$refs.myComboBox.focus();
             this.$refs.myComboBox.blur();
-            console.log("scroll")
         },
     },
     emits: ['update:modelValue'],

@@ -20,6 +20,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    cursor: text;
 }
 
 .text__input-icon-end {
@@ -45,7 +46,6 @@
 .text__input:hover {
     /* background-color: #e6e6e6; */
     border-color: var(--primary-color);
-    cursor: pointer;
 }
 .text__input:focus {
     border: 1px solid var(--primary-color);

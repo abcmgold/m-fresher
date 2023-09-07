@@ -1,4 +1,6 @@
-﻿using MISA.WebFresher042023.Demo.Core.Entities;
+﻿using MISA.WebFresher042023.Demo.Core.Dto.PropertyTransfer;
+using MISA.WebFresher042023.Demo.Core.Entities;
+using MISA.WebFresher042023.Demo.Core.HandleException;
 using MISA.WebFresher042023.Demo.Core.Interface.Repository;
 using System;
 using System.Collections;
@@ -9,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace MISA.WebFresher042023.Demo.Core.Manager
 {
+    /// <summary>
+    /// Lớp check nghiệp vụ khi thao tác với tài sản điều chuyển
+    /// </summary>
     public class TransferAssetDetailManager
     {
         private readonly ITransferAssetDetailRepository _transferAssetDetailRepository;
@@ -18,28 +23,36 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
             _transferAssetDetailRepository = transferAssetDetailRepository;
             _transferAssetRepository = transferAssetRepository;
         }
-        /// <summary>
-        /// Check nghiệp vụ tài sản có được phép xóa ở form thêm hay không
-        /// </summary>
-        /// <param name="transferAssetDetailId"></param>
-        /// <param name="transferAssetId"></param>
-        /// <returns></returns>
-        public async Task<Dictionary<string, DateTime>> CheckTransferAssetDetail(Guid transferAssetDetailId, Guid transferAssetId)
+
+        public void CheckListDeparment(List<TransferAssetDetailUpdateDto> transferAssetDetaiList)
         {
-            // lấy ra danh sách các chứng từ có xuất hiện tài sản hiện tại và có thời gian chứng từ lớn hơn thời gian chứng từ của
-            // chứng từ hiện tại
-            var transferAssetList = await _transferAssetRepository.GetByDetail(transferAssetDetailId, transferAssetId);
-
-            Dictionary<string, DateTime> infoTransferAsset = new Dictionary<string, DateTime>();
-
-            if (transferAssetList.Count > 0)
+            foreach (var transferAsset in transferAssetDetaiList)
             {
-                foreach( var transferAsset in transferAssetList)
+                if (transferAsset.DepartmentTransferId == transferAsset.DepartmentId)
                 {
-                    infoTransferAsset.Add(transferAsset.TransferAssetCode, transferAsset.TransactionDate);
+                    throw new UserException("Bộ phận chuyển đi phải khác bộ phận hiện tại", 400);
                 }
             }
-            return infoTransferAsset;
+        }
+
+        public async Task CheckExistTransferAssetDetail(List<TransferAssetDetailUpdateDto> listUpdate, List<TransferAssetDetailUpdateDto> listDelete)
+        {
+            var listId = new List<Guid>();
+            listUpdate.ForEach(elementUpdate =>
+            {
+                listId.Add(elementUpdate.TransferAssetDetailId);
+            });
+            listDelete.ForEach(elementUpdate =>
+            {
+                listId.Add(elementUpdate.TransferAssetDetailId);
+            });
+
+            var numberRecord = await _transferAssetDetailRepository.CountRecord(string.Join(",", listId));
+
+            if (numberRecord != listId.Count)
+            {
+                throw new UserException("Danh sách tài sản điều chuyển tồn tại tài sản điều chuyển không có trong hệ thống !", 400);
+            }
         }
     }
 }

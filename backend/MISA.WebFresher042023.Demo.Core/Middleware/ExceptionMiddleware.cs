@@ -4,6 +4,9 @@ using MISA.WebFresher042023.Demo.Core.Resources;
 
 namespace MISA.WebFresher042023.Demo.Middleware
 {
+    /// <summary>
+    /// Lớp khai bao middleware
+    /// </summary>
     public class ExceptionMiddleware
     {
         private readonly RequestDelegate next;

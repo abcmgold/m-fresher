@@ -1,10 +1,12 @@
 <template>
     <m-modal
-        v-esc="
+        @keydown.esc="
             () => {
                 this.$emit('hideChoosenForm');
             }
         "
+        tabindex="0"
+        ref="modal"
     >
         <div class="choosen-from">
             <div class="choosen-form-header">
@@ -78,7 +80,7 @@
                                 {{ data.PropertyName }}
                             </div>
                             <div class="text-align-left cell--item" style="width: 200px">
-                                {{ data.DepartmentName }}
+                                {{ data.DepartmentTransferName ? data.DepartmentTransferName : data.DepartmentName }}
                             </div>
                             <div class="text-align-right cell--item" style="width: 150px">
                                 {{ this.formatedMoney(data.OriginalPrice) }}
@@ -91,7 +93,29 @@
                             </div>
                         </div>
                     </div>
-                    <div class="table__content--sumary" v-if="this.$store.getters.getIsShowSummary"></div>
+                    <div class="table__content--sumary" v-if="this.$store.getters.getIsShowSummary">
+                        <div style="width: 50px">
+                        </div>
+                        <div style="width: 50px"></div>
+                        <div style="width: 150px">
+                            
+                        </div>
+                        <div style="width: 200px">
+                   
+                        </div>
+                        <div style="width: 200px">
+                            
+                        </div>
+                        <div class="text-align-right cell--item" style="width: 150px; font-weight: bold">
+                            {{ this.formatedMoney(this.totalOriginalPrice) }}
+                        </div>
+                        <div class="text-align-right cell--item" style="width: 150px; font-weight: bold">
+                            {{ this.formatedMoney(this.totalResidualPrice) }}
+                        </div>
+                        <div style="width: 150px">
+                           
+                        </div>
+                    </div>
                     <div class="table__paging paging" v-if="this.$store.getters.getIsShowPaging">
                         <m-pagination
                             :dataSelect="this.numberOfRecordsPerPage"
@@ -174,22 +198,12 @@ import { delay } from '@/common/common';
 export default {
     name: 'ChoosenForm',
     props: {
-        listTransferId: Array,
+        excludedIds: Array,
     },
     emits: ['hideChoosenForm', 'updateListSelectedProperty'],
     data() {
         return {
             listHeader: this.$_MISAResource['vn-VI'].listChoosenTranfer,
-            dataRender: [
-                {
-                    propertyCode: 'TS0001',
-                    propertyName: 'Tuấn Bùi',
-                    departmentUse: 'HCSN',
-                    originalPrice: '20000000',
-                    residualPrice: '20000000',
-                    followYear: '2022',
-                },
-            ],
             currentPage: 1,
             pageSize: '20',
             listProperty: [],
@@ -220,12 +234,20 @@ export default {
             isShowDialog: false,
             textDialog: '',
             dialogActions: {},
+            totalOriginalPrice: 0,
+            totalResidualPrice: 0
         };
     },
     async created() {
         await this.getListProperty();
 
         await this.getAllDepartments();
+    },
+    mounted() {
+        this.$refs.modal.$el.focus()
+    }, 
+    unmounted() {
+        this.$parent.$refs.container.focus()
     },
     watch: {
         pageSize: function (newValue) {
@@ -262,25 +284,36 @@ export default {
         },
     },
     methods: {
+        /*
+         * Gọi api lấy danh sách các tài sản
+         * Author: BATUAN (07/06/2023)
+         */
         async getListProperty() {
             this.isLoadingData = true;
+            let tringId = this.excludedIds.join(', ');
             await request
                 .getRecord(
-                    `Property/Filter?pageNumber=${this.currentPage}&pageSize=${Number(
+                    `Property/CurrentInfo?pageNumber=${this.currentPage}&pageSize=${Number(
                         this.pageSize,
-                    )}&excludeIds=${this.listTransferId.join(', ')}`,
+                    )}&excludedIds=${tringId}`,
                 )
                 .then(async (res) => {
                     await delay(500);
                     this.isLoadingData = false;
-                    this.listProperty = res.data.Data;
-                    this.totalRecords = res.data.Total[0].TotalRecord;
+                    this.listProperty = res.data;
+                    this.totalRecords = res.data[0].TotalRecordCount;
+                    this.totalOriginalPrice = res.data[0].TotalPrice;
+                    this.totalResidualPrice = res.data[0].TotalResidualPrice;
                     this.pageNumber = Math.ceil(this.totalRecords / this.pageSize);
                 })
                 .catch((err) => {
                     console.log(err);
                 });
         },
+        /*
+         * Gọi api lấy danh sách phòng ban
+         * Author: BATUAN (07/06/2023)
+         */
         async getAllDepartments() {
             await request
                 .getRecord('Department')
@@ -297,7 +330,10 @@ export default {
                     this.handleException(err.statusCode, err.message, this.showDialog);
                 });
         },
-
+        /*
+         * Sự kiện click vào ô checkbox
+         * Author: BATUAN (07/06/2023)
+         */
         handleClickOnRow(index) {
             this.firstClickRow = index;
             this.clickIndex = index;
@@ -392,8 +428,11 @@ export default {
                 }
             }
         },
+        /*
+         * Sự kiện click vào ô checkbox
+         * Author: BATUAN (07/06/2023)
+         */
         clickOnCheckbox(index, id) {
-            console.log(index);
             const checkboxRef = this.$refs[`checkbox-${id}`][0];
             if (checkboxRef) {
                 if (checkboxRef.isChecked) {
@@ -407,7 +446,10 @@ export default {
                 this.checkFullChecked();
             }
         },
-
+        /*
+         * Sự kiện click vào ô checkbox all
+         * Author: BATUAN (07/06/2023)
+         */
         clickOnCheckBoxAll() {
             if (!this.$refs['checkbox-all'][0].isChecked) {
                 this.$refs['checkbox-all'][0].isChecked = true;
@@ -430,39 +472,49 @@ export default {
                 this.checkForCheckbox();
             }
         },
+        /*
+         * Loại bỏ hết các hàng đang chọn
+         * Author: BATUAN (07/06/2023)
+         */
         removeAllSelected() {
             this.selectedRow = [];
             this.checkForCheckbox();
             this.checkFullChecked();
         },
+        /*
+         * Sự kiện khi cập nhật danh sách tài sản
+         * Author: BATUAN (07/06/2023)
+         */
         handleChoosenProperty() {
             if (this.selectedRow.length == 0) {
-                this.showDialog('Vui lòng chọn tài sản điều chuyển!')
+                this.showDialog('Vui lòng chọn tài sản điều chuyển!');
             } else if (!this.newDepartmentName) {
-                this.showDialog('Vui lòng chọn bộ phận sử dụng mới!')
+                this.showDialog('Vui lòng chọn bộ phận sử dụng mới!');
             } else {
                 let listSelectedProperty = [];
                 let checked = true;
 
                 for (let i = 0; i < this.selectedRow.length; i++) {
-                    if (this.selectedRow[i].DepartmentName == this.newDepartmentName) {
+                    if (this.selectedRow[i].DepartmentTransferName == this.newDepartmentName) {
                         checked = false;
                         break;
                     }
                 }
                 if (checked == false) {
-                    this.showDialog('Bộ phận sử dụng mới phải khác bộ phận cũ')
+                    this.showDialog('Bộ phận sử dụng mới phải khác bộ phận cũ');
                 } else {
                     for (let i = 0; i < this.selectedRow.length; i++) {
                         let property = { ...this.selectedRow[i] };
-                        property.DepartmentTransferName = this.newDepartmentName;
-                        property.DepartmentTransferId = this.newDepartmentId;
+                        if (property.DepartmentTransferId === '00000000-0000-0000-0000-000000000000') {
+                            property.DepartmentTransferId = property.DepartmentId;
+                            property.DepartmentTransferName = property.DepartmentName;
+                        }
                         property.Reason = this.note;
                         listSelectedProperty.push({
-                            DepartmentId: property.DepartmentId,
-                            DepartmentName: property.DepartmentName,
-                            DepartmentTransferId: property.DepartmentTransferId,
-                            DepartmentTransferName: property.DepartmentTransferName,
+                            DepartmentId: property.DepartmentTransferId,
+                            DepartmentName: property.DepartmentTransferName,
+                            DepartmentTransferId: this.newDepartmentId,
+                            DepartmentTransferName: this.newDepartmentName,
                             PropertyId: property.PropertyId,
                             OriginalPrice: property.OriginalPrice,
                             Reason: property.Reason,
@@ -470,6 +522,7 @@ export default {
                             PropertyName: property.PropertyName,
                             FollowYear: property.FollowYear,
                             WearRateValue: property.WearRateValue,
+                            ResidualPrice: property.ResidualPrice,
                         });
                     }
                     this.$emit('updateListSelectedProperty', listSelectedProperty);
@@ -517,9 +570,21 @@ export default {
         /*
          * Đóng dialog
          * Author: BATUAN (29/08/2023)
-        */
+         */
         hideDialog() {
             this.isShowDialog = false;
+        },
+        /*
+         * Tính toán giá trị còn lại của các tài sản
+         * Author: BATUAN (30/08/2023)
+         */
+        caculateResidualPrice(property) {
+            const currentDate = new Date();
+            return property.OriginalPrice - (currentDate.getFullYear() - property.FollowYear) * property.WearRateValue;
+        },
+
+        eventPressEsc(event) {
+            console.log(event);
         },
     },
 };

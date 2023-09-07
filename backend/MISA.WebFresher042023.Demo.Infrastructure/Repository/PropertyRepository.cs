@@ -5,6 +5,7 @@ using Dapper;
 using MISA.WebFresher042023.Demo.Core.Interface.Repository;
 using System.Text.RegularExpressions;
 using MISA.WebFresher042023.Demo.Infrastructure.Interface;
+using MISA.WebFresher042023.Demo.Core.DtoReadonly;
 
 namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
 {
@@ -70,6 +71,17 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
             if (result == null) return "TS00000";
 
             return result;
+        }
+
+        public async Task<List<PropertyReadonly>> GetCurrenPropertyInfo(int pageNumber, int pageSize, string? excludedIds)
+        {
+            DynamicParameters parameters = new DynamicParameters();
+            parameters.Add("@PageNumber", pageNumber);
+            parameters.Add("@PageSize", pageSize);
+            parameters.Add("@ExcludedIds", excludedIds);
+            var result = await _unitOfWork.Connection.QueryAsync<PropertyReadonly>(sql: "CALL Proc_Property_GetCurrent(@PageNumber, @PageSize, @ExcludedIds)", parameters);
+
+            return result.ToList();
         }
     }
 }

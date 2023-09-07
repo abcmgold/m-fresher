@@ -1,11 +1,12 @@
 <template>
-    <div class="content__navbar">
+    <div class="content__navbar" tabindex="0" @keydown="handleSearchByKeyBoard">
         <div class="content__navbar-left">
             <div class="text-field">
                 <m-text-input
                     v-model="this.searchInput"
                     :placeholder="this.$_MISAResource['vn-VI'].searchProperty"
                     individualClass="text__input-icon-start"
+                    ref="inputSearch"
                 ></m-text-input>
             </div>
             <el-select
@@ -15,6 +16,7 @@
                 :placeholder="this.$_MISAResource['vn-VI'].propertyType"
                 filterable
                 :title="propertyTypeFilter"
+                :no-match-text="'Không có kết quả'"
             >
                 <el-option
                     v-for="item in PropertyTypes"
@@ -31,6 +33,7 @@
                 class="back-ground__icon"
                 filterable
                 :title="departmentUseFilter"
+                :no-match-text="'Không có kết quả'"
             >
                 <el-option
                     v-for="item in Departments"
@@ -139,23 +142,31 @@
                         ></m-checkbox>
                     </div>
                     <div class="text-align-center cell--item" style="minWidth: 50px">{{ index + 1 }}</div>
-                    <div class="text-align-left cell--item" style="minWidth: 150px">{{ data.PropertyCode }}</div>
-                    <div class="text-align-left cell--item" style="minWidth: 300px">{{ data.PropertyName }}</div>
+                    <div class="text-align-left cell--item" style="minWidth: 150px">
+                        <div class="text--surround">{{ data.PropertyCode }}</div>
+                    </div>
+                    <div class="text-align-left cell--item" style="minWidth: 300px">
+                        <div class="text--surround">{{ data.PropertyName }}</div>
+                    </div>
                     <div class="text-align-left cell--item" style="minWidth: 250px">
-                        {{ data.PropertyTypeName }}
+                        <div class="text--surround">{{ data.PropertyTypeName }}</div>
                     </div>
-                    <div class="text-align-left cell--item" style="minWidth: 250px">{{ data.DepartmentName }}</div>
+                    <div class="text-align-left cell--item" style="minWidth: 250px">
+                        <div class="text--surround">{{ data.DepartmentName }}</div>
+                    </div>
                     <div class="text-align-right cell--item" style="minWidth: 100px">
-                        {{ this.formatedMoney(data.Quantity) }}
+                        <div class="text--surround">{{ this.formatedMoney(data.Quantity) }}</div>
                     </div>
                     <div class="text-align-right cell--item" style="minWidth: 150px">
-                        {{ this.formatedMoney(data.OriginalPrice) }}
+                        <div class="text--surround">{{ this.formatedMoney(data.OriginalPrice) }}</div>
                     </div>
                     <div class="text-align-right cell--item" style="minWidth: 150px">
-                        {{ this.formatedMoney(data.WearRateValue) }}
+                        <div class="text--surround">{{ this.formatedMoney(data.WearRateValue) }}</div>
                     </div>
                     <div class="text-align-right cell--item" style="minWidth: 150px">
-                        {{ this.formatedMoney(data.OriginalPrice - data.WearRateValue) }}
+                        <div class="text--surround">
+                            {{ this.formatedMoney(data.OriginalPrice - data.WearRateValue) }}
+                        </div>
                     </div>
                     <div class="cell--item" style="minWidth: 120px"></div>
                 </div>
@@ -224,7 +235,9 @@
                 @changePageSize="changePageSize"
             ></m-pagination>
         </div>
-        <div class="table__content--empty" v-if="isShowEmptyRecord"></div>
+        <div class="table__content--empty" v-if="isShowEmptyRecord">
+            <div class="icon--empty"></div>
+        </div>
         <div v-if="this.isLoadingData" class="grid-loading-container">
             <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
             <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
@@ -279,7 +292,7 @@
     <m-context-menu
         @showDetail="this.showDetail(this.indexSelected, this.idSelected)"
         @showDuplicate="this.showDuplicate(this.indexSelected, this.idSelected)"
-        @deleteOneRow="this.deleteOneRow(this.indexSelected)"
+        @deleteOneRow="this.deleteOneRow(this.idSelected, this.indexSelected)"
         :position="this.contextMenuPosition"
         :isShowContext="this.$store.getters.getIsShowContextMenu"
     ></m-context-menu>
@@ -426,7 +439,7 @@ export default {
                 firstBtnFunction: null,
                 secondBtnFunction: null,
                 thirdBtnFunction: null,
-            }
+            },
         };
     },
     async created() {
@@ -563,7 +576,7 @@ export default {
                     this.Departments = response.data;
                 })
                 .catch((err) => {
-                    this.handleException(err.statusCode, err.message,err.documentInfo, this.showDialog);
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
 
             this.Departments.forEach((department) => {
@@ -623,7 +636,7 @@ export default {
                     });
                 })
                 .catch((err) => {
-                    this.handleException(err.statusCode, err.message, err.documentInfo,this.showDialog);
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
 
             setTimeout(() => {
@@ -920,7 +933,7 @@ export default {
                 .then(() => (isSuccess = true))
                 .catch(async (err) => {
                     this.$store.commit('toggleMaskElementShow');
-                    this.handleException(err.statusCode, err.message, this.showDialog);
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                     this.errorFieldName = err.errorField;
                 });
 
@@ -1055,10 +1068,10 @@ export default {
          */
         deleteRowOnClickIcon() {
             if (this.selectedRow.length <= 0) {
-                this.showDialog(this.$_MISAResource['vn-VI'].chooseAtLeastOne, "",{
+                this.showDialog(this.$_MISAResource['vn-VI'].chooseAtLeastOne, '', {
                     thirdBtnFunction: this.closeDialog,
-                    thirdDialogBtnText: this.$_MISAResource['vn-VI'].close
-                })
+                    thirdDialogBtnText: this.$_MISAResource['vn-VI'].close,
+                });
             } else {
                 if (this.selectedRow.length == 1) {
                     let record = this.dataTable.find((data) => {
@@ -1073,13 +1086,12 @@ export default {
                         this.selectedRow.length >= 10 ? this.selectedRow.length : `0${this.selectedRow.length}`;
                     this.textDialog = `<strong>${beginText}</strong> ${this.$_MISAResource['vn-VI'].deleteMultipleMessage}`;
                 }
-                this.showDialog(this.textDialog,"", {
+                this.showDialog(this.textDialog, '', {
                     firstBtnFunction: this.closeDialog,
                     firstDialogBtnText: this.$_MISAResource['vn-VI'].cancel,
                     thirdBtnFunction: this.deleteRows,
-                    thirdDialogBtnText: this.$_MISAResource['vn-VI'].delete
-                })
-
+                    thirdDialogBtnText: this.$_MISAResource['vn-VI'].delete,
+                });
             }
             this.isMultipleDelele = true;
         },
@@ -1087,28 +1099,18 @@ export default {
          * Sự kiện khi click vào biểu tượng xóa ở hàng của table
          * Author: BATUAN (08/06/2023)
          */
-        deleteOneRow(id) {
-            this.textDialog = '';
-            this.beginText = '';
-            this.endText = '';
+        deleteOneRow(id,index) {
+            let code = this.dataRender[index].PropertyCode;
+            let name = this.dataRender[index].PropertyName;
 
-            let code = this.dataRender[id].PropertyCode;
-            let name = this.dataRender[id].PropertyName;
+            this.textDialog = `${this.$_MISAResource['vn-VI'].confirm} <strong>${code}-${name}?</strong>`;
 
-            this.endText = `${code}-${name}?`;
-            this.textDialog = this.$_MISAResource['vn-VI'].confirm;
-
-            this.showDialog(
-                this.beginText,
-                this.textDialog,
-                this.endText,
-                this.$_MISAResource['vn-VI'].no,
-                '',
-                this.$_MISAResource['vn-VI'].delete,
-                this.closeDialog,
-                null,
-                () => this.deleteRows(this.idSelected),
-            );
+            this.showDialog(this.textDialog, [], {
+                firstBtnFunction: this.closeDialog,
+                firstDialogBtnText: this.$_MISAResource['vn-VI'].cancel,
+                thirdBtnFunction: () => this.deleteRows(id,index),
+                thirdDialogBtnText: this.$_MISAResource['vn-VI'].delete,
+            });
 
             this.isMultipleDelele = false;
         },
@@ -1116,9 +1118,8 @@ export default {
          * Xóa các hàng được chọn
          * Author: BATUAN (08/06/2023)
          */
-        async deleteRows(id) {
+        async deleteRows(id, index) {
             if (this.isMultipleDelele) {
-                console.log(this.selectedRow);
                 //Xóa các bản ghi
                 await instance
                     .delete(`Property`, { data: this.selectedRow })
@@ -1143,14 +1144,16 @@ export default {
                         this.$refs['checkbox-all'][0].isChecked = false;
                     })
                     .catch((err) => {
-                        console.log(err);
-                        this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog)
+                        this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                     });
             }
             // Xóa 1 bản ghi
             else {
+                console.log(index)
+                let row = [];
+                row.push(id)
                 await instance
-                    .delete(`Property/${id}`)
+                    .delete(`Property`, { data: row })
                     .then(async () => {
                         // Hiện toast message thông báo thành công
                         this.showToastSuccess('Xóa thành công');
@@ -1171,7 +1174,7 @@ export default {
                     })
                     .catch((err) => {
                         console.log(err);
-                        this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog)
+                        this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                     });
             }
         },
@@ -1357,10 +1360,14 @@ export default {
          * Hiển thị dialog thông báo
          * Author: BATUAN (29/06/2023)
          */
-        showDialog(textDialog, documentInfo, dialogActions = {
-            thirdDialogBtnText: "Đóng",
-            thirdBtnFunction: this.closeDialog
-        }) {
+        showDialog(
+            textDialog,
+            documentInfo,
+            dialogActions = {
+                thirdDialogBtnText: 'Đóng',
+                thirdBtnFunction: this.closeDialog,
+            },
+        ) {
             this.isShowModal = true;
             this.documentInfoDialog = documentInfo;
             this.textDialog = textDialog;
@@ -1380,6 +1387,21 @@ export default {
         },
         toggleMiniSetting() {
             this.isShowMiniSetting = !this.isShowMiniSetting;
+        },
+        /*
+         * Sự kiện Ctrl + F để tìm kiếm
+         * Author: BATUAN (24/08/2023)
+         */
+        handleSearchByKeyBoard(event) {
+            if (event.key === 'f') {
+                {
+                    if (event.ctrlKey) {
+                        this.$refs.inputSearch.$el.focus();
+                        // Ngăn chặn hành vi mặc định của trình duyệt khi nhấn Ctrl + F
+                        event.preventDefault();
+                    }
+                }
+            }
         },
     },
 };

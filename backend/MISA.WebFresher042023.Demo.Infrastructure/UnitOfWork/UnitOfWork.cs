@@ -2,14 +2,16 @@
 using MISA.WebFresher042023.Demo.Infrastructure.Interface;
 using MySqlConnector;
 using System.Data;
+using System.Data.Common;
+using System.Runtime.CompilerServices;
 
 namespace MISA.WebFresher042023.Demo.Infrastructure.UnitOfWork
 {
-    public class UnitOfWork : IUnitOfWork
+    public sealed class UnitOfWork : IUnitOfWork
     {
-        private IDbConnection _connection;
-        private IDbTransaction _transaction;
-        protected readonly string? _connectionString;
+        private readonly DbConnection _connection;
+        private DbTransaction? _transaction;
+        private readonly string? _connectionString;
 
         public UnitOfWork(IConfiguration configuration)
         {
@@ -17,37 +19,90 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.UnitOfWork
             _connection = new MySqlConnection(_connectionString);
         }
 
-        public IDbConnection Connection => _connection;
-        public IDbTransaction Transaction => _transaction;
+        public DbConnection Connection => _connection;
+
+        public DbTransaction? Transaction => _transaction;
 
         public void BeginTransaction()
         {
-            _connection.Open();
-            _transaction = _connection.BeginTransaction();
+            if (_connection.State == ConnectionState.Open)
+            {
+                _transaction = _connection.BeginTransaction();
+            }
+            else
+            {
+                _connection.Open();
+                _transaction = _connection.BeginTransaction();
+
+            }
+        }
+
+        public async Task BeginTransactionAsync()
+        {
+            if (_connection.State == GetOpen())
+            {
+                _transaction = await _connection.BeginTransactionAsync();
+            }
+            else
+            {
+                await _connection.OpenAsync();
+                _transaction = await _connection.BeginTransactionAsync();
+
+            }
+        }
+
+        private static ConnectionState GetOpen()
+        {
+            return System.Data.ConnectionState.Open;
         }
 
         public void Commit()
         {
-            _transaction.Commit();
-            _connection.Close();
+            _transaction?.Commit();
         }
 
-        public void Rollback()
+        public async Task CommitAsync()
         {
-            _transaction.Rollback();
-            _connection.Close();
+            if (_transaction != null)
+            {
+                await _transaction.CommitAsync();
+            }
+
+            await DisposeAsync();
         }
 
         public void Dispose()
         {
+            _transaction?.Dispose();
+            _transaction = null;
+
+            _connection.Close();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
             if (_transaction != null)
             {
-                _transaction.Dispose();
+                await _transaction.DisposeAsync();
             }
-            if (_connection != null)
+            _transaction = null;
+            await _connection.CloseAsync();
+        }
+
+        public void Rollback()
+        {
+            _transaction?.Rollback();
+            Dispose();
+        }
+
+        public async Task RollbackAsync()
+        {
+            if (_transaction != null)
             {
-                _connection.Dispose();
+                await _transaction.RollbackAsync();
             }
+            await DisposeAsync();
+
         }
     }
 }

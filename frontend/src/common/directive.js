@@ -57,7 +57,7 @@ const scrollOutside = {
         const onScrollOutside = binding.value;
         // Function để kiểm tra xem sự kiện click có diễn ra bên ngoài phần tử không
         el.onScrollHandler = event => {
-            if ((el !== event.target && !el.contains(event.target))) { // Gọi function truyền vào thông qua giá trị ràng buộc
+            if ((!el.contains(event.target))) { // Gọi function truyền vào thông qua giá trị ràng buộc
                 onScrollOutside();
             }
         };

@@ -89,7 +89,15 @@ namespace MISA.WebFresher042023.Demo.Controllers
             var result = await _propertyService.GetAutoIdAsync();
 
             return StatusCode(200, result);
-        } 
+        }
+        [HttpGet]
+        [Route("CurrentInfo")]
+        public async Task<ActionResult> GetCurrentInfo(int pageNumber, int pageSize, string? excludedIds)
+        {
+            var res = await _propertyService.GetCurrenPropertyInfo(pageNumber, pageSize, excludedIds);
+
+            return Ok(value: res);
+        }
         #endregion
     }
 }

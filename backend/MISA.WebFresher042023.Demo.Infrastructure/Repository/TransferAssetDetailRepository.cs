@@ -48,5 +48,17 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
 
             return (List<TransferAssetDetail>)result;
         }
+
+        public async Task<int> CountRecord(string listId)
+        {
+            DynamicParameters? parameters = new DynamicParameters();
+
+            parameters.Add("@listId", listId);
+
+            var result = await _unitOfWork.Connection.QueryFirstOrDefaultAsync<int>(
+                sql: "CALL Proc_TransferAssetDetail_CountRecord(@listId)", param: parameters);
+
+            return result;
+        }
     }
 }

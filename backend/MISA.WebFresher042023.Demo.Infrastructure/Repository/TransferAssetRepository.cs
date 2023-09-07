@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using MISA.WebFresher042023.Demo.Core.DtoReadonly;
 using MISA.WebFresher042023.Demo.Core.Entities;
 using MISA.WebFresher042023.Demo.Core.Interface.Repository;
 using MISA.WebFresher042023.Demo.Infrastructure.Interface;
@@ -32,6 +33,17 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
                 param: parameters);
             return result.ToList();
         }
+        /// <summary>
+        /// Lấy mã chứng từ điều chuyển lớn nhất
+        /// </summary>
+        /// <returns></returns>
+        public async Task<string> GetGreatestCode()
+        {
+            var greatestCode = await _unitOfWork.Connection.QueryFirstOrDefaultAsync<string>("CALL Proc_TransferAsset_GetGreatestCode()");
+            
+            return greatestCode;
+        }
+
 
         public async Task<List<TransferAsset>> GetByDetail(Guid transferAssetDetailId, Guid transferAssetId)
         {
@@ -69,15 +81,26 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
                 return new { Data = result, Total = total };
         }
 
-        public async Task<List<TransferAsset>> GetByPropertyId(Guid propertyId)
+        public async Task<List<TransferAssetPropertyReadonly>> GetByPropertyId(string listId)
         {
             DynamicParameters parameters = new DynamicParameters();
 
-            parameters.Add("@PropertyId", propertyId); 
+            parameters.Add("@ListId", listId); 
 
-            var res = await _unitOfWork.Connection.QueryAsync<TransferAsset>(sql: "CALL Proc_TransferAsset_GetByPropertyId(@PropertyId)", param: parameters, transaction: _unitOfWork.Transaction);
+            var res = await _unitOfWork.Connection.QueryAsync<TransferAssetPropertyReadonly>(sql: "CALL Proc_TransferAsset_GetByPropertyId(@ListId)", param: parameters, transaction: _unitOfWork.Transaction);
 
             return res.ToList();
+        }
+
+        public async Task<TransferAsset> GetTransferAssetByCodeAsync(string transferAssetCode)
+        {
+            DynamicParameters parameters = new DynamicParameters();
+
+            parameters.Add("@TransferAssetCode", transferAssetCode);
+
+            var res = await _unitOfWork.Connection.QueryFirstOrDefaultAsync<TransferAsset>(sql: "CALL Proc_TransferAsset_GetByCode(@TransferAssetCode)", param: parameters);
+
+            return res;
         }
     }
 }

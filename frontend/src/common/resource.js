@@ -321,6 +321,7 @@ const MISAResource = {
         notification: "Thông báo",
         setup: "Cài đặt",
         help: "Hỏi đáp",
+        chat: "Nhắn tin",
         profile: "Thông tin cá nhân",
         departmentOfFinance: "Sở tài chính",
         year: "Năm",

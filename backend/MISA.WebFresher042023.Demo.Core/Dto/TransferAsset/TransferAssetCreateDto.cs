@@ -15,7 +15,7 @@ namespace MISA.WebFresher042023.Demo.Core.Dto.Document
         public DateTime TransactionDate { get; set; }
         public decimal OriginalPrice { get; set; }
         public string? Note { get; set; }
-        public List<TransferAssetDetailCreateDto> TransferAssetDetailCreateList { get; set; }
-        public List<ReceiverCreateDto>? ReceiverCreateList { get; set; }
+        public List<TransferAssetDetailCreateDto> TransferAssetDetailList { get; set; }
+        public List<ReceiverCreateDto>? ReceiverList { get; set; }
     }
 }

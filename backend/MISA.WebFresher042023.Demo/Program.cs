@@ -59,6 +59,9 @@ builder.Services.AddScoped<ITransferAssetRepository, TransferAssetRepository>();
 builder.Services.AddScoped<ITransferAssetDetailService, TransferAssetDetailService>();
 builder.Services.AddScoped<ITransferAssetDetailRepository, TransferAssetDetailRepository>();
 
+builder.Services.AddScoped<IReceiverRepository, ReceiverRepository>();
+builder.Services.AddScoped<IReceiverService, ReceiverService>();
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 

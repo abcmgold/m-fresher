@@ -27,18 +27,20 @@ namespace MISA.WebFresher042023.Demo.Core.Service
         public virtual async Task<int> DeleteAsync(List<Guid> listId)
         {
             string concatenatedIds = string.Join(", ", listId);
+
             try
             {
-                _unitOfWork.BeginTransaction();
+                await _unitOfWork.BeginTransactionAsync();
 
                 var res = await _baseRepository.DeleteAsync(concatenatedIds);
 
-                _unitOfWork.Commit();
+                await _unitOfWork.CommitAsync();
+
                 return res;
             }
             catch (Exception)
             {
-                _unitOfWork.Rollback();
+                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }

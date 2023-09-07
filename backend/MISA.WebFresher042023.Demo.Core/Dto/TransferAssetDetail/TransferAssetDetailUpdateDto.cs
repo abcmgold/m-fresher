@@ -18,6 +18,6 @@ namespace MISA.WebFresher042023.Demo.Core.Dto.PropertyTransfer
         public Guid TransferAssetId { get; set; }
         public decimal OriginalPrice { get; set; }
         public string Reason { get; set; }
-        public StatusRecord StatusRerord { get; set; }
+        public StatusRecord StatusRecord { get; set; }
     }
 }

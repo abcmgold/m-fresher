@@ -207,12 +207,14 @@
     background: url(../../assets/icon/Icon-qlts.svg) no-repeat -242px -110px;
 	width: 20px;
 	height: 20px;
+    cursor: pointer;
 }
 
 .icon--comment{
     background: url(../../assets/icon/Icon-qlts.svg) no-repeat -154px -109px;
 	width: 20px;
 	height: 22px;
+    cursor: pointer;
 }
 
 .icon--arrow-down {
@@ -237,4 +239,10 @@
     background: url(../../assets/icon/qlts-icon.svg) no-repeat -332px -331px;
 	width: 17px;
 	height: 18px;
+}
+
+.icon--empty {
+    background: url(../../assets/icon/img-EmptyData.svg) no-repeat 0 0;
+	width: 183px;
+	height: 123px;
 }

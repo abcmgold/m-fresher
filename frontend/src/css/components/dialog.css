@@ -25,7 +25,6 @@
 
 .dialog__discription {
     display: flex;
-    align-items: center;
     padding: 36px 24px 12px 24px;
     column-gap: 12px;
 }
@@ -46,6 +45,7 @@
 }
 
 .dialog__discription--text {
+    line-height: 20px;
     min-width: 268px;
     word-wrap: break-word;
 }

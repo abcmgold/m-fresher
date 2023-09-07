@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http.Features;
 using MISA.WebFresher042023.Demo.Core.Dto.Property;
+using MISA.WebFresher042023.Demo.Core.DtoReadonly;
 using MISA.WebFresher042023.Demo.Core.Entities;
 using MISA.WebFresher042023.Demo.Core.HandleException;
 using MISA.WebFresher042023.Demo.Core.Interface.Repository;
@@ -26,18 +27,6 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             _propertyRepository = propertyRepository;
             _transferAssetRepository = transferAssetRepository;
             propertyManager = new PropertyManager(_propertyRepository, _transferAssetRepository);
-        }
-
-        public async Task<bool> CheckDuplicatePropertyCode(string propertyCode)
-        {
-            var res = await _propertyRepository.CheckDuplicatePropertyCode(propertyCode);
-
-            if (res != null)
-            {
-                throw new UserException(Resources.ResourceVN.DuplicateDepartmentCode, 409, "propertyCodeInput");
-            }
-
-            return true;
         }
 
         public async Task<Object> GetByPagingAsync(int pageNumber, int pageSize, string? searchInput, string? propertyType, string? departmentName, string? excludeIds)
@@ -149,29 +138,33 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
         public override async Task<int> DeleteAsync(List<Guid> propertyId)
         {
-            foreach(var id in propertyId)
-            {
-                await propertyManager.CheckExistInTransferAsset(id);
-            }
+            await propertyManager.CheckExistInTransferAsset(propertyId);
 
-            string concatenatedIds = string.Join(", ", propertyId);
+            string concatenatedIds = string.Join(separator: ", ", propertyId);
 
             try
             {
-                _unitOfWork.BeginTransaction();
+                await _unitOfWork.BeginTransactionAsync();
 
                 await _propertyRepository.DeleteAsync(concatenatedIds);
 
-                _unitOfWork.Commit();
+                await _unitOfWork.CommitAsync();
 
                 return 1;
             }
             catch (Exception)
             {
-                _unitOfWork.Rollback();
+                await _unitOfWork.RollbackAsync();
 
                 throw;
             }
+        }
+
+        public async Task<List<PropertyReadonly>> GetCurrenPropertyInfo(int pageNumber, int pageSize, string? excludedIds)
+        {
+            var res = await _propertyRepository.GetCurrenPropertyInfo(pageNumber, pageSize, excludedIds);
+
+            return res;
         }
     }
 }

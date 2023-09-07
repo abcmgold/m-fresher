@@ -1,4 +1,6 @@
 ﻿using MISA.WebFresher042023.Demo.Core.Dto.Property;
+using MISA.WebFresher042023.Demo.Core.DtoReadonly;
+using MISA.WebFresher042023.Demo.Core.Entities;
 
 namespace MISA.WebFresher042023.Demo.Core.Interface.Service
 {
@@ -21,11 +23,10 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Service
         Task<object> GetByPagingAsync(int pageNumber, int pageSize, string? searchInput, string? propertyType, string? departmentName, string? excludeIds);
 
         /// <summary>
-        /// Check mã code đã tồn tại trong db hay chưa ?
+        /// Lấy danh sách tài sản với phòng ban mới
         /// </summary>
-        /// <param name="propertyCode">Mã code của property</param>
-        /// <returns>true or false</returns>
-        /// CreatedBy: BATUAN (21/06/2023)
-        Task<bool> CheckDuplicatePropertyCode(string propertyCode);
+        /// <returns>Danh sách tài sản</returns>
+        /// CreatedBy: BATUAN (21/08/2023)
+        Task<List<PropertyReadonly>> GetCurrenPropertyInfo(int pageNumber, int pageSize, string? excludedIds);
     }
 }

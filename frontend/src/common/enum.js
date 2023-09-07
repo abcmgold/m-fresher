@@ -2,6 +2,7 @@ const ENUM = {
     maxLengthNumber: 18,
     maxLengthCode: 20,
     maxLengthText: 255,
+    maxLengthName: 100,
     
     formAdd: 1,
     formUpdate: 2,
@@ -14,6 +15,13 @@ const ENUM = {
         badRequest: 400,
         conflic: 409,
         serverError: 500
+    },
+
+    statusRecord: {
+        insert : 2,
+        update : 1,
+        noChange : 0,
+        delete : -1
     }
 };
 

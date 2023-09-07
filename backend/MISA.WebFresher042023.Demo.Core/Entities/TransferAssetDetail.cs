@@ -19,8 +19,12 @@ namespace MISA.WebFresher042023.Demo.Core.Entities
         public string DepartmentTransferName { get; set; }
         public Guid PropertyId { get; set; }
         public string PropertyName { get; set; }
+        public decimal? WearRateValue { get; set; }
+        public int? TotalRecords { get; set; }
+        public int? FollowYear { get; set; }
         public string PropertyCode { get; set; }
         public Guid TransferAssetId { get; set; }
         public string Reason { get; set; }
+        public decimal? ResidualPrice { get; set; }
     }
 }

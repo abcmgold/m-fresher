@@ -1,18 +1,22 @@
 <template>
-    <div class="property-tranfer--container">
+    <div class="property-tranfer--container" ref=container>
         <div class="tranfer__navbar">
             <div class="tranfer__navbar--left">
                 <div class="no-selected-document" v-if="!this.selectedRow.length">
                     Điều chuyển
-                    <button class="btn btn btn--noborder content__btn--reload">
-                        <div class="icon--reload"></div>
+                    <button class="btn btn btn--noborder content__btn--reload" @click="handleReload">
+                        <div
+                            class="icon--reload"
+                            :content="this.$_MISAResource['vn-VI'].reload"
+                            v-tippy="{ placement: 'top' }"
+                        ></div>
                     </button>
                 </div>
                 <div class="selected-document" v-if="this.selectedRow.length">
                     <div class="number-select">
                         Đã chọn: <strong>{{ this.selectedRow.length }}</strong>
                     </div>
-                    <m-button individualClass="btn--noborder" label="Bỏ chọn"></m-button>
+                    <m-button individualClass="btn--noborder" label="Bỏ chọn" @click="removeAllSelected"></m-button>
                     <m-button individualClass="btn--sub" label="Xóa" @click="deleteTransferAssets"></m-button>
                 </div>
             </div>
@@ -21,10 +25,18 @@
                     :label="this.$_MISAResource['vn-VI'].addDocument"
                     :individualClass="'btn--primary'"
                     icon="icon--add"
-                    @click="this.showTransferForm"
+                    @click="() => this.showTransferForm(this.$_MISAEnum.formAdd)"
                 ></m-button>
-                <div class="icon--question"></div>
-                <div class="icon--comment"></div>
+                <div
+                    class="icon--question"
+                    :content="this.$_MISAResource['vn-VI'].help"
+                    v-tippy="{ placement: 'bottom' }"
+                ></div>
+                <div
+                    class="icon--comment"
+                    :content="this.$_MISAResource['vn-VI'].chat"
+                    v-tippy="{ placement: 'bottom' }"
+                ></div>
             </div>
         </div>
         <div class="tranfer__content" :class="{ 'hidden-detail': !this.isShowDetailDocument }">
@@ -78,27 +90,35 @@
                             ></m-checkbox>
                         </div>
                         <div class="text-align-center cell--item" style="width: 50px">{{ index + 1 }}</div>
-                        <div class="text-align-left cell--item" style="width: 150px">{{ data.TransferAssetCode }}</div>
-                        <div class="text-align-center cell--item" style="width: 200px">
-                            {{ this.formatedCurrentDate(data.TransactionDate) }}
+                        <div class="text-align-left cell--item" style="width: 150px">
+                            <div class="text--surround">{{ data.TransferAssetCode }}</div>
                         </div>
                         <div class="text-align-center cell--item" style="width: 200px">
-                            {{ this.formatedCurrentDate(data.TransferDate) }}
+                            <div class="text--surround">{{ this.formatedCurrentDate(data.TransactionDate) }}</div>
+                        </div>
+                        <div class="text-align-center cell--item" style="width: 200px">
+                            <div class="text--surround">{{ this.formatedCurrentDate(data.TransferDate) }}</div>
                         </div>
                         <div class="text-align-right cell--item" style="width: 150px">
-                            {{ this.formatedMoney(data.OriginalPrice) }}
+                            <div class="text--surround">{{ this.formatedMoney(data.OriginalPrice) }}</div>
                         </div>
                         <div class="text-align-right cell--item" style="width: 150px">
-                            {{ this.formatedMoney(data.ResidualPrice) }}
+                            <div class="text--surround">{{ this.formatedMoney(data.ResidualPrice) }}</div>
                         </div>
                         <div class="text-align-left cell--item" style="flex: 1">
-                            {{ data.Note }}
+                            <div class="text--surround">{{ data.Note }}</div>
                         </div>
-                        <div class="table-list-icons cell--item" style="width: 113px">
+                        <div class="table-list-icons cell--item" style="width: 120px">
                             <div
                                 v-tippy="$_MISAResource['vn-VI'].edit"
                                 class="table--icon table--icon-pencil"
-                                @click="this.showDetail(index, data.id)"
+                                @click.stop
+                                @click="
+                                    async () => {
+                                        await this.getTransferAssetDetail(data.TransferAssetId);
+                                        this.showTransferForm(this.$_MISAEnum.formUpdate);
+                                    }
+                                "
                             ></div>
                             <div
                                 v-tippy="$_MISAResource['vn-VI'].delete"
@@ -119,7 +139,7 @@
                         {{ this.formatedMoney(this.totalPrice) }}
                     </div>
                     <div style="width: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
-                        {{ this.formatedMoney(this.totalPrice) }}
+                        {{ this.formatedMoney(this.totalResidualPrice) }}
                     </div>
                     <div style="flex: 1" class="text-align-right"></div>
                     <div style="width: 120px; font-weight: bold; padding: 0px 16px" class="text-align-right"></div>
@@ -129,11 +149,15 @@
                 <m-pagination
                     :dataSelect="this.numberOfRecordsPerPage"
                     :numberPages="this.pageNumberDocument * 10"
-                    @changeCurrentPageDocument="changeCurrentPageDocument"
+                    @changeCurrentPage="changeCurrentPageDocument"
                     :pageSize="this.pageSizeDocument"
                     :totalRecords="this.totalRecordDocuments"
-                    @changePageSizeDocument="changePageSizeDocument"
+                    @changePageSize="changePageSizeDocument"
                 ></m-pagination>
+            </div>
+            <div v-if="this.transferAssetList.length == 0" class="table__content--empty">
+                <div class="icon--empty"></div>
+
             </div>
             <div v-if="this.isLoadingDataDocument" class="grid-loading-container">
                 <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
@@ -162,10 +186,10 @@
                     <div class="detail__label">Thông tin chi tiết</div>
                 </div>
                 <div class="detail__header--right">
-                    <div class="detail_hidden__icon" v-if="this.isShowDetailDocument" @click="tougleDetailDocument">
+                    <div class="detail_hidden__icon" v-if="this.isShowDetailDocument" @click="toggleDetailDocument">
                         <div class="icon--arrow-down"></div>
                     </div>
-                    <div class="detail_show__icon" v-if="!this.isShowDetailDocument" @click="tougleDetailDocument">
+                    <div class="detail_show__icon" v-if="!this.isShowDetailDocument" @click="toggleDetailDocument">
                         <div class="icon--arrow-up"></div>
                     </div>
                 </div>
@@ -200,25 +224,27 @@
                         >
                             <div class="text-align-center cell--item" style="width: 50px">{{ index + 1 }}</div>
                             <div class="text-align-left cell--item" style="width: 120px">
-                                {{ data.PropertyCode }}
+                                <div class="text--surround">{{ data.PropertyCode }}</div>
                             </div>
                             <div class="text-align-left cell--item" style="width: 120px">
-                                {{ data.PropertyName }}
+                                <div class="text--surround">{{ data.PropertyName }}</div>
                             </div>
                             <div class="text-align-right cell--item" style="width: 120px">
-                                {{ this.formatedMoney(data.OriginalPrice) }}
+                                <div class="text--surround">{{ this.formatedMoney(data.OriginalPrice) }}</div>
                             </div>
                             <div class="text-align-right cell--item" style="width: 120px">
-                                {{ data.ResidualPrice }}
+                                <div class="text--surround">
+                                    {{ this.formatedMoney(this.caculateResidualPrice(data)) }}
+                                </div>
                             </div>
                             <div class="text-align-left cell--item" style="width: 180px">
-                                {{ data.DepartmentName }}
+                                <div class="text--surround">{{ data.DepartmentName }}</div>
                             </div>
                             <div class="text-align-left cell--item" style="width: 200px">
-                                {{ data.DepartmentTransferName }}
+                                <div class="text--surround">{{ data.DepartmentTransferName }}</div>
                             </div>
                             <div class="text-align-left cell--item" style="flex: 1">
-                                {{ data.Reason }}
+                                <div class="text--surround">{{ data.Reason }}</div>
                             </div>
                         </div>
                     </div>
@@ -245,31 +271,42 @@
             <div class="table__paging paging" v-if="this.isShowDetailDocument">
                 <m-pagination
                     :dataSelect="this.numberOfRecordsPerPage"
-                    :numberPages="this.pageNumberDocument * 10"
-                    @changeCurrentPageDocument="changeCurrentPageDocument"
+                    :numberPages="this.pageNumbersDetail * 10"
+                    @changeCurrentPage="changeCurrentPageDetail"
                     :pageSize="this.pageSizeDocument"
-                    :totalRecords="this.totalRecordDocuments"
-                    @changePageSizeDocument="changePageSizeDocument"
+                    :totalRecords="this.totalRecordDetail"
+                    @changePageSize="changePageSizeDetail"
                 ></m-pagination>
             </div>
         </div>
     </div>
-    <PropertyTransferForm v-if="this.isShowTransferForm" @hideTransferForm="hideTransferForm"></PropertyTransferForm>
+    <PropertyTransferForm
+        v-if="this.isShowTransferForm"
+        :formMode="this.formMode"
+        :transferAssetProps="this.transferAsset"
+        @hideTransferForm="hideTransferForm"
+        @showToastSuccess="showToastSuccess"
+        @createdNewTransferAsset="createdNewTransferAsset"
+        @updateTransferAsset="updateTransferAsset"
+    ></PropertyTransferForm>
     <m-modal v-if="this.isShowDialog">
         <m-dialog
             :type="this.typeDialog"
             :text="this.textDialog"
             :status="this.statusDialog"
             :documentInfo="this.documentInfoDialog"
-            :firstBtnFunction="this.firstBtnFunction"
-            :secondBtnFunction="this.secondBtnFunction"
-            :thirdBtnFunction="this.thirdBtnFunction"
-            :firstBtnLabel="this.firstDialogBtnText"
-            :secondBtnLabel="this.secondDialogBtnText"
-            :thirdBtnLabel="this.thirdDialogBtnText"
             :dialogActions="this.dialogActions"
         ></m-dialog>
     </m-modal>
+    <m-toast :label="this.labelToastSuccess" icon="icon--success" v-if="isShowToastSuccess"></m-toast>
+    <m-toast :label="this.labelToastError" icon="icon--error" v-if="isShowToastError"></m-toast>
+    <m-context-menu
+        @showDetail="this.showDetail(this.indexSelected, this.idSelected)"
+        @showDuplicate="this.showDuplicate(this.indexSelected, this.idSelected)"
+        @deleteOneRow="this.deleteOneRow(this.idSelected, this.indexSelected)"
+        :position="this.contextMenuPosition"
+        :isShowContext="!this.$store.getters.getIsShowContextMenu"
+    ></m-context-menu>
 </template>
 
 <script scoped>
@@ -286,6 +323,13 @@ export default {
     },
     data() {
         return {
+            totalRecordDocuments: 0,
+            totalRecordDetail: 0,
+            pageNumbersDetail: 0,
+            labelToastSuccess: '',
+            labelToastError: '',
+            isShowToastSuccess: false,
+            isShowToastError: false,
             listHeaderTranfer: this.$_MISAResource['vn-VI'].listHeaderTranfer,
             listHeaderDetailTranfer: this.$_MISAResource['vn-VI'].listHeaderDetailTranfer,
             transferAssetList: [],
@@ -320,27 +364,57 @@ export default {
             ],
             pageNumberDocument: 0,
             totalPrice: 0,
+            totalResidualPrice: 0,
             isLoadingDataDocument: false,
             isLoadingDataDetail: false,
             isShowDialog: false,
             textDialog: '',
             documentInfoDialog: [],
             dialogActions: {},
+            formMode: -1,
+            transferAsset: null,
         };
     },
-    watch: {},
+    watch: {
+        detailDocumentPage: async function () {
+            await this.getDetailDocument();
+        },
+        detailDocumentPageSize: async function () {
+            await this.getDetailDocument();
+        },
+        currentPageDocument: async function () {
+            await this.getDocumentByPaging();
+        },
+        pageSizeDocument: async function () {
+            await this.getDocumentByPaging();
+        },
+    },
     async created() {
-        this.clickIndex = 0;
-
         await this.getDocumentByPaging();
 
         this.pageNumberDocument = Math.ceil(this.totalRecordDocuments / this.pageSizeDocument);
 
-        if (this.transferAssetList.length > 0) {
-            await this.getDetailDocument();
-        }
+        await this.handleGetDetailDocument(0);
     },
     methods: {
+        /*
+         * Lấy danh sách chi tiết của các chứng từ
+         * Author: BATUAN (07/06/2023)
+         */
+        async getTransferAssetDetail(id) {
+            await request
+                .getRecord(`TransferAsset/GetInfo?transferAssetId=${id}`)
+                .then((res) => {
+                    this.transferAsset = res.data;
+                })
+                .catch((err) => {
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                });
+        },
+        /*
+         * Gọi api lấy danh sách chứng từ
+         * Author: BATUAN (07/06/2023)
+         */
         async getDocumentByPaging() {
             this.isLoadingDataDocument = true;
             await request
@@ -356,11 +430,15 @@ export default {
                     this.totalRecordDocuments = response.data.Total[0].NumberRecords;
                     // lưu giá trị tổng số
                     this.totalPrice = response.data.Total[0].TotalPrice;
+                    if (response.data.Data.length > 0) {
+                        this.totalResidualPrice = response.data.Data[0].TotalResidualPrice;
+                    }
+
                     await delay(500);
                     this.isLoadingDataDocument = false;
                 })
                 .catch((err) => {
-                    this.handleException(err.statusCode, err.message,'', this.showDialog);
+                    this.handleException(err.statusCode, err.message, '', this.showDialog);
                 });
         },
         /*
@@ -380,20 +458,34 @@ export default {
                     await delay(500);
                     this.isLoadingDataDetail = false;
                     this.transferAssetDetailList = response.data;
+                    this.totalRecordDetail = this.transferAssetDetailList[0].TotalRecords;
+                    this.pageNumbersDetail = Math.ceil(this.totalRecordDetail / this.detailDocumentPageSize);
                 })
                 .catch((err) => {
                     // this.handleException(err.statusCode, err.message, this.showDialog);
                     console.log(err);
                 });
         },
-        tougleDetailDocument() {
+        /*
+         * Ẩn / hiện detail
+         * Author: BATUAN (07/06/2023)
+         */
+        toggleDetailDocument() {
             this.isShowDetailDocument = !this.isShowDetailDocument;
         },
+        /*
+         * Sự kiện liên quan đến resize kích thước bảng master/detail
+         * Author: BATUAN (07/06/2023)
+         */
         startResize() {
             if (!this.holdingDetail) {
                 this.resizingDetail = true;
             }
         },
+        /*
+         * Sự kiện liên quan đến resize kích thước bảng master/detail
+         * Author: BATUAN (07/06/2023)
+         */
         stopResize() {
             if (this.holdingDetail) {
                 this.resizingDetail = false;
@@ -402,6 +494,10 @@ export default {
                 window.removeEventListener('mouseup', this.stopResize);
             }
         },
+        /*
+         * Sự kiện liên quan đến resize kích thước bảng master/detail
+         * Author: BATUAN (07/06/2023)
+         */
         mousedownHandler(event) {
             if (this.resizingDetail) {
                 this.holdingDetail = true;
@@ -410,7 +506,10 @@ export default {
                 window.addEventListener('mouseup', this.stopResize);
             }
         },
-        // Trong method mousemoveHandler
+        /*
+         * Sự kiện liên quan đến resize kích thước bảng master/detail
+         * Author: BATUAN (07/06/2023)
+         */
         mousemoveHandler(event) {
             if (this.holdingDetail) {
                 const deltaY = event.clientY - this.startMousePositionY;
@@ -427,18 +526,39 @@ export default {
                 }
             }
         },
-        showTransferForm() {
+        /*
+         * Hiển thị form chọn tài sản
+         * Author: BATUAN (07/06/2023)
+         */
+        showTransferForm(mode) {
             this.isShowTransferForm = true;
+            this.formMode = mode;
         },
+        /*
+         * Ẩn form chọn tài sản
+         * Author: BATUAN (07/06/2023)
+         */
         hideTransferForm() {
             this.isShowTransferForm = false;
         },
+        /*
+         * Sự kiện liên quan đến click vào hàng trong table
+         * Author: BATUAN (07/06/2023)
+         */
         async handleClickOnRow(index) {
             this.firstClickRow = index;
 
+            await this.handleGetDetailDocument(index);
+        },
+        /*
+         * Lấy lại dữ liệu của detail khi click vào master
+         * Author: BATUAN (12/06/2023)
+         */
+        async handleGetDetailDocument(index) {
             this.clickIndex = index;
-
-            await this.getDetailDocument();
+            if (this.transferAssetList.length > 0) {
+                await this.getDetailDocument();
+            }
         },
         /*
          * Sự kiện click vào hàng của table
@@ -451,7 +571,7 @@ export default {
             }
             // Sự kiện Ctrl + Click
             if (event.ctrlKey) {
-                if (!this.selectedRow.some(transfer => transfer.TransferAssetId == id)) {
+                if (!this.selectedRow.some((transfer) => transfer.TransferAssetId == id)) {
                     this.selectedRow.push(this.transferAssetList[index]);
                 } else {
                     this.selectedRow = this.selectedRow.filter((row) => {
@@ -494,7 +614,7 @@ export default {
          */
         isSelected(transfer) {
             if (this.selectedRow) {
-                return this.selectedRow.some(trans => trans.TransferAssetId == transfer.TransferAssetId);
+                return this.selectedRow.some((trans) => trans.TransferAssetId == transfer.TransferAssetId);
             }
             return false;
         },
@@ -517,15 +637,25 @@ export default {
                 this.$refs['checkbox-all'][0].isChecked = false;
             }
         },
+        /*
+         * Sự kiện liên quan kiểm tra 1 hàng có đang được check không
+         * Author: BATUAN (07/06/2023)
+         */
         checkForCheckbox() {
             for (let i = 0; i < this.transferAssetList.length; i++) {
-                if (this.selectedRow.some((item) => item.TransferAssetId == this.transferAssetList[i].TransferAssetId)) {
+                if (
+                    this.selectedRow.some((item) => item.TransferAssetId == this.transferAssetList[i].TransferAssetId)
+                ) {
                     this.$refs[`checkbox-${this.transferAssetList[i].TransferAssetId}`][0].isChecked = true;
                 } else {
                     this.$refs[`checkbox-${this.transferAssetList[i].TransferAssetId}`][0].isChecked = false;
                 }
             }
         },
+        /*
+         * Sự kiện click vào ô checkbox
+         * Author: BATUAN (07/06/2023)
+         */
         clickOnCheckbox(index, id) {
             if (this.$refs[`checkbox-${id}`][0].isChecked) {
                 this.selectedRow = this.selectedRow.filter((item) => {
@@ -537,6 +667,10 @@ export default {
             this.checkForCheckbox();
             this.checkFullChecked();
         },
+        /*
+         * Sự kiện click vào ô checkbox all
+         * Author: BATUAN (07/06/2023)
+         */
         clickOnCheckBoxAll() {
             if (this.$refs['checkbox-all'][0].isChecked) {
                 this.$refs['checkbox-all'][0].isChecked = false;
@@ -551,7 +685,11 @@ export default {
                 this.checkForCheckbox();
             } else if (!this.$refs['checkbox-all'][0].isChecked) {
                 for (let i = 0; i < this.transferAssetList.length; i++) {
-                    if (!this.selectedRow.some((item) => item.TransferAssetId == this.transferAssetList[i].TransferAssetId)) {
+                    if (
+                        !this.selectedRow.some(
+                            (item) => item.TransferAssetId == this.transferAssetList[i].TransferAssetId,
+                        )
+                    ) {
                         this.selectedRow.push(this.transferAssetList[i]);
                     }
                 }
@@ -609,68 +747,176 @@ export default {
          * Author: BATUAN (29/08/2023)
          */
         deleteTransferAsset(index, id) {
-            this.showDialog(`Bạn có muốn xóa chứng từ <strong>${this.transferAssetList[index].TransferAssetCode}</strong> không?`, '', {
-                firstDialogBtnText: 'Hủy',
-                firstBtnFunction: this.hideDialog,
-                thirdDialogBtnText: 'Xóa',
-                thirdBtnFunction: () => this.deleteRecord(id),
-            })
+            this.showDialog(
+                `Bạn có muốn xóa chứng từ <strong>${this.transferAssetList[index].TransferAssetCode}</strong> không?`,
+                '',
+                {
+                    firstDialogBtnText: 'Hủy',
+                    firstBtnFunction: this.hideDialog,
+                    thirdDialogBtnText: 'Xóa',
+                    thirdBtnFunction: () => this.deleteRecord(id),
+                },
+            );
         },
         /*
          * Sự kiện khi click vào ô button xóa nhiều khi chọn vào các bản ghi
          * Author: BATUAN (29/08/2023)
-        */
+         */
         deleteTransferAssets() {
             if (this.selectedRow.length == 1) {
-                this.showDialog(`Bạn có muốn xóa chứng từ <strong>${this.selectedRow[0].TransferAssetCode}</strong> không?`, '', {
-                firstDialogBtnText: 'Hủy',
-                firstBtnFunction: this.hideDialog,
-                thirdDialogBtnText: 'Xóa',
-                thirdBtnFunction: this.deleteRecords,
-                })
+                this.showDialog(
+                    `Bạn có muốn xóa chứng từ <strong>${this.selectedRow[0].TransferAssetCode}</strong> không?`,
+                    '',
+                    {
+                        firstDialogBtnText: 'Hủy',
+                        firstBtnFunction: this.hideDialog,
+                        thirdDialogBtnText: 'Xóa',
+                        thirdBtnFunction: this.deleteRecords,
+                    },
+                );
+            } else {
+                this.showDialog(
+                    `<strong>${this.selectedRow.length}</strong> chứng từ đã được chọn, bạn có muốn xóa các chứng từ này không ?`,
+                    '',
+                    {
+                        firstDialogBtnText: 'Hủy',
+                        firstBtnFunction: this.hideDialog,
+                        thirdDialogBtnText: 'Xóa',
+                        thirdBtnFunction: this.deleteRecords,
+                    },
+                );
             }
-            else {
-                this.showDialog(`<strong>${this.selectedRow.length}</strong> chứng từ đã được chọn, bạn có muốn xóa các chứng từ này không ?`, '', {
-                firstDialogBtnText: 'Hủy',
-                firstBtnFunction: this.hideDialog,
-                thirdDialogBtnText: 'Xóa',
-                thirdBtnFunction: this.deleteRecords,
-                })
-            }
-           
         },
         /*
          * Hàm gọi api xóa chứng từ khi xóa nhiều
          * Author: BATUAN (29/08/2023)
-        */
+         */
         async deleteRecords() {
-            let listId = []
-            this.selectedRow.forEach(row => {
+            let listId = [];
+            this.selectedRow.forEach((row) => {
                 listId.push(row.TransferAssetId);
-            })
-            await request.deleteRecord('TransferAsset', {data: listId})
-            .then(res => {
-                console.log(res)
-            })
-            .catch(err => {
-                this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
-            })
-        }, 
+            });
+            await request
+                .deleteRecord('TransferAsset', { data: listId })
+                .then(() => {
+                    this.showToastSuccess('Xóa thành công');
+                    this.hideDialog();
+                    this.getDocumentByPaging();
+                    this.selectedRow = [];
+                })
+                .catch((err) => {
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                });
+        },
         /*
          * Hàm gọi api xóa chứng từ khi click vào ô xóa ở mỗi hàng
          * Author: BATUAN (29/08/2023)
-        */
+         */
         async deleteRecord(id) {
-            let listId = []
-            listId.push(id)
-            await request.deleteRecord('TransferAsset', {data: listId})
-            .then(res => {
-                console.log(res)
-            })
-            .catch(err => {
-                this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
-            })
-        }, 
+            let listId = [];
+            listId.push(id);
+            await request
+                .deleteRecord('TransferAsset', { data: listId })
+                .then(async () => {
+                    this.showToastSuccess('Xóa thành công');
+                    this.hideDialog();
+                    this.getDocumentByPaging();
+                    this.selectedRow = [];
+                })
+                .catch((err) => {
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                });
+        },
+        /*
+         * Show toast hiển thị thành công
+         * Author: BATUAN (27/05/2023)
+         */
+        showToastSuccess(label) {
+            this.isShowToastSuccess = true;
+            this.labelToastSuccess = label;
+            // Ẩn sau 3s
+            setTimeout(() => {
+                this.isShowToastSuccess = false;
+            }, 3000);
+        },
+        /*
+         * Gọi api tạo mới chứng từ điều chuyển
+         * Author: BATUAN (27/08/2023)
+         */
+        async createdNewTransferAsset(transferAsset) {
+            this.$store.commit('toggleMaskElementShow');
+            await request
+                .insertRecord('TransferAsset/Insert', transferAsset)
+                .then(async () => {
+                    await delay(200);
+                    this.$store.commit('toggleMaskElementShow');
+                    this.showToastSuccess('Thêm chứng từ thành công');
+                    this.hideTransferForm();
+                    await this.getDocumentByPaging();
+                    await this.handleGetDetailDocument(0);
+                })
+                .catch(async (err) => {
+                    await delay(200);
+                    this.$store.commit('toggleMaskElementShow');
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                });
+        },
+        /*
+         * Gọi api update chứng từ điều chuyển
+         * Author: BATUAN (27/08/2023)
+         */
+        async updateTransferAsset(transferAsset) {
+            this.$store.commit('toggleMaskElementShow');
+            await request
+                .updateRecord('TransferAsset', transferAsset)
+                .then(async () => {
+                    await delay(200);
+                    this.$store.commit('toggleMaskElementShow');
+                    this.showToastSuccess('Chỉnh sửa chứng từ thành công');
+                    this.hideTransferForm();
+                    await this.getDocumentByPaging();
+                    await this.handleGetDetailDocument(0);
+                })
+                .catch(async (err) => {
+                    await delay(200);
+                    this.$store.commit('toggleMaskElementShow');
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                });
+        },
+        /*
+         * Bỏ chọn hết các ô checkbox
+         * Author: BATUAN (27/08/2023)
+         */
+        removeAllSelected() {
+            this.selectedRow = [];
+            this.checkFullChecked();
+            this.checkForCheckbox();
+        },
+        /*
+         * Tính toán giá trị còn lại của các tài sản
+         * Author: BATUAN (30/08/2023)
+         */
+        caculateResidualPrice(property) {
+            const currentDate = new Date();
+            return property.OriginalPrice - (currentDate.getFullYear() - property.FollowYear) * property.WearRateValue;
+        },
+        async changeCurrentPageDetail(newPage) {
+            this.detailDocumentPage = newPage;
+        },
+        async changePageSizeDetail(newPageSize) {
+            this.detailDocumentPageSize = newPageSize;
+        },
+        async changeCurrentPageDocument(newPage) {
+            this.currentPageDocument = newPage;
+        },
+        async changePageSizeDocument(newPageSize) {
+            this.pageSizeDocument = newPageSize;
+        },
+        async handleReload() {
+            await this.getDocumentByPaging();
+
+            await this.handleGetDetailDocument(0);
+        }
     },
 };
 </script>

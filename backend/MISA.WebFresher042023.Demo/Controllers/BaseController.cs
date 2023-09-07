@@ -90,7 +90,7 @@ namespace MISA.WebFresher042023.Demo.Controllers
         /// CreatedBy: BATUAN (14/06/2023)
         // PUT api/<PropertiesController>/5
         [HttpPut]
-        public async Task<ActionResult> Update(List<TEntityUpdateDto> property)
+        public virtual async Task<ActionResult> Update(List<TEntityUpdateDto> property)
         {
             var res = await _baseService.UpdateAsync(property);
 
