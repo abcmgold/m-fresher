@@ -7,6 +7,7 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Service
     /// <summary>
     /// Inteface làm việc với controller của property
     /// </summary>
+    /// CreatedBy: BATUAN (30/06/2023)
     public interface IPropertyService : IBaseService<PropertyDto, PropertyUpdateDto, PropertyCreateDto>
     {  
         /// <summary>

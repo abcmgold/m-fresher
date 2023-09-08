@@ -199,6 +199,7 @@ export default {
     name: 'ChoosenForm',
     props: {
         excludedIds: Array,
+        listTemporaryDelete: Array
     },
     emits: ['hideChoosenForm', 'updateListSelectedProperty'],
     data() {
@@ -247,7 +248,9 @@ export default {
         this.$refs.modal.$el.focus()
     }, 
     unmounted() {
-        this.$parent.$refs.container.focus()
+        if (this.$parent) {
+            this.$parent.$refs.container.focus()
+        }
     },
     watch: {
         pageSize: function (newValue) {
@@ -305,6 +308,17 @@ export default {
                     this.totalOriginalPrice = res.data[0].TotalPrice;
                     this.totalResidualPrice = res.data[0].TotalResidualPrice;
                     this.pageNumber = Math.ceil(this.totalRecords / this.pageSize);
+                    if (this.listTemporaryDelete && this.listTemporaryDelete.length > 0) {
+                        for (let i = 0; i < this.listProperty.length; i++) {
+                            for (let j = 0; j  < this.listTemporaryDelete.length; j++) {
+                                if (this.listTemporaryDelete[j].PropertyId == this.listProperty[i].PropertyId) {
+                                    this.listProperty[i].DepartmentTransferId = this.listTemporaryDelete[j].DepartmentId
+                                    this.listProperty[i].DepartmentTransferName = this.listTemporaryDelete[j].DepartmentName
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 })
                 .catch((err) => {
                     console.log(err);
@@ -581,10 +595,6 @@ export default {
         caculateResidualPrice(property) {
             const currentDate = new Date();
             return property.OriginalPrice - (currentDate.getFullYear() - property.FollowYear) * property.WearRateValue;
-        },
-
-        eventPressEsc(event) {
-            console.log(event);
         },
     },
 };

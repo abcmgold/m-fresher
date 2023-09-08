@@ -2,12 +2,6 @@
 using MISA.WebFresher042023.Demo.Core.Entities;
 using MISA.WebFresher042023.Demo.Core.HandleException;
 using MISA.WebFresher042023.Demo.Core.Interface.Repository;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MISA.WebFresher042023.Demo.Core.Manager
 {
@@ -23,18 +17,31 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
             _transferAssetDetailRepository = transferAssetDetailRepository;
             _transferAssetRepository = transferAssetRepository;
         }
-
-        public void CheckListDeparment(List<TransferAssetDetailUpdateDto> transferAssetDetaiList)
+        /// <summary>
+        /// Kiểm tra xem các tài sản điều chuyển có tài sản nào có bộ phận mới và cũ trùng nhau không
+        /// </summary>
+        /// <param name="transferAssetDetaiList">Danh sách tài sản điều chuyển</param>
+        /// <exception cref="UserException"></exception>
+        /// CreateBy: BATUAN (30/08/2023)
+        public void CheckListDeparment(List<TransferAssetDetail> transferAssetDetaiList)
         {
             foreach (var transferAsset in transferAssetDetaiList)
             {
                 if (transferAsset.DepartmentTransferId == transferAsset.DepartmentId)
                 {
-                    throw new UserException("Bộ phận chuyển đi phải khác bộ phận hiện tại", 400);
+                    throw new UserException(Resources.ResourceVN.DiffirentDepartment, (int)Enum.StatusCode.BadRequest);
                 }
             }
         }
 
+        /// <summary>
+        /// Check danh sách tài sản điều chuyển được update và xóa có tài sản nào không tồn tại hay không
+        /// </summary>
+        /// <param name="listUpdate">Danh sách update</param>
+        /// <param name="listDelete">Danh sách xóa</param>
+        /// <returns></returns>
+        /// <exception cref="UserException"></exception>
+        /// CreateBy: BATUAN (30/08/2023)
         public async Task CheckExistTransferAssetDetail(List<TransferAssetDetailUpdateDto> listUpdate, List<TransferAssetDetailUpdateDto> listDelete)
         {
             var listId = new List<Guid>();
@@ -51,7 +58,7 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
 
             if (numberRecord != listId.Count)
             {
-                throw new UserException("Danh sách tài sản điều chuyển tồn tại tài sản điều chuyển không có trong hệ thống !", 400);
+                throw new UserException(Resources.ResourceVN.NotExistTransferAssetDetail, (int)Enum.StatusCode.BadRequest);
             }
         }
     }

@@ -11,6 +11,8 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
     /// <summary>
     /// Lớp trừu tượng của tài sản điều chuyển
     /// </summary>
+    /// CreatedBy: BATUAN (30/08/2023)
+
     public interface ITransferAssetRepository : IBaseRepository<TransferAsset>
     {
         /// <summary>
@@ -39,22 +41,32 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
         /// <summary>
         /// Danh sách các chứng từ dựa theo Id của chứng từ và thời gian chứng từ
         /// </summary>
-        /// <param name="propertyId"></param>
-        /// <param name="transactionDate"></param>
-        /// <returns>Trả về danh sách các bản ghi có chứa tài sản điều chuyển theo id và có thời gian chứng từ lớn hơn TransactionDate</returns>
+        /// <param name="propertyId">Id tài sản</param>
+        /// <param name="transferDate">Ngày chứng từ</param>
+        /// <returns>Trả về danh sách các bản ghi có chứa tài sản điều chuyển theo id và có thời gian điều chuyển lớn hơn TransferDate</returns>
         /// CreatedBy: BATUAN (30/08/2023)
-        Task<List<TransferAsset>> CheckExist(Guid propertyId, DateTime transactionDate);
+        Task<List<TransferAsset>> CheckExist(Guid propertyId, DateTime transferDate);
         /// <summary>
         /// Lấy ra chứng từ điều chuyển thông qua mã code
         /// </summary>
         /// <param name="transferAssetCode">Mã code của chứng từ</param>
         /// <returns>Chứng từ điều chuyển</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         Task<TransferAsset> GetTransferAssetByCodeAsync(string transferAssetCode);
         /// <summary>
         /// Sinh mã code tự động cho chứng từ điều chuyển
         /// </summary>
         /// <returns>Chuỗi mã chứng từ mới</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         Task<string> GetGreatestCode();
+        /// <summary>
+        /// Kiểm tra xem có tồn tại chứng từ nào có thời gian điều chuyển lớn hơn transferDate hay không
+        /// </summary>
+        /// <param name="transferDate">Thời gian điều chuyển</param>
+        /// <returns>0: Không tồn tại|| 1: Tồn tại</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
+        public Task<int> CheckGreaterTransferDate(DateTime transferDate);
+
     }
 
 }

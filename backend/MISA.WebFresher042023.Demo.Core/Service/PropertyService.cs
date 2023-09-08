@@ -29,7 +29,7 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             propertyManager = new PropertyManager(_propertyRepository, _transferAssetRepository);
         }
 
-        public async Task<Object> GetByPagingAsync(int pageNumber, int pageSize, string? searchInput, string? propertyType, string? departmentName, string? excludeIds)
+        public async Task<object> GetByPagingAsync(int pageNumber, int pageSize, string? searchInput, string? propertyType, string? departmentName, string? excludeIds)
         {
             var property = await _propertyRepository.GetByPagingAsync(pageNumber, pageSize, searchInput, propertyType, departmentName, excludeIds);
 
@@ -87,7 +87,7 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
             if (checkMajor != null)
             {
-                throw new UserException(checkMajor.Error, 400, checkMajor.ErrorField);
+                throw new UserException(checkMajor.Error, (int)Enum.StatusCode.BadRequest, checkMajor.ErrorField);
 
             }
 
@@ -126,7 +126,7 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
             if (checkMajor != null)
             {
-                throw new UserException(checkMajor.Error, 400, checkMajor.ErrorField);
+                throw new UserException(checkMajor.Error, (int)Enum.StatusCode.BadRequest, checkMajor.ErrorField);
 
             }
 

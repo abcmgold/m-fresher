@@ -11,6 +11,8 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
     /// <summary>
     /// Lớp trừu tượng của người nhận tài sản
     /// </summary>
+    /// CreatedBy: BATUAN (30/08/2023)
+
     public interface IReceiverRepository : IBaseRepository<Receiver>
     {
         /// <summary>
@@ -18,11 +20,13 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
         /// </summary>
         /// <param name="transferAssetId">Id chứng từ điều chuyển</param>
         /// <returns>Danh sách người nhận</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         public Task<List<Receiver>> GetByTransferAssetId(Guid transferAssetId);
         /// <summary>
         /// Lấy danh sách người nhận của chứng từ mới nhất
         /// </summary>
         /// <returns>Danh sách người nhận</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         public Task<IEnumerable<Receiver>> GetLastestReceivers();
 
     }

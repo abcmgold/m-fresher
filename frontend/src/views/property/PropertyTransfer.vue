@@ -1,5 +1,5 @@
 <template>
-    <div class="property-tranfer--container" ref=container>
+    <div class="property-tranfer--container" ref="container">
         <div class="tranfer__navbar">
             <div class="tranfer__navbar--left">
                 <div class="no-selected-document" v-if="!this.selectedRow.length">
@@ -82,6 +82,13 @@
                             'row-only-selected': this.clickIndex == index,
                         }"
                         @click="clickOnRowTable(index, data.TransferAssetId, $event)"
+                        @contextmenu.prevent="showContextMenu($event, index, data.TransferAssetId)"
+                        @dblclick="
+                            async () => {
+                                await this.getTransferAssetDetail(data.TransferAssetId);
+                                this.showTransferForm(this.$_MISAEnum.formUpdate);
+                            }
+                        "
                     >
                         <div class="text-align-center cell--item cell--item--checkbox" style="width: 50px">
                             <m-checkbox
@@ -157,7 +164,6 @@
             </div>
             <div v-if="this.transferAssetList.length == 0" class="table__content--empty">
                 <div class="icon--empty"></div>
-
             </div>
             <div v-if="this.isLoadingDataDocument" class="grid-loading-container">
                 <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
@@ -301,11 +307,20 @@
     <m-toast :label="this.labelToastSuccess" icon="icon--success" v-if="isShowToastSuccess"></m-toast>
     <m-toast :label="this.labelToastError" icon="icon--error" v-if="isShowToastError"></m-toast>
     <m-context-menu
-        @showDetail="this.showDetail(this.indexSelected, this.idSelected)"
-        @showDuplicate="this.showDuplicate(this.indexSelected, this.idSelected)"
-        @deleteOneRow="this.deleteOneRow(this.idSelected, this.indexSelected)"
+        @showDetail="
+            async () => {
+                await this.getTransferAssetDetail(this.idSelected);
+                this.showTransferForm(this.$_MISAEnum.formUpdate);
+            }
+        "
+        @deleteOneRow="
+            () => {
+                this.deleteTransferAsset(this.indexSelected, this.idSelected);
+            }
+        "
         :position="this.contextMenuPosition"
-        :isShowContext="!this.$store.getters.getIsShowContextMenu"
+        :isShowContext="this.$store.getters.getIsShowContextMenu"
+        :isHasDuplicate="false"
     ></m-context-menu>
 </template>
 
@@ -373,6 +388,9 @@ export default {
             dialogActions: {},
             formMode: -1,
             transferAsset: null,
+            contextMenuPosition: {},
+            idSelected: '',
+            indexSelected: -1
         };
     },
     watch: {
@@ -461,9 +479,8 @@ export default {
                     this.totalRecordDetail = this.transferAssetDetailList[0].TotalRecords;
                     this.pageNumbersDetail = Math.ceil(this.totalRecordDetail / this.detailDocumentPageSize);
                 })
-                .catch((err) => {
+                .catch(() => {
                     // this.handleException(err.statusCode, err.message, this.showDialog);
-                    console.log(err);
                 });
         },
         /*
@@ -525,6 +542,53 @@ export default {
                     }
                 }
             }
+        },
+        /*
+         * Show context menu
+         * Author: BATUAN (29/06/2023)
+         */
+        showContextMenu(event, index, id) {
+            this.indexSelected = index;
+            this.idSelected = id;
+            this.clickIndex = index;
+
+            const browserHeight = window.innerHeight;
+            const browserWidth = window.innerWidth;
+
+            // Tính toán vị trí context menu
+
+            const menuWidth = this.$store.getters.getContextMenuSize.x;
+            const menuHeight = this.$store.getters.getContextMenuSize.y;
+            let positionX = event.clientX;
+            let positionY = event.clientY;
+
+            // Kiểm tra xem context menu có bị che khuất không
+            if (positionX + menuWidth > browserWidth) {
+                positionX = browserWidth - menuWidth;
+            }
+
+            if (positionY + menuHeight > browserHeight) {
+                positionY = browserHeight - menuHeight;
+            }
+
+            this.contextMenuPosition = { x: positionX, y: positionY };
+
+            this.$store.commit('showContextMenu');
+
+            document.addEventListener('click', this.hideContextMenu);
+
+            document.addEventListener('wheel', this.hideContextMenu);
+
+            event.preventDefault();
+        },
+        /*
+         * Show context menu
+         * Author: BATUAN (29/06/2023)
+         */
+        hideContextMenu() {
+            this.$store.commit('hideContextMenu');
+            document.removeEventListener('click', this.hideContextMenu);
+            document.removeEventListener('wheel', this.hideContextMenu);
         },
         /*
          * Hiển thị form chọn tài sản
@@ -916,7 +980,7 @@ export default {
             await this.getDocumentByPaging();
 
             await this.handleGetDetailDocument(0);
-        }
+        },
     },
 };
 </script>

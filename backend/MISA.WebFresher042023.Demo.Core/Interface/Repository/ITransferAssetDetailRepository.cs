@@ -11,6 +11,8 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
     /// <summary>
     /// Lớp trừu trượng của tài sản điều chuyển
     /// </summary>
+    /// CreatedBy: BATUAN (30/08/2023)
+    /// 
     public interface ITransferAssetDetailRepository : IBaseRepository<TransferAssetDetail>
     {
         /// <summary>

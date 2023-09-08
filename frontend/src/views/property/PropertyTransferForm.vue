@@ -250,6 +250,7 @@
                                         :filterable="true"
                                         v-model="data.DepartmentTransferName"
                                         :dataSelect="this.departmentNames"
+                                        @click="() => {checkChangeValueCombobox(data, index)}"
                                     ></m-combo-box>
                                 </div>
                                 <div class="text-align-left cell--item" style="flex: 1">
@@ -339,6 +340,7 @@
         @hideChoosenForm="this.hideChoosenForm"
         @updateListSelectedProperty="this.updateListSelectedProperty"
         :excludedIds="this.excludedIds"
+        :listTemporaryDelete="this.listTemporaryDelete"
     ></ChoosenForm>
     <m-modal v-if="this.isShowDialog">
         <m-dialog
@@ -418,6 +420,7 @@ export default {
             listReceiverLastest: [],
             totalResidualPrice: 0,
             totalOriginalPrice: 0,
+            listTemporaryDelete: [], // lưu danh sách tài sản xóa mềm (tài sản điều chuyển đã nằm trong database)
         };
     },
     watch: {
@@ -460,7 +463,7 @@ export default {
     },
     unmounted() {
         if (this.$parent) {
-            this.$parent.$refs.container.focus()
+            this.$parent.$refs.container.focus();
         }
     },
     methods: {
@@ -543,7 +546,12 @@ export default {
             if (this.$refs['checkbox-delivery'].isChecked) {
                 this.$refs['checkbox-delivery'].isChecked = false;
                 this.isShowMoreDeliveryOptions = false;
-                this.listReceiver = [];
+                if (this.formMode == this.$_MISAEnum.formAdd) {
+                    this.listReceiver = [];
+                }
+                else if (this.formMode == this.$_MISAEnum.formUpdate) {
+                    this.listReceiver = JSON.parse(JSON.stringify(this.transferAsset.ReceiverList));
+                }
             } else {
                 if (this.formMode == this.$_MISAEnum.formAdd) {
                     this.$refs['checkbox-delivery'].isChecked = true;
@@ -554,7 +562,13 @@ export default {
                 } else if (this.formMode == this.$_MISAEnum.formUpdate) {
                     this.$refs['checkbox-delivery'].isChecked = true;
                     this.isShowMoreDeliveryOptions = true;
-                    this.listReceiver = JSON.parse(JSON.stringify(this.transferAsset.ReceiverList));
+                    if (this.transferAsset.ReceiverList && this.transferAsset.ReceiverList.length > 0) {
+                        this.listReceiver = JSON.parse(JSON.stringify(this.transferAsset.ReceiverList));
+                    } else {
+                        this.listReceiver.push({
+                            ReceiverOrder: 1,
+                        });
+                    }
                 }
             }
         },
@@ -626,7 +640,7 @@ export default {
                 if (this.inputFilter) {
                     transferAssetCopyList = transferAssetCopyList.filter((element) => {
                         return (
-                            element.PropertyId.toLowerCase().includes(this.inputFilter.trim().toLowerCase()) ||
+                            element.PropertyCode.toLowerCase().includes(this.inputFilter.trim().toLowerCase()) ||
                             element.PropertyName.toLowerCase().includes(this.inputFilter.trim().toLowerCase())
                         );
                     });
@@ -851,6 +865,8 @@ export default {
                                 return element.PropertyId != row.PropertyId;
                             },
                         );
+                        this.listTemporaryDelete = [];
+                        this.listTemporaryDelete.push(row);
                         this.paging();
                         this.calculateTotalResidualPrice();
                         this.calculateTotalOriginalPrice();
@@ -867,6 +883,33 @@ export default {
                 this.paging();
                 this.calculateTotalResidualPrice();
                 this.calculateTotalOriginalPrice();
+            }
+        },
+        /*
+         * Gọi Api kiểm tra tài sản được phép xóa ở form thêm hay không
+         * Author: BATUAN (29/08/2023)
+         */
+         async checkChangeValueCombobox(row, index) {
+            if (
+                this.listInitialTransferAssetDetail &&
+                this.listInitialTransferAssetDetail.some((transferAssetDetail) => {
+                    return transferAssetDetail.PropertyId == row.PropertyId;
+                })
+            ) {
+                let propertyIds = [];
+                propertyIds.push(row.PropertyId);
+                await request
+                    .insertRecord(
+                        `TransferAsset/CheckTransferAsset?transferAssetId=${this.transferAsset.TransferAssetId}`,
+                        propertyIds,
+                    )
+                    // .then(() => {
+                    // })
+                    .catch(async (err) => {
+                        this.$refs.combobox[index].autoBlur();
+                        await delay(200);
+                        this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                    });
             }
         },
         /*
@@ -1256,7 +1299,13 @@ export default {
         async handleClickAddLastestReceiver() {
             if (this.$refs.checkboxAddReceiver.isChecked == true) {
                 this.$refs.checkboxAddReceiver.isChecked = false;
-                this.listReceiver = this.listReceiver.filter((item) => !this.listReceiverLastest.includes(item));
+                if (this.formMode == this.$_MISAEnum.formAdd) {
+                    this.listReceiver = [];
+                }
+                else if (this.formMode == this.$_MISAEnum.formUpdate) {
+                    this.listReceiver = JSON.parse(JSON.stringify(this.transferAsset.ReceiverList));
+                }
+                // this.listReceiver = this.listReceiver.filter((item) => !this.listReceiverLastest.includes(item));
                 if (this.listReceiver.length == 0) {
                     this.listReceiver.push({
                         ReceiverOrder: 1,
@@ -1265,16 +1314,16 @@ export default {
             } else {
                 this.$refs.checkboxAddReceiver.isChecked = true;
                 await this.getLastestReceiver();
-                if (
-                    this.listReceiver.length == 1 &&
-                    !this.listReceiver[0].FullName &&
-                    !this.listReceiver[0].Represent &&
-                    !this.listReceiver[0].Position
-                ) {
-                    this.listReceiver = [...this.listReceiverLastest];
-                } else {
-                    this.listReceiver = this.listReceiver.concat(this.listReceiverLastest);
-                }
+                // if (
+                //     this.listReceiver.length == 1 &&
+                //     !this.listReceiver[0].FullName &&
+                //     !this.listReceiver[0].Represent &&
+                //     !this.listReceiver[0].Position
+                // ) {
+                this.listReceiver = [...this.listReceiverLastest];
+                // } else {
+                //     this.listReceiver = this.listReceiver.concat(this.listReceiverLastest);
+                // }
             }
         },
         /*
@@ -1293,7 +1342,6 @@ export default {
          * Author: BATUAN (24/08/2023)
          */
         handleSearchByKeyBoard(event) {
-            console.log(event)
             if (event.key === 'f') {
                 {
                     if (event.ctrlKey) {

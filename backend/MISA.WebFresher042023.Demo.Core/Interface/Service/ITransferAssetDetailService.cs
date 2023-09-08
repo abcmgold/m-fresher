@@ -14,6 +14,14 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Service
     /// CreatedBy: BATUAN (30/08/2023)
     public interface ITransferAssetDetailService : IBaseService<TransferAssetDetailDto, TransferAssetDetailUpdateDto, TransferAssetDetailCreateDto>
     {
+        /// <summary>
+        /// Phân trang bản ghi lấy theo Id của chứng từ
+        /// </summary>
+        /// <param name="documentId">Id chứng từ</param>
+        /// <param name="pageNumber">Trang số mấy?</param>
+        /// <param name="pageSize">Kích thước trang</param>
+        /// <returns>Danh sách chi tiết chứng từ</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         public Task<List<TransferAssetDetailDto>> GetPropertyTransferByDocumentId(Guid documentId, int pageNumber, int pageSize);
     }
 }

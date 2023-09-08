@@ -61,6 +61,15 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tài sản &lt;strong&gt;{0}&lt;/strong&gt; nằm trong chứng từ có thời gian điều chuyển lớn hơn!.
+        /// </summary>
+        public static string CheckTransferAsset {
+            get {
+                return ResourceManager.GetString("CheckTransferAsset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ngày mua phải nhỏ hơn hoặc bằng ngày bắt đầu theo dõi.
         /// </summary>
         public static string DateError {
@@ -124,11 +133,38 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bộ phận chuyển đi phải khác bộ phận hiện tại.
+        /// </summary>
+        public static string DiffirentDepartment {
+            get {
+                return ResourceManager.GetString("DiffirentDepartment", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Mã tài sản đã tồn tại.
         /// </summary>
         public static string DuplicateDepartmentCode {
             get {
                 return ResourceManager.GetString("DuplicateDepartmentCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ngày điều chuyển phải lớn hơn hoặc bằng ngày chứng từ.
+        /// </summary>
+        public static string ErrorDateInTransferAsset {
+            get {
+                return ResourceManager.GetString("ErrorDateInTransferAsset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không thể xóa chứng từ &lt;strong&gt;{0}&lt;/strong&gt; do tài sản &lt;strong&gt;{1}&lt;/strong&gt; nằm trong chứng từ này cũng thuộc chứng từ khác có thời gian tạo mới hơn !.
+        /// </summary>
+        public static string ErrorMesageDeleteTransferAsset {
+            get {
+                return ResourceManager.GetString("ErrorMesageDeleteTransferAsset", resourceCulture);
             }
         }
         
@@ -142,6 +178,15 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Mã chứng từ điều chuyển đã tồn tại.
+        /// </summary>
+        public static string ExistTransferAssetCode {
+            get {
+                return ResourceManager.GetString("ExistTransferAssetCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ngày theo dõi không được trống.
         /// </summary>
         public static string FollowDateRequired {
@@ -151,11 +196,47 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to - Chứng từ điều chuyển &lt;strong&gt;{0}&lt;/strong&gt; &lt;strong&gt;({1})&lt;/strong&gt;.
+        /// </summary>
+        public static string InfoTransferAsset {
+            get {
+                return ResourceManager.GetString("InfoTransferAsset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Anh/Chị không thể xóa do tài sản &lt;strong&gt;{0}&lt;/strong&gt; đã phát sinh chứng từ !.
+        /// </summary>
+        public static string NotDeleteProperty {
+            get {
+                return ResourceManager.GetString("NotDeleteProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Danh sách tài sản điều chuyển tồn tại tài sản điều chuyển không có trong hệ thống !.
+        /// </summary>
+        public static string NotExistTransferAssetDetail {
+            get {
+                return ResourceManager.GetString("NotExistTransferAssetDetail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Không tìm thấy tài nguyên với mã Id.
         /// </summary>
         public static string NotFoundId {
             get {
                 return ResourceManager.GetString("NotFoundId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Không thể thao tác do tài sản &lt;strong&gt;{0}&lt;/strong&gt; nằm trong chứng có thời gian điều chuyển mới hơn !.
+        /// </summary>
+        public static string NotUpdateOrDelete {
+            get {
+                return ResourceManager.GetString("NotUpdateOrDelete", resourceCulture);
             }
         }
         

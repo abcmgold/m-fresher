@@ -46,17 +46,20 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Service
         /// Hàm check 1 tài sản điều chuyển có được xóa ở form chỉnh sửa hay không
         /// </summary>
         /// <returns></returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         public Task CheckDeleteOrNot(Guid transferAssetId, Guid propertyId);
         /// <summary>
         /// Hàm check các tài sản điều chuyển có được xóa ở form chỉnh sửa hay không
         /// </summary>
         /// <param name="transferAssetIds"></param>
         /// <returns></returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         public Task CheckDeleteMultiOrNot(Guid transferAssetId, List<Guid> propertyIds);
         /// <summary>
         /// Sinh mã code tự động
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Chuỗi mã code của chứng từ</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         public Task<string> GetAutoTransferAssetCode();
     }
 }

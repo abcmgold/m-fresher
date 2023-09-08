@@ -1,5 +1,5 @@
 <template>
-    <div class="dialog">
+    <div class="dialog" ref="dialog" tabindex="0">
         <div class="dialog__discription">
             <div class="dialog__discription--icon">
                 <div class="icon--warning"></div>
@@ -55,8 +55,8 @@ export default {
             this.isShowDetailText = !this.isShowDetailText;
         }
     },
-    updated() {
-        console.log(this.documentInfo)
+    mounted() {
+        this.$refs.dialog.focus();
     },
     data() {
         return {

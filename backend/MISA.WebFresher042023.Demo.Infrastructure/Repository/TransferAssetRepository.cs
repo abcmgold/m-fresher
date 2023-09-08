@@ -94,12 +94,23 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
 
         public async Task<TransferAsset> GetTransferAssetByCodeAsync(string transferAssetCode)
         {
-            DynamicParameters parameters = new DynamicParameters();
+            DynamicParameters parameters = new();
 
             parameters.Add("@TransferAssetCode", transferAssetCode);
 
             var res = await _unitOfWork.Connection.QueryFirstOrDefaultAsync<TransferAsset>(sql: "CALL Proc_TransferAsset_GetByCode(@TransferAssetCode)", param: parameters);
 
+            return res;
+        }
+
+        public async Task<int> CheckGreaterTransferDate(DateTime transferDate)
+        {
+            DynamicParameters parameters = new();
+
+            parameters.Add("@TransferDate", transferDate);
+
+            var res = await _unitOfWork.Connection.QueryFirstOrDefaultAsync<int>(sql: "CALL Proc_TransferAsset_IsHasGreaterTransferDate(@TransferDate)", param: parameters);
+            
             return res;
         }
     }

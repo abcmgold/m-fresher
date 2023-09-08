@@ -71,7 +71,7 @@ export default {
          */
         autoFocus() {
             this.$refs.myDatePicker.openMenu();
-        },
+        }
     },
 };
 </script>

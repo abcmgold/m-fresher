@@ -12,18 +12,20 @@
         :value="modelValue"
         :no-match-text="'Không có kết quả'"
         @change="
-            $emit(
-                'update:modelValue',
-                this.dataSelect.find((code) => {
-                    return code.value == this.selectedPropertyTypeName;
-                }).label,
-            )
+            () => {
+                this.$emit(
+                    'update:modelValue',
+                    this.dataSelect.find((code) => {
+                        return code.value == this.selectedPropertyTypeName;
+                    }).label,
+                );
+            }
         "
     >
         <el-option
             class="select"
             v-for="code in this.dataSelect"
-            :key="code.value"
+                :key="code.value"
             :label="code.label"
             :value="code.value"
         ></el-option>
@@ -87,7 +89,7 @@ export default {
          * Sự kiện tự động blur vào ô input
          * Author: BATUAN (14/06/2023)
          */
-         autoBlur() {
+        autoBlur() {
             // this.$refs.myComboBox.focus();
             this.$refs.myComboBox.blur();
         },

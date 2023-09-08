@@ -295,6 +295,7 @@
         @deleteOneRow="this.deleteOneRow(this.idSelected, this.indexSelected)"
         :position="this.contextMenuPosition"
         :isShowContext="this.$store.getters.getIsShowContextMenu"
+        :isHasDuplicate="true"
     ></m-context-menu>
     <m-toast :label="this.labelToastSuccess" icon="icon--success" v-if="isShowToastSuccess"></m-toast>
     <m-toast :label="this.labelToastError" icon="icon--error" v-if="isShowToastError"></m-toast>
@@ -1108,7 +1109,7 @@ export default {
             this.showDialog(this.textDialog, [], {
                 firstBtnFunction: this.closeDialog,
                 firstDialogBtnText: this.$_MISAResource['vn-VI'].cancel,
-                thirdBtnFunction: () => this.deleteRows(id,index),
+                thirdBtnFunction: () => this.deleteRows(id),
                 thirdDialogBtnText: this.$_MISAResource['vn-VI'].delete,
             });
 
@@ -1118,7 +1119,7 @@ export default {
          * Xóa các hàng được chọn
          * Author: BATUAN (08/06/2023)
          */
-        async deleteRows(id, index) {
+        async deleteRows(id) {
             if (this.isMultipleDelele) {
                 //Xóa các bản ghi
                 await instance
@@ -1149,7 +1150,6 @@ export default {
             }
             // Xóa 1 bản ghi
             else {
-                console.log(index)
                 let row = [];
                 row.push(id)
                 await instance
@@ -1173,7 +1173,6 @@ export default {
                         this.$refs['checkbox-all'][0].isChecked = false;
                     })
                     .catch((err) => {
-                        console.log(err);
                         this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                     });
             }

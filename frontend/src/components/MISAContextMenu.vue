@@ -14,7 +14,7 @@
                 <div class="item-icon icon--delete"></div>
                 <div class="item-content">Xóa</div>
             </li>
-            <li class="item" @click="this.$emit('showDuplicate')">
+            <li class="item" v-if="this.isHasDuplicate" @click="this.$emit('showDuplicate')">
                 <div class="item-icon icon--duplicate"></div>
                 <div class="item-content">Nhân bản</div>
             </li>
@@ -28,8 +28,8 @@ export default {
     props: {
         position: Object,
         isShowContext: Boolean,
+        isHasDuplicate: Boolean
     },
-    created() {},
     updated() {
         if (this.$refs.contextMenu && this.$store.getters.getContextMenuSize.x != this.$refs.contextMenu.clientWidth ) {
             this.$nextTick(() => {
