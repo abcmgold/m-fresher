@@ -9,10 +9,12 @@
         <div class="popup">
             <div class="popup__header">
                 <div class="popup__header__title">{{ this.title }}</div>
-                <div id="btnCloseModalAdd" class="popup__header__close" @click="$emit('hideAddProperty')">
-                    <el-tooltip effect="dark" :content="this.MISAResource['vn-VI'].close" placement="bottom-start">
-                        <div class="icon--close"></div>
-                    </el-tooltip>
+                <div id="btnCloseModalAdd" class="popup__header__close" @click="this.showDialogCancel">
+                    <div
+                        :content="this.MISAResource['vn-VI'].close"
+                        v-tippy="{ placement: 'bottom' }"
+                        class="icon--close"
+                    ></div>
                 </div>
             </div>
             <div class="popup__container">
@@ -31,6 +33,7 @@
                                     :isRequired="true"
                                     type="text-field"
                                     :maxLength="this.enum.maxLengthCode"
+                                    @keydown="this.keydownShiftTab($event)"
                                 ></m-text-input>
                             </m-group-input>
                         </div>
@@ -78,7 +81,9 @@
                     <div class="popup__row-col-6">
                         <div class="popup__item">
                             <div class="input-group">
-                                <div class="input__text--label">{{this.MISAResource['vn-VI'].property.departmentName}}</div>
+                                <div class="input__text--label">
+                                    {{ this.MISAResource['vn-VI'].property.departmentName }}
+                                </div>
                                 <m-text-input
                                     v-model="property.DepartmentName"
                                     :isRequired="true"
@@ -110,7 +115,9 @@
                     <div class="popup__row-col-6">
                         <div class="popup__item">
                             <div class="input-group">
-                                <div class="input__text--label">{{this.MISAResource['vn-VI'].property.propertyTypeName}}</div>
+                                <div class="input__text--label">
+                                    {{ this.MISAResource['vn-VI'].property.propertyTypeName }}
+                                </div>
                                 <m-text-input
                                     v-model="property.PropertyTypeName"
                                     :isRequired="true"
@@ -123,7 +130,11 @@
                 <div class="popup__row">
                     <div class="popup__row-col-3">
                         <div class="popup__item popup__item-force">
-                            <m-group-input :text="this.MISAResource['vn-VI'].property.quantity" :isForce="true" :message="this.MISAResource['vn-VI'].property.quantityError">
+                            <m-group-input
+                                :text="this.MISAResource['vn-VI'].property.quantity"
+                                :isForce="true"
+                                :message="this.MISAResource['vn-VI'].property.quantityError"
+                            >
                                 <m-money-input
                                     ref="quantityInput"
                                     v-model="property.Quantity"
@@ -212,7 +223,7 @@
                         <div class="popup__item">
                             <div class="input-group">
                                 <div class="input__text--label">
-                                    {{this.MISAResource['vn-VI'].property.followYear}}
+                                    {{ this.MISAResource['vn-VI'].property.followYear }}
                                     <div class="popup__item-icon-force">*</div>
                                 </div>
                                 <m-text-input
@@ -227,83 +238,77 @@
                 </div>
                 <div class="popup__row">
                     <div class="popup__row-col-3">
-                        <div class="popup__item popup__item-force">
-                            <div class="popup__item-label text__label">
-                                {{this.MISAResource['vn-VI'].property.purchaseDate}}
-                                <div class="popup__item-icon-force">*</div>
-                            </div>
-                            <m-date-picker
+                        <m-group-input
+                            :text="this.MISAResource['vn-VI'].property.purchaseDate"
+                            :isForce="true"
+                            :message="this.MISAResource['vn-VI'].property.purchaseDateError"
+                            ><m-date-picker
                                 ref="purchaseDateInput"
                                 type="date"
                                 :isRequired="true"
                                 v-model="property.PurchaseDate"
                             ></m-date-picker>
-                        </div>
+                        </m-group-input>
                     </div>
                     <div class="popup__row-col-3">
                         <div class="popup__item popup__item-force">
-                            <div class="popup__item-label text__label">
-                                {{this.MISAResource['vn-VI'].property.useDate}}
-                                <div class="popup__item-icon-force">*</div>
-                            </div>
-
-                            <m-date-picker
-                                ref="useDateInput"
-                                type="date"
-                                :isRequired="true"
-                                v-model="property.FollowDate"
-                            ></m-date-picker>
+                            <m-group-input
+                                :text="this.MISAResource['vn-VI'].property.useDate"
+                                :isForce="true"
+                                :message="this.MISAResource['vn-VI'].property.useDateError"
+                                ><m-date-picker
+                                    ref="useDateInput"
+                                    type="date"
+                                    :isRequired="true"
+                                    v-model="property.FollowDate"
+                                ></m-date-picker>
+                            </m-group-input>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="popup__action-btn">
                 <m-button
-                    individualClass="btn--noborder "
-                    :label="this.MISAResource['vn-VI'].cancel"
-                    @click="this.showDialogCancel"
-                ></m-button>
-                <m-button
                     individualClass="btn--primary"
                     :label="this.MISAResource['vn-VI'].save"
                     @click="this.addProperty"
                 ></m-button>
+                <m-button
+                    individualClass="btn--noborder"
+                    :label="this.MISAResource['vn-VI'].cancel"
+                    @click="this.showDialogCancel"
+                    @keydown="this.keydownTab($event)"
+                    ref="lastButton"
+                ></m-button>
             </div>
         </div>
     </m-modal>
-    <m-modal v-show="isShowDialogCancel">
+    <m-modal v-if="this.isShowModal">
         <m-dialog
-            :text="
-                this.selectedRow
-                    ? this.MISAResource['vn-VI'].cancelEditting
-                    : this.MISAResource['vn-VI'].declareProperty
-            "
-            :firstBtnLabel="this.MISAResource['vn-VI'].no"
-            :thirdBtnLabel="this.MISAResource['vn-VI'].yes"
-            :firstBtnFunction="hideDialogCancel"
-            :thirdBtnFunction="hideDialogAndModal"
-        ></m-dialog>
-    </m-modal>
-    <m-modal v-show="isShowDialogValidate">
-        <m-dialog
+            :type="this.typeDialog"
             :text="this.textDialog"
-            :endText="this.validateMsg"
-            thirdBtnLabel="Đóng"
-            :thirdBtnFunction="hideDialogValidate"
+            :firstBtnFunction="this.firstBtnFunction"
+            :secondBtnFunction="this.secondBtnFunction"
+            :thirdBtnFunction="this.thirdBtnFunction"
+            :firstBtnLabel="this.firstDialogBtnText"
+            :secondBtnLabel="this.secondDialogBtnText"
+            :thirdBtnLabel="this.thirdDialogBtnText"
+            :dialogActions="this.dialogActions"
         ></m-dialog>
     </m-modal>
 </template>
 
 <script scoped>
-import { formatCurrentDate } from '@/common/common';
+import { formatCurrentDate, formatRatio } from '@/common/common';
 import ENUM from '@/common/enum';
 import { MISAResource } from '@/common/resource';
-import instance from '@/common/instance';
+import exception from '@/common/exception';
 export default {
     name: 'PropertyAdd',
     props: {
         closeAddFunction: Function,
         selectedRow: { type: Object, default: null },
+        propertyCodeSample: String,
         departmentCodes: {
             type: Array,
             default: null,
@@ -312,50 +317,67 @@ export default {
             type: Array,
             default: null,
         },
+        formMode: Number,
     },
     data() {
         return {
             property: {},
             compareProperty: {},
             MISAResource: MISAResource,
-            isShowDialogCancel: false,
-            isShowDialogValidate: false,
-            selectedPropertyTypeName: '',
-            selectedDepartmentName: '',
             validateMsg: '',
-            textDialog: '',
             enum: ENUM,
-
             title: '',
-            propertyCodeSample: '',
+            isShowModal: '',
+            textDialog: '',
+            firstDialogBtnText: '',
+            secondDialogBtnText: '',
+            thirdDialogBtnText: '',
+            firstBtnFunction: null,
+            secondBtnFunction: null,
+            thirdBtnFunction: null,
+            dialogActions: {
+                firstDialogBtnText: '',
+                secondDialogBtnText: '',
+                thirdDialogBtnText: '',
+                firstBtnFunction: null,
+                secondBtnFunction: null,
+                thirdBtnFunction: null,
+            },
         };
     },
-    async created() {
-        if (!this.selectedRow) {
-            // tính giá trị code mới được gợi ý
-            await this.generateSampleCode();
-            this.title = this.MISAResource['vn-VI'].addProperty;
-        }
-        // gán các giá trị mặc định
-        this.property.PropertyCode = this.propertyCodeSample;
-        this.property.Quantity = 1;
-        this.property.OriginalPrice = 0;
-        this.property.NumberYearUse = 0;
-        this.property.WearRate = 0;
-        this.property.WearRateValue = 0;
-        this.property.FollowYear = new Date().getFullYear().toString();
-        this.property.PurchaseDate = this.formatedCurrentDate();
-        this.property.FollowDate = this.formatedCurrentDate();
-
-        if (this.selectedRow) {
-            this.property = { ...this.selectedRow };
+    created() {
+        switch (this.formMode) {
+            case this.enum.formAdd:
+                this.title = this.MISAResource['vn-VI'].addProperty;
+                // gán các giá trị mặc định
+                this.property.PropertyCode = this.propertyCodeSample;
+                this.property.Quantity = 1;
+                this.property.OriginalPrice = Number(0);
+                this.property.NumberYearUse = Number(0);
+                this.property.WearRate = Number(0);
+                this.property.WearRateValue = Number(0);
+                this.property.FollowYear = new Date().getFullYear();
+                this.property.PurchaseDate = new Date();
+                this.property.FollowDate = new Date();
+                break;
+            case this.enum.formUpdate:
+                this.title = this.MISAResource['vn-VI'].updateProperty;
+                this.property = { ...this.selectedRow };
+                break;
+            case this.enum.formDuplicate:
+                this.title = this.MISAResource['vn-VI'].addProperty;
+                this.property = { ...this.selectedRow };
+                this.property.PropertyCode = this.propertyCodeSample;
+                break;
+            default:
+                break;
         }
         this.compareProperty = { ...this.property };
     },
-    beforeMount() {
-        if (this.selectedRow) {
-            this.title = this.MISAResource['vn-VI'].updateProperty;
-        }
+    mounted() {
+        // focus vào ô input đầu tiên khi lên form
+        const firstKey = Object.keys(this.$refs)[0];
+        this.$refs[firstKey].autoFocus();
     },
     unmounted() {
         this.$emit('resetSelectedRow');
@@ -379,6 +401,8 @@ export default {
             if (option) {
                 this.property.PropertyTypeName = option.value;
                 this.property.PropertyTypeId = option.id;
+                this.property.WearRate = option.wearRate;
+                this.property.NumberYearUse = option.numberYearUse;
             }
         },
         // Tính toán lại giá trị hao mòn khi nguyên giá thay đổi
@@ -399,45 +423,6 @@ export default {
 
     methods: {
         /*
-         * Tạo mã code mới khi mở form thêm
-         * Author: BATUAN (16/06/2023)
-         */
-        async generateSampleCode() {
-            await instance
-                .get('Property/GetLastestCode')
-                .then((res) => {
-                    // Tách phần chữ
-                    let textPart = res.data.match(/[A-Za-z]+/)[0];
-
-                    if (!res.data.match(/\d+/)) {
-                        let newPropertyCode = textPart + '1';
-                        this.propertyCodeSample = newPropertyCode;
-                    } else {
-                        // Tách phần số từ chuỗi mã
-                        let numberPart = res.data.match(/\d+/)[0];
-                        // tính độ dài của phần số trong đoạn mã
-                        let length = numberPart.length;
-                        // chuyển phần số thành 1 số nguyên
-                        let number = parseInt(numberPart);
-                        // tăng giá trị lên 1
-                        number++;
-                        // chuyển lại về string
-                        number = number.toString();
-                        // gắn thêm các số 0 ở trước cho đủ độ dài ban đâu
-                        let preZero = '';
-                        for (let i = 0; i < length - number.length; i++) {
-                            preZero = preZero + '0';
-                        }
-                        // giá trị sau khi được tăng
-                        let newPropertyCode = textPart + preZero + number;
-                        this.propertyCodeSample = newPropertyCode;
-                    }
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
-        },
-        /*
          * Upload khi ấn vào nút Lưu
          * Author: BATUAN (27/05/2023)
          * ModifiedBy: BATUAN (30/05/2023)
@@ -445,33 +430,53 @@ export default {
         addProperty() {
             //validate thành công
             if (this.validateData().validate) {
-                if (this.validateMajor()) {
-                    // Sửa dữ liệu
-                    if (this.selectedRow) {
-                        //tính toán lại giá trị còn lại
-                        this.property.ResidualValue = this.property.OriginalValue - this.property.WearRateValue;
-                        // sửa tài sản
-                        this.$emit('updateValueRow', this.property);
-                      
-                    }
-                    // Thêm tài sản
-                    else {
-                        //tính toán lại giá trị còn lại
-                        this.property.ResidualValue = this.property.OriginalValue - this.property.WearRateValue;
-                        // thêm tài sản mới
-                        this.$emit('addNewProperty', this.property);
+                if (this.validateMajor().check) {
+                    switch (this.formMode) {
+                        // Thêm mới
+                        case this.enum.formAdd:
+                            //tính toán lại giá trị còn lại
+                            this.property.ResidualValue = this.property.OriginalValue - this.property.WearRateValue;
+                            // thêm tài sản mới
+                            this.$emit('addNewProperty', this.property);
+                            break;
+                        // Sửa
+                        case this.enum.formUpdate:
+                            //tính toán lại giá trị còn lại
+                            this.property.ResidualValue = this.property.OriginalValue - this.property.WearRateValue;
+                            // sửa tài sản
+                            this.$emit('updateValueRow', this.property);
+                            break;
+                        // Nhân bản
+                        case this.enum.formDuplicate:
+                            //tính toán lại giá trị còn lại
+                            this.property.ResidualValue = this.property.OriginalValue - this.property.WearRateValue;
+                            // sửa tài sản
+                            this.$emit('addNewProperty', this.property);
+                            break;
+                        default:
+                            break;
                     }
                 } else {
-                    this.isShowDialogValidate = true;
+                    this.$emit('showDialog', this.textDialog);
                 }
             } else {
+                // Gọi hàm blur của các ô input
                 for (const ref in this.$refs) {
                     if (this.$refs[ref].onBlurFunction) {
                         this.$refs[ref].onBlurFunction();
                     }
                 }
+                // Focus vào ô input lỗi đầu tiên
                 this.focusOnErrorInput();
             }
+        },
+        /*
+         * Show dialog thông báo lỗi validate
+         * Author: BATUAN (30/05/2023)
+         */
+        showDialogValidate(message) {
+            this.showDialogValidate = true;
+            this.textDialog = message;
         },
         /*
          * Validate dữ liệu của các trường bắt buộc
@@ -479,19 +484,19 @@ export default {
          */
         validateData() {
             let validate = true;
-            let refText = '';
+            let refName = '';
             for (const ref in this.$refs) {
                 if (this.$refs[ref].isRequired) {
-                    if (!this.$refs[ref].modelValue) {
+                    if (this.$refs[ref].modelValue === '' || this.$refs[ref].modelValue === undefined) {
                         validate = false;
-                        refText = ref;
+                        refName = ref;
                         break;
                     }
                 }
             }
             return {
                 validate,
-                refText,
+                refName,
             };
         },
         /*
@@ -500,92 +505,146 @@ export default {
          */
         validateMajor() {
             let check = true;
+            let refName = null;
             if (
                 Number(this.property.WearRate.toFixed(2)) != Number((1 / this.property.NumberYearUse) * 100).toFixed(2)
             ) {
                 this.textDialog = this.MISAResource['vn-VI'].wearRateError;
                 check = false;
+                refName = 'numberYearsUseInput';
             }
             if (Number(this.property.WearRateValue) > Number(this.property.OriginalPrice)) {
                 this.textDialog = this.MISAResource['vn-VI'].wearRateValueError;
                 check = false;
+                refName = 'originalValueInput';
             }
-            return check;
+            if (this.property.PurchaseDate > this.property.FollowDate) {
+                this.textDialog = this.MISAResource['vn-VI'].dateError;
+                check = false;
+                refName = 'purchaseDateInput';
+            }
+            return {
+                check,
+                refName,
+            };
         },
         /*
          * Hiển thị dialog cancel
          * Author: BATUAN (27/05/2023)
          */
         showDialogCancel() {
-            if (JSON.stringify(this.compareProperty) == JSON.stringify(this.property)) {
+            if (
+                JSON.stringify(this.compareProperty) == JSON.stringify(this.property) &&
+                this.formMode != this.enum.formAdd &&
+                this.formMode != this.enum.formDuplicate
+            ) {
                 this.$emit('hideAddProperty');
             } else {
-                this.isShowDialogCancel = true;
+                switch (this.formMode) {
+                    case this.enum.formAdd:
+                        this.showDialog(this.$_MISAResource['vn-VI'].declareProperty, {
+                            firstDialogBtnText: this.$_MISAResource['vn-VI'].no,
+                            thirdDialogBtnText: this.$_MISAResource['vn-VI'].yes,
+                            firstBtnFunction: this.hideDialog,
+                            thirdBtnFunction: this.hideModal,
+                        });
+                        break;
+                    case this.enum.formUpdate:
+                        this.showDialog(this.$_MISAResource['vn-VI'].declareProperty, {
+                            firstDialogBtnText: this.$_MISAResource['vn-VI'].no,
+                            thirdDialogBtnText: this.$_MISAResource['vn-VI'].yes,
+                            firstBtnFunction: this.hideDialog,
+                            thirdBtnFunction: this.hideModal,
+                        });
+                        break;
+                    case this.enum.formDuplicate:
+                        this.showDialog(this.$_MISAResource['vn-VI'].declareProperty, {
+                            firstDialogBtnText: this.$_MISAResource['vn-VI'].no,
+                            thirdDialogBtnText: this.$_MISAResource['vn-VI'].yes,
+                            firstBtnFunction: this.hideDialog,
+                            thirdBtnFunction: this.hideModal,
+                        });
+                        break;
+                    default:
+                        break;
+                }
             }
+        },
+        showDialog(textDialog, dialogActions) {
+            this.isShowModal = true;
+            this.textDialog = textDialog;
+            this.dialogActions = dialogActions;
+        },
+        hideDialog() {
+            this.isShowModal = false;
         },
         /*
          * Ẩn modals chi tiết tài sản
          * Author: BATUAN (27/05/2023)
          */
         hideModal() {
-            this.$emit('closeDetail');
-        },
-        /*
-         * Ẩn dialog
-         * Author: BATUAN (27/05/2023)
-         */
-        hideDialogCancel() {
-            this.isShowDialogCancel = false;
-        },
-        /*
-         * Ẩn dialog thông báo validate
-         * Author: BATUAN (27/05/2023)
-         */
-        hideDialogValidate() {
-            this.focusOnErrorInput();
-            this.isShowDialogValidate = false;
+            this.$emit('closeDialogAndForm');
         },
         /*
          * FormatDate
          * Author: BATUAN (29/05/2023)
          */
-        formatedCurrentDate() {
-            return formatCurrentDate();
+        formatedCurrentDate(date) {
+            return formatCurrentDate(date);
         },
         /*
-         * Ẩn dialog cancel và đóng form thêm tài sản
-         * Author: BATUAN (27/05/2023)
+         * Format tỷ lệ
+         * Author: BATUAN (29/05/2023)
          */
-        hideDialogAndModal() {
-            this.$emit('hideAddProperty');
-            this.isShowDialogCancel = false;
+        formatedRatio() {
+            return formatRatio();
         },
         /*
          * Focus vào ô input lỗi đầu tiên
          * Author: BATUAN (27/05/2023)
          */
         focusOnErrorInput() {
-            if (this.validateData().refText) {
+            if (this.validateData().refName) {
                 this.$nextTick(() => {
-                    switch (this.$refs[this.validateData().refText].type) {
-                        case 'combo-box':
-                            this.$refs[this.validateData().refText].$refs.myComboBox.focus();
-                            break;
-                        case 'text-field':
-                            this.$refs[this.validateData().refText].$el.focus();
-                            break;
-                        case 'number-field':
-                            this.$refs[this.validateData().refText].$refs.myInputNumber.focus();
-                            break;
-                        case 'date':
-                            this.$refs[this.validateData().refText].$refs.myDatePicker.openMenu();
-                            break;
-                        default:
-                            this.$refs[this.validateData().refText].$el.focus();
-                            break;
-                    }
+                    this.$refs[this.validateData().refName].autoFocus();
+                });
+            } else if (this.validateMajor().refName) {
+                this.$nextTick(() => {
+                    this.$refs[this.validateMajor().refName].autoFocus();
                 });
             }
+        },
+        /*
+         * sự kiện tab ở phần tử cuối cùng thì tự nhảy lên input đầu tiên
+         * Author: BATUAN (27/05/2023)
+         */
+        keydownTab(event) {
+            if (event.key === 'Tab') {
+                if (!event.shiftKey) {
+                    const firstKey = Object.keys(this.$refs)[0];
+                    this.$refs[firstKey].autoFocus();
+                    event.preventDefault();
+                }
+            }
+        },
+        /*
+         * sự kiện shift + tab ở phần tử đầu thì tự nhảy xuống button cuối cùng
+         * Author: BATUAN (27/05/2023)
+         */
+        keydownShiftTab(event) {
+            if (event.key === 'Tab') {
+                if (event.shiftKey) {
+                    this.$refs.lastButton.$el.focus();
+                    event.preventDefault();
+                }
+            }
+        },
+           /*
+         * Xử lý mã lỗi backend trả về
+         * Author: BATUAN (29/06/2023)
+         */
+         handleException(statusCode, message, documentInfo, showDialog) {
+            exception(statusCode, message, documentInfo, showDialog);
         },
     },
 };

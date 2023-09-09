@@ -30,6 +30,11 @@
     box-sizing: border-box;
     margin: 0;
 }
+
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: Roboto;
     font-size: 14px;
@@ -37,11 +42,6 @@ body {
 
 a {
     text-decoration: none;
-}
-
-.row {
-    width: 100%;
-    margin-top: 30px;
 }
 
 .container {
@@ -88,4 +88,46 @@ a {
     top: 0;
     left: 0;
     z-index: 99999999;
+}
+
+.row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.col-3 {
+    width: 25%;
+    padding: 0px 16px;
+}
+
+.col-6 {
+    width: 50%;
+    padding: 0px 16px;
+}
+
+.col-2 {
+    width: 16.66%;
+    padding: 0px 16px;
+}
+
+.col-3 {
+    width: 25%;
+    padding: 0px 16px;
+}
+
+.col-9 {
+    width: 75%;
+    padding: 0px 16px;
+}
+
+.col-4 {
+    width: 33.33%;
+    padding: 0px 16px;
+}
+
+.col-8 {
+    width: 66.66%;
+    padding: 0px 16px;
 }

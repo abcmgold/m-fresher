@@ -22,7 +22,6 @@
 </template>
 
 <script>
-// import { formatMoney } from '../common/common.js';
 export default {
     name: 'MISATextInput',
     props: {
@@ -42,7 +41,7 @@ export default {
     },
 
     methods: {
-         /*
+        /*
          * Sự kiện khi click vào ô input thì giá trị trong ô đó được bôi đậm
          * Author: BATUAN (14/06/2023)
          */
@@ -50,7 +49,7 @@ export default {
             // Bôi đen nội dung trong ô input khi tập trung
             this.$refs.inputValue.select();
         },
-         /*
+        /*
          * Sự kiện khi blur khỏi ô input
          * Author: BATUAN (14/06/2023)
          */
@@ -64,7 +63,7 @@ export default {
                 }
             }
         },
-         /*
+        /*
          * Sự kiện khi giá trị ô input thay đổi
          * Author: BATUAN (14/06/2023)
          */
@@ -73,6 +72,13 @@ export default {
             if (this.$parent.hideErrorMessage) {
                 this.$parent.hideErrorMessage();
             }
+        },
+        /*
+         * Sự kiện tự động focus vào ô input
+         * Author: BATUAN (14/06/2023)
+         */
+        autoFocus() {
+            this.$refs.inputValue.focus();
         },
     },
     emits: ['update:modelValue'],

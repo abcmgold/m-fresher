@@ -1,7 +1,7 @@
 import instance from "./instance";
 
-export const getRecord = async(url) => {
-    let res = await instance.get(url)
+export const getRecord = async(url, body) => {
+    let res = await instance.get(url, body)
     return res;
 }
 
@@ -10,13 +10,14 @@ export const updateRecord = async(url, record) => {
     return res;
 }
 
-export const deleteRecord = async(url) => {
-    let res = await instance.delete(url)
+export const deleteRecord = async(url, listId) => {
+    let res = await instance.delete(url, listId)
     return res;
 }
 
-export const insertRecord = async(url, record) =>  {
-    let res = await instance.post(url,record)
+
+export const insertRecord = async(url, body) =>  {
+    let res = await instance.post(url,body)
     return res;
 }
 

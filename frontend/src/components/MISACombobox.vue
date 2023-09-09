@@ -1,7 +1,6 @@
 <template>
     <el-select
         ref="myComboBox"
-        :disabled="disabled"
         v-model="selectedPropertyTypeName"
         :class="{ 'el-select--error': error }"
         class="combo-box"
@@ -9,25 +8,24 @@
         v-on:blur="onBlurFunction"
         v-on:change="onChangeFunction"
         :placeholder="placeholder"
-        v-on:focus="() => {
-            if (this.$parent.hideErrorMessage) {
-                this.$parent.hideErrorMessage();
-            }
-        }"
         :filterable="this.filterable"
         :value="modelValue"
+        :no-match-text="'Không có kết quả'"
         @change="
-            $emit(
-                'update:modelValue',
-                this.dataSelect.find((code) => {
-                    return code.value == this.selectedPropertyTypeName;
-                }).label,
-            )
+            () => {
+                this.$emit(
+                    'update:modelValue',
+                    this.dataSelect.find((code) => {
+                        return code.value == this.selectedPropertyTypeName;
+                    }).label,
+                );
+            }
         "
     >
         <el-option
+            class="select"
             v-for="code in this.dataSelect"
-            :key="code.value"
+                :key="code.value"
             :label="code.label"
             :value="code.value"
         ></el-option>
@@ -47,16 +45,17 @@ export default {
         placeholder: String,
         errorMsg: String,
         type: String,
-        filterable: Boolean
+        filterable: Boolean,
+        isChecked: Boolean
     },
+    
     mounted() {
         this.selectedPropertyTypeName = this.modelValue;
     },
-    watch: {
-    },
+    watch: {},
     methods: {
-         /*
-         * Sự kiện khi blur khỏ ô input
+        /*
+         * Sự kiện khi blur khỏi ô input
          * Author: BATUAN (14/06/2023)
          */
         onBlurFunction() {
@@ -70,7 +69,7 @@ export default {
                 }
             }
         },
-         /*
+        /*
          * Sự kiện khi ô input thay đổi
          * Author: BATUAN (14/06/2023)
          */
@@ -80,8 +79,23 @@ export default {
                 this.$parent.hideErrorMessage();
             }
         },
+        /*
+         * Sự kiện tự động focus vào ô input
+         * Author: BATUAN (14/06/2023)
+         */
+        autoFocus() {
+            this.$refs.myComboBox.focus();
+            // this.$refs.myComboBox.blur();
+        },
+        /*
+         * Sự kiện tự động blur vào ô input
+         * Author: BATUAN (14/06/2023)
+         */
+        autoBlur() {
+            this.$refs.myComboBox.blur();
+        },
     },
-    emit: ['update:modelValue'],
+    emits: ['update:modelValue'],
 };
 </script>
 

@@ -4,7 +4,8 @@
             <m-icon :icon="icon" ></m-icon>
         </div>
         <div class="sidebar__item--text" >{{label}}</div>
-        <m-icon :icon="arrow"></m-icon>
+        <m-icon icon="icon--down--big" v-if="isShowPropertyMenu"></m-icon>
+        <m-icon icon="icon--up--big" v-if="!isShowPropertyMenu"></m-icon>
     </router-link>
 </template>
 
@@ -25,7 +26,8 @@ export default {
             type: String,
             default: "/"
         },
-        arrow: String
+        arrow: String,
+        isShowPropertyMenu: Boolean,
     },
     created() {
         this.route = this.router

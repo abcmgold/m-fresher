@@ -1,0 +1,125 @@
+.property-tranfer--container {
+    background-color: white;
+}
+
+.property-tranfer--container .hasScrollBar {
+    width: 113px !important;
+}
+
+
+.tranfer__navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+}
+
+.tranfer__content {
+    position: relative;
+}
+
+.tranfer__navbar--left {
+    display: flex;
+    align-items: center;
+    column-gap: 12px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.tranfer__navbar--right {
+    display: flex;
+    align-items: center;
+    column-gap: 12px;
+}
+
+.tranfer__navbar--right button {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+}
+
+.tranfer__separate {
+    width: 100%;
+    height: 4px;
+    border-top: 0.5px solid #777;
+    border-bottom: 0.5px solid #777;
+    cursor: s-resize;
+}
+
+.detail__header {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 16px;
+}
+
+.detail__label {
+    background-color: var(--primary-color);
+    height: 22px;
+    display: flex;
+    line-height: 22px;
+    padding: 0px 6px;
+    border-radius: 4px;
+    color: white;
+    /* font-weight: 600; */
+}
+
+.detail_hidden__icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: #e4e4e4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.detail_show__icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: #e4e4e4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.tranfer__content .table__content--row:hover {
+    background-color: #d1edf4;
+}
+
+.tranfer__content .table__content--row:hover .table--icon{
+    background-color: white;
+}
+
+.no-selected-document {
+    display: flex;
+    align-items: center;
+    column-gap: 12px;
+}
+
+.selected-document {
+    display: flex;
+    align-items: center;
+}
+
+.no-selected-document .btn {
+    padding: 0;
+    min-width: 0;
+}
+
+.selected-document .btn--sub {
+    color: #ec4141;
+    border-color: #ec4141;
+    height: 32px;
+    min-width: 60px;
+}
+
+.selected-document .btn--noborder {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.number-select {
+    font-weight: 300;
+    font-size: 14px;
+}

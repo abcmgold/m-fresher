@@ -1,51 +1,55 @@
 <template>
-    <div class="content__navbar">
+    <div class="content__navbar" tabindex="0" @keydown="handleSearchByKeyBoard">
         <div class="content__navbar-left">
             <div class="text-field">
                 <m-text-input
                     v-model="this.searchInput"
-                    :placeholder="this.MISAResource['vn-VI'].searchProperty"
+                    :placeholder="this.$_MISAResource['vn-VI'].searchProperty"
                     individualClass="text__input-icon-start"
+                    ref="inputSearch"
                 ></m-text-input>
             </div>
             <el-select
+                class="back-ground__icon"
                 v-model="propertyTypeFilter"
                 clearable
-                :placeholder="this.MISAResource['vn-VI'].propertyType"
-                class="back-ground__icon"
+                :placeholder="this.$_MISAResource['vn-VI'].propertyType"
                 filterable
                 :title="propertyTypeFilter"
+                :no-match-text="'Không có kết quả'"
             >
                 <el-option
                     v-for="item in PropertyTypes"
                     :key="item.PropertyTypeId"
                     :label="item.PropertyTypeName"
                     :value="item.PropertyTypeName"
+                    :title="item.PropertyTypeName"
                 ></el-option>
             </el-select>
             <el-select
                 v-model="departmentUseFilter"
                 clearable
-                :placeholder="this.MISAResource['vn-VI'].departmentUse"
+                :placeholder="this.$_MISAResource['vn-VI'].departmentUse"
                 class="back-ground__icon"
                 filterable
                 :title="departmentUseFilter"
+                :no-match-text="'Không có kết quả'"
             >
                 <el-option
                     v-for="item in Departments"
                     :key="item.DepartmentId"
                     :label="item.DepartmentName"
                     :value="item.DepartmentName"
+                    :title="item.DepartmentName"
                 ></el-option>
             </el-select>
             <m-button
-                :label="this.MISAResource['vn-VI'].reload"
+                :label="this.$_MISAResource['vn-VI'].reload"
                 class="content__btn--reload"
                 :individualClass="'btn btn--noborder'"
                 :icon="'icon--reload'"
                 @click="
                     async () => {
-                        await this.$store.commit('toggleMaskElement');
                         await this.getPropertyWithFilter();
                     }
                 "
@@ -53,21 +57,33 @@
         </div>
         <div class="content__navbar-right">
             <m-button
-                :label="this.MISAResource['vn-VI'].addProperties"
+                :label="this.$_MISAResource['vn-VI'].addProperties"
                 :individualClass="'btn--primary'"
                 @click="this.showAddProperty"
             ></m-button>
-            <el-tooltip effect="dark" content="Xuất file excel" placement="bottom-start">
-                <m-button :individualClass="' btn--single btn--combo-excel'"></m-button>
-            </el-tooltip>
-            <el-tooltip effect="dark" content="Xóa" placement="bottom-start">
+            <m-button
+                v-tippy="$_MISAResource['vn-VI'].exportExcel"
+                :individualClass="' btn--single btn--combo-excel'"
+            ></m-button>
+            <m-button
+                v-tippy="$_MISAResource['vn-VI'].delete"
+                :individualClass="' btn--single'"
+                :icon="'icon--delete'"
+                @click="this.deleteRowOnClickIcon"
+            ></m-button>
+            <div class="drop-down">
                 <m-button
-                    :individualClass="' btn--single'"
-                    :icon="'icon--delete'"
-                    @click="this.deleteRowOnClickIcon"
-                    data-title="Xóa"
+                    v-tippy="$_MISAResource['vn-VI'].hide"
+                    :individualClass="' btn--single btn--setting'"
+                    :icon="'icon--setting'"
+                    @click.stop="this.toggleMiniSetting"
                 ></m-button>
-            </el-tooltip>
+                <m-setting
+                    v-show="this.isShowMiniSetting"
+                    :isShowMiniSetting="this.isShowMiniSetting"
+                    @toggleMiniSetting="this.toggleMiniSetting"
+                ></m-setting>
+            </div>
         </div>
     </div>
     <div class="content__body">
@@ -75,6 +91,7 @@
             <div class="table__content--header">
                 <div
                     class="table__content--header-item cell--item"
+                    :class="{ 'cell--item--checkbox': header.name == 'checkbox' }"
                     v-for="(header, index) in this.listHeader"
                     :key="index"
                     :style="{ minWidth: header.width }"
@@ -82,10 +99,9 @@
                     <template v-if="header.name === 'checkbox'">
                         <m-checkbox
                             ref="checkbox-all"
-                            @selectAllRow="selectAllRow"
-                            @unSelectAllRow="unSelectAllRow"
                             type="primary"
                             :class="header.align"
+                            @click="clickOnCheckBoxAll"
                         ></m-checkbox>
                     </template>
                     <template v-else>
@@ -103,78 +119,83 @@
                     </template>
                 </div>
             </div>
-            <div class="table__content--body" ref="contentBody" @scroll="scrollHandler($event)">
+            <div class="table__content--body" style="width: 1670px" ref="contentBody" @scroll="scrollHandler($event)">
                 <div
                     v-for="(data, index) in this.dataRender"
                     :key="data.Id"
                     :class="{
                         'row-selected': isSelected(data.PropertyId),
-                        'row-hovered': this.hoveredRowIndex === data.PropertyId,
+                        'row-hovered': this.hoveredRowIndex == data.PropertyId || this.indexContextMenu == index,
                     }"
                     @click="clickOnRowTable(index, data.PropertyId, $event)"
                     class="table__content--row"
-                    @mouseenter="handleMouseOver(data.PropertyId)"
+                    @mouseenter.stop="handleMouseOver(data.PropertyId)"
                     @mouseleave="handleMouseOut"
                     @dblclick="showDetail(index, data.PropertyId)"
+                    @contextmenu.prevent="showContextMenu($event, index, data.PropertyId)"
                 >
                     <div class="text-align-center cell--item cell--item--checkbox" style="minWidth: 50px">
                         <m-checkbox
                             :ref="`checkbox-${data.PropertyId}`"
-                            @checkedCheckbox="checkedCheckbox"
-                            @uncheckedCheckbox="uncheckedCheckbox"
                             :id="data.PropertyId"
+                            @click="clickOnCheckbox(index, data.PropertyId)"
                         ></m-checkbox>
                     </div>
                     <div class="text-align-center cell--item" style="minWidth: 50px">{{ index + 1 }}</div>
-                    <div class="text-align-left cell--item" style="minWidth: 150px">{{ data.PropertyCode }}</div>
-                    <div class="text-align-left cell--item" style="minWidth: 300px">{{ data.PropertyName }}</div>
+                    <div class="text-align-left cell--item" style="minWidth: 150px">
+                        <div class="text--surround">{{ data.PropertyCode }}</div>
+                    </div>
+                    <div class="text-align-left cell--item" style="minWidth: 300px">
+                        <div class="text--surround">{{ data.PropertyName }}</div>
+                    </div>
                     <div class="text-align-left cell--item" style="minWidth: 250px">
-                        {{ data.PropertyTypeName }}
+                        <div class="text--surround">{{ data.PropertyTypeName }}</div>
                     </div>
-                    <div class="text-align-left cell--item" style="minWidth: 250px">{{ data.DepartmentName }}</div>
-                    <div class="text-align-right cell--item" style="minWidth: 160px">
-                        {{ this.formatedMoney(data.Quantity) }}
+                    <div class="text-align-left cell--item" style="minWidth: 250px">
+                        <div class="text--surround">{{ data.DepartmentName }}</div>
                     </div>
-                    <div class="text-align-right cell--item" style="minWidth: 150px">
-                        {{ this.formatedMoney(data.OriginalPrice) }}
-                    </div>
-                    <div class="text-align-right cell--item" style="minWidth: 150px">
-                        {{ this.formatedMoney(data.WearRateValue) }}
+                    <div class="text-align-right cell--item" style="minWidth: 100px">
+                        <div class="text--surround">{{ this.formatedMoney(data.Quantity) }}</div>
                     </div>
                     <div class="text-align-right cell--item" style="minWidth: 150px">
-                        {{ this.formatedMoney(data.OriginalPrice - data.WearRateValue) }}
+                        <div class="text--surround">{{ this.formatedMoney(data.OriginalPrice) }}</div>
                     </div>
-                    <div class="table-list-icons cell--item stay-right" style="minWidth: 120px"></div>
+                    <div class="text-align-right cell--item" style="minWidth: 150px">
+                        <div class="text--surround">{{ this.formatedMoney(data.WearRateValue) }}</div>
+                    </div>
+                    <div class="text-align-right cell--item" style="minWidth: 150px">
+                        <div class="text--surround">
+                            {{ this.formatedMoney(data.OriginalPrice - data.WearRateValue) }}
+                        </div>
+                    </div>
+                    <div class="cell--item" style="minWidth: 120px"></div>
                 </div>
             </div>
-            <div class="table__content--sumary">
+            <div style="width: 1666px" class="table__content--sumary" v-if="this.$store.getters.getIsShowSummary">
                 <div class="text-align-center cell--item" style="minWidth: 50px"></div>
                 <div style="minWidth: 50px"></div>
                 <div style="minWidth: 150px"></div>
                 <div style="minWidth: 300px"></div>
                 <div style="minWidth: 250px"></div>
                 <div style="minWidth: 250px"></div>
-                <div style="minWidth: 160px; font-weight: bold; padding: 0px 16px" class="text-align-right">
-                    {{ this.formatedMoney(this.totalProperties['Quantity']) }}
+                <div style="minWidth: 100px; font-weight: bold; padding: 0px 16px" class="text-align-right">
+                    {{ this.formatedMoney(this.totalSummary.TotalQuantity) }}
                 </div>
                 <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
-                    {{ this.formatedMoney(this.totalProperties['OriginalPrice']) }}
+                    {{ this.formatedMoney(this.totalSummary.TotalOriginalPrice) }}
                 </div>
                 <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
-                    {{ this.formatedMoney(this.totalProperties['WearRateValue']) }}
+                    {{ this.formatedMoney(this.totalSummary.TotalWearRateValue) }}
                 </div>
                 <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
                     {{
-                        this.formatedMoney(
-                            this.totalProperties['OriginalPrice'] - this.totalProperties['WearRateValue'],
-                        )
+                        this.formatedMoney(this.totalSummary.TotalOriginalPrice - this.totalSummary.TotalWearRateValue)
                     }}
                 </div>
                 <div style="minWidth: 120px"></div>
             </div>
-            <!-- <el-skeleton :rows="5" animated style="width: 100% !important"/> -->
         </div>
-        <div class="table__fixed">
+        <div class="table__fixed" :class="{ 'table__fixed--summary': !this.$store.getters.getIsShowPaging }">
             <div class="table__fixed--header">Chức năng</div>
             <div class="table__fixed--body" ref="fixedBody" @scroll="scrollHandler($event)">
                 <div
@@ -182,24 +203,29 @@
                     :key="index"
                     :class="{
                         'row-selected': isSelected(data.PropertyId),
-                        'row-hovered': this.hoveredRowIndex === data.PropertyId,
+                        'row-hovered': this.hoveredRowIndex == data.PropertyId || this.indexContextMenu == index,
                     }"
                     class="table-list-icons cell--item"
                     @mouseover="handleMouseOver(data.PropertyId)"
                     @mouseout="handleMouseOut"
                     @click="clickOnRowTable(index, data.PropertyId, $event)"
                 >
-                    <!-- <el-tooltip effect="dark" content="Chỉnh sửa" placement="bottom-start"> -->
-                    <div class="table--icon table--icon-pencil" @click="this.showDetail(index, data.id)"></div>
-                    <!-- </el-tooltip> -->
-                    <!-- <el-tooltip effect="dark" content="Xóa" placement="bottom-start"> -->
-                    <div class="table--icon table--icon-comment"></div>
-                    <!-- </el-tooltip> -->
+                    <div
+                        v-tippy="$_MISAResource['vn-VI'].edit"
+                        class="table--icon table--icon-pencil"
+                        @click="this.showDetail(index, data.id)"
+                    ></div>
+                    <div
+                        v-tippy="$_MISAResource['vn-VI'].duplicate"
+                        @click.stop
+                        class="table--icon table--icon-duplicate"
+                        @click="this.showDuplicate(index, data.id)"
+                    ></div>
                 </div>
             </div>
-            <div class="table__fixed--sumary"></div>
+            <div class="table__fixed--sumary" v-if="this.$store.getters.getIsShowSummary"></div>
         </div>
-        <div class="table__paging paging">
+        <div class="table__paging paging" v-if="this.$store.getters.getIsShowPaging">
             <m-pagination
                 :dataSelect="this.numberOfRecordsPerPage"
                 :numberPages="this.pageNumber * 10"
@@ -209,10 +235,9 @@
                 @changePageSize="changePageSize"
             ></m-pagination>
         </div>
-        <div class="table__content--empty" v-if="isShowEmptyRecord"></div>
-        <!-- <div class="scroll-bar-y" ref="tableScroll" @scroll="scrollHandler">
-            <div class="scroll-bar-content" :style="{ height: `${this.scrollBarContentHeight}px` }"></div>
-        </div> -->
+        <div class="table__content--empty" v-if="isShowEmptyRecord">
+            <div class="icon--empty"></div>
+        </div>
         <div v-if="this.isLoadingData" class="grid-loading-container">
             <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
             <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
@@ -231,67 +256,118 @@
             <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
             <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
         </div>
-
-        <m-modal v-if="this.isShowDeleteDialog">
-            <m-dialog
-                :text="this.textDialog"
-                firstBtnLabel="Không"
-                thirdBtnLabel="Xóa"
-                :beginText="this.beginText"
-                :endText="this.deleteMsg"
-                :firstBtnFunction="closeDialog"
-                :thirdBtnFunction="deleteRow"
-            ></m-dialog>
-        </m-modal>
-        <m-modal v-if="this.isShowWarnDialog">
-            <m-dialog
-                :text="this.textDialog"
-                thirdBtnLabel="Đóng"
-                :thirdBtnFunction="
-                    () => {
-                        this.isShowWarnDialog = false;
-                    }
-                "
-            ></m-dialog>
-        </m-modal>
     </div>
     <PropertyAdd
+        ref="propertyForm"
         v-if="isShowAddProperty"
         @addNewProperty="addNewProperty"
         @updateValueRow="updateValueRowSelected"
         @hideAddProperty="hideAddProperty"
-        :selectedRow="this.selectedData"
         @resetSelectedRow="this.resetSelectedRow"
+        @showDialog="this.showDialog"
+        @closeDialogAndForm="this.closeDialogAndForm"
+        @closeDialog="this.closeDialog"
+        :selectedRow="this.selectedData"
+        :propertyCodeSample="this.propertyCodeSample"
         :departmentCodes="this.departmentCodes"
         :propertyTypeCodes="this.propertyTypeCodes"
+        :formMode="this.formMode"
     ></PropertyAdd>
+    <m-modal v-if="this.isShowModal">
+        <m-dialog
+            :type="this.typeDialog"
+            :text="this.textDialog"
+            :status="this.statusDialog"
+            :documentInfo="this.documentInfoDialog"
+            :firstBtnFunction="this.firstBtnFunction"
+            :secondBtnFunction="this.secondBtnFunction"
+            :thirdBtnFunction="this.thirdBtnFunction"
+            :firstBtnLabel="this.firstDialogBtnText"
+            :secondBtnLabel="this.secondDialogBtnText"
+            :thirdBtnLabel="this.thirdDialogBtnText"
+            :dialogActions="this.dialogActions"
+        ></m-dialog>
+    </m-modal>
+
+    <m-context-menu
+        @showDetail="this.showDetail(this.indexSelected, this.idSelected)"
+        @showDuplicate="this.showDuplicate(this.indexSelected, this.idSelected)"
+        @deleteOneRow="this.deleteOneRow(this.idSelected, this.indexSelected)"
+        :position="this.contextMenuPosition"
+        :isShowContext="this.$store.getters.getIsShowContextMenu"
+        :isHasDuplicate="true"
+    ></m-context-menu>
     <m-toast :label="this.labelToastSuccess" icon="icon--success" v-if="isShowToastSuccess"></m-toast>
     <m-toast :label="this.labelToastError" icon="icon--error" v-if="isShowToastError"></m-toast>
 </template>
 
 <script scoped>
 import { formatMoney } from '@/common/common';
+import { delay } from '@/common/common';
 import PropertyAdd from './PropertyAdd.vue';
 import instance from '@/common/instance';
 import request from '@/common/api';
 import debounce from 'lodash/debounce';
-import { MISAResource } from '@/common/resource';
+import { directive } from 'vue-tippy';
+import exception from '@/common/exception';
+
 export default {
     name: 'EstateList',
     components: {
         PropertyAdd,
     },
+    directives: {
+        tippy: directive,
+    },
     data() {
         return {
-            MISAResource: MISAResource,
-            scrollBarContentHeight: 0,
+            // Biến đánh dấu show summary
+            isShowSummary: true,
+            // Biến đánh dấu show paging
+            isShowPaging: true,
+            // Biến đánh dấu show setting
+            isShowMiniSetting: false,
+            // Function của button đầu tiên từ trái sang trong dialog
+            firstBtnFunction: null,
+            // Function của button thứ 2 từ trái sang trong dialog
+            secondBtnFunction: null,
+            // Function của button thứ 3 từ trái sang trong dialog
+            thirdBtnFunction: null,
+            // Nhãn của các button trong dialog
+            statusDialog: -1,
+            typeDialog: '',
+            firstDialogBtnText: '',
+            secondDialogBtnText: '',
+            thirdDialogBtnText: '',
+            beginText: '',
+            textDialog: '',
+            endText: '',
+            // Biến đánh dấu show modal
+            isShowModal: false,
+            isShowModalRespone: false,
+            // Biến đánh dấu show context menu hay không
+            isShowContext: false,
+            // Vị trí của hàng được show context menu
+            indexContextMenu: null,
+            // Mã code tự động sinh được trả về từ backend
+            propertyCodeSample: null,
+            // index của hàng được chọn để lên form
+            indexSelected: null,
+            // id của hàng được chọn để lên form
+            idSelected: null,
+            // Chiều dài và rộng của context menu
+            contextMenuPosition: {},
+            // Biến đánh dấu là xóa nhiều hay không
+            isMultipleDelele: false,
+            // Biến lưu trạng thái form
+            formMode: null,
+            // Lưu danh sách header
             listHeader: [],
-
-            // giá trị ô lọc mã tài sản
+            // Giá trị ô lọc mã tài sản
             propertyTypeFilter: '',
-            // giá trị ô lọc tên phòng ban sử dụng
+            // Giá trị ô lọc tên phòng ban sử dụng
             departmentUseFilter: '',
-            //Danh sách bộ phận sử dụng
+            // Danh sách bộ phận sử dụng
             Departments: [],
             // Danh sách loại tài sản
             PropertyTypes: [],
@@ -301,80 +377,83 @@ export default {
             departmentCodes: [],
             // lưu các mã loại tài sản để đẩy vào cho component combobox
             propertyTypeCodes: [],
-
+            // Biến check show form detail hay không
             isShowDetail: false,
+            // Biến check show toast success hay không
             isShowToastSuccess: false,
+            // Biến check show toast error hay không
             isShowToastError: false,
-
+            // Nội dung của toast success
             labelToastSuccess: '',
+            // Nội dung của toast error
             labelToastError: '',
-
+            // Biến check show form thêm tài sản hay không
             isShowAddProperty: false,
-            isShowDeleteDialog: false,
-            isShowWarnDialog: false,
-            deleteMsg: '',
-            beginText: '',
-            textDialog: '',
+            // Lưu giá trị hàng được chọn hiển thị lên form thêm hoặc nhân bản
             selectedData: null,
-            hoveredRow: null,
+            // Lưu danh sách id của các hàng được chọn
             selectedRow: [],
-            seletedRowIndex: null,
-            idSelectedData: -1,
-            pageSize: 20,
+            // Mặc định số lượng bản ghi trên trang
+            pageSize: '20',
+            // Tổng số bản ghi
             totalRecords: 0,
+            // Mảng lưu giá trị các cột trong summary
+            totalSummary: {},
+            // Mặc định giá trị page hiện tại
             currentPage: 1,
+            // Số lượng trang
             pageNumber: 0,
+            // Lưu trạng thái loading
             isLoadingData: false,
-            totalProperties: {}, // lưu giá trị của tổng các cột
+            // Lưu giá trị các bản ghi hiển thị lên table
             dataTable: [],
+            // Lưu giá trị các bản ghi hiển thị lên table
             dataRender: [],
+            // Lưu giá trị index của hàng được hover
             hoveredRowIndex: -1,
-
-            // show khi không có bản ghi nào
+            // Lưu trạng thái hiển thị không có bản ghi hay không
             isShowEmptyRecord: false,
-
             numberOfRecordsPerPage: [
                 {
-                    label: 20,
-                    value: 20,
+                    label: '20',
+                    value: '20',
                 },
                 {
-                    label: 40,
-                    value: 40,
+                    label: '40',
+                    value: '40',
                 },
                 {
-                    label: 60,
-                    value: 60,
+                    label: '60',
+                    value: '60',
                 },
             ],
             // Đánh dấu hàng đầu tiên được chọn khi dùng sự kiện shift + click
             firstClickRow: 0,
+            // Đánh dấu hàng thứ hai được chọn khi dùng sự kiện shift + click
             secondClickRow: '',
+            errorFieldName: '',
+            documentInfoDialog: [],
+            dialogActions: {
+                firstDialogBtnText: '',
+                secondDialogBtnText: '',
+                thirdDialogBtnText: '',
+                firstBtnFunction: null,
+                secondBtnFunction: null,
+                thirdBtnFunction: null,
+            },
         };
     },
     async created() {
         // Lấy ra list header
-        this.listHeader = this.MISAResource['vn-VI'].listHeader;
-
-        this.getAllProperty();
+        this.listHeader = this.$_MISAResource['vn-VI'].listHeader;
         // Lấy ra danh sách phòng ban để đưa vào combo box
         this.getAllDepartments();
-
-        // Lấy ra danh sách phòng ban để đưa vào combo box
+        // Lấy ra danh sách mã loại tài sản để đưa vào combo box
         this.getAllPropertyTypes();
-
+        // Lấy dữ liệu phân trang
         await this.getPropertyWithFilter();
-
+        // Tính toán số trang
         this.calculateNumberPage();
-
-        // Tính lại độ dài thanh scroll custom
-        if (this.totalRecords) {
-            if (this.totalRecords <= this.pageSize) {
-                this.scrollBarContentHeight = this.totalRecords * 48;
-            } else {
-                this.scrollBarContentHeight = this.pageSize * 48;
-            }
-        }
     },
     watch: {
         pageSize: function (newValue) {
@@ -390,24 +469,12 @@ export default {
             this.$refs['checkbox-all'][0].isChecked = false;
             this.selectedRow = [];
 
-            // tính toán lại giá trị thanh scroll
-            if (this.totalRecords) {
-                if (this.totalRecords <= newValue) {
-                    this.scrollBarContentHeight = this.totalRecords * 48;
-                } else {
-                    this.totalRecords = newValue * 48;
-                }
-            }
-
             for (let i = 0; i < this.selectedRow.length; i++) {
                 this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = true;
             }
             this.checkFullChecked();
         },
         currentPage: async function () {
-            this.dataRender.forEach((data) => {
-                this.dataTable.push(data);
-            });
             await this.getPropertyWithFilter();
 
             for (let i = 0; i < this.dataRender.length; i++) {
@@ -475,9 +542,7 @@ export default {
 
             this.selectedRow = [];
         }, 1000),
-        dataRender: function () {
-            this.calculateTotal(['Quantity', 'OriginalPrice', 'WearRateValue', 'ResidualValue']);
-        },
+
         selectedRow: function () {
             for (let i = 0; i < this.dataRender.length; i++) {
                 if (
@@ -500,6 +565,7 @@ export default {
         changePageSize: function (newValue) {
             this.pageSize = newValue;
         },
+
         /*
          * Lấy dữ liệu phòng ban để đưa vào combobox
          * Author: BATUAN (14/06/2023)
@@ -510,8 +576,8 @@ export default {
                 .then((response) => {
                     this.Departments = response.data;
                 })
-                .catch((error) => {
-                    console.log(error.message);
+                .catch((err) => {
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
 
             this.Departments.forEach((department) => {
@@ -532,8 +598,8 @@ export default {
                 .then((response) => {
                     this.PropertyTypes = response.data;
                 })
-                .catch((error) => {
-                    console.log(error.message);
+                .catch((err) => {
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
 
             this.PropertyTypes.forEach((propertyType) => {
@@ -541,6 +607,8 @@ export default {
                     id: propertyType.PropertyTypeId,
                     value: propertyType.PropertyTypeName,
                     label: propertyType.PropertyTypeCode,
+                    wearRate: propertyType.WearRate,
+                    numberYearUse: propertyType.NumberYearUse,
                 });
             });
         },
@@ -552,25 +620,53 @@ export default {
             this.isLoadingData = true;
             await request
                 .getRecord(
-                    `Property/filter?pageNumber=${this.currentPage}&pageSize=${this.pageSize}&searchInput=${this.searchInput}&propertyType=${this.propertyTypeFilter}&departmentName=${this.departmentUseFilter}`,
+                    `Property/filter?pageNumber=${this.currentPage}&pageSize=${Number(this.pageSize)}&searchInput=${
+                        this.searchInput
+                    }&propertyType=${this.propertyTypeFilter}&departmentName=${this.departmentUseFilter}`,
                 )
                 .then((response) => {
+                    // lưu dữ liệu data hiển thị
                     this.dataRender = response.data.Data;
-                    this.totalRecords = response.data.NumberRecords;
+                    // lưu tổng số bản ghi
+                    this.totalRecords = response.data.Total[0].TotalRecord;
+                    // lưu giá trị tổng số
+                    this.totalSummary = response.data.Total[0];
+                    // lưu dữ liệu vào mảng phục vụ việc truy xuất khi sang trang khác(xóa nhiều)
+                    this.dataRender.forEach((data) => {
+                        this.dataTable.push(data);
+                    });
                 })
-                .catch((error) => {
-                    console.error(error);
+                .catch((err) => {
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
 
             setTimeout(() => {
                 this.isLoadingData = false;
             }, 500);
-
+            // kiểm tra xem mảng dataRender có rỗng hay không
             if (this.dataRender.length === 0) {
                 this.isShowEmptyRecord = true;
             } else {
                 this.isShowEmptyRecord = false;
             }
+        },
+        /*
+         * Tạo mã code mới khi mở form thêm
+         * Author: BATUAN (16/06/2023)
+         */
+        async generateSampleCode() {
+            this.$store.commit('toggleMaskElementShow');
+            await instance
+                .get('Property/GetLastestCode')
+                .then((res) => {
+                    this.propertyCodeSample = res.data;
+                })
+                .catch((err) => {
+                    this.handleException(err.statusCode, err.message, this.showDialog);
+                });
+
+            await delay(300);
+            this.$store.commit('toggleMaskElementShow');
         },
         /*
          * Lấy dữ liệu tất cả bản ghi trong db
@@ -582,8 +678,8 @@ export default {
                 .then((response) => {
                     this.dataTable = response.data;
                 })
-                .catch((error) => {
-                    console.error(error);
+                .catch((err) => {
+                    this.handleException(err.statusCode, err.message, this.showDialog);
                 });
         },
         /*
@@ -597,11 +693,38 @@ export default {
          * Hiển thị trang chi tiết và gán các giá trị của hàng được chọn
          * Author: BATUAN (27/05/2023)
          */
-        showDetail(index, id) {
-            this.showAddProperty();
+        async showDetail(index, id) {
+            this.$store.commit('toggleMaskElementShow');
+            await delay(300);
+            this.$store.commit('toggleMaskElementShow');
+            // Gán form mode thành form update
+            this.formMode = this.$_MISAEnum.formUpdate;
+            // Hiển thị màn hình update(giống thêm mới)
+            this.isShowAddProperty = true;
+            // Lấy giá trị data để hiển thị lên màn chi tiết
             this.selectedData = this.dataRender[index];
-            this.seletedRowIndex = index;
-            this.idSelectedData = id;
+            // Lưu index hàng được chọn
+            this.indexSelected = index;
+            // Lưu id hàng được chọn
+            this.idSelected = id;
+        },
+        /*
+         * Hiển thị trang chi tiết(nhân bản)
+         * Author: BATUAN (27/06/2023)
+         */
+        async showDuplicate(index, id) {
+            // Lấy mã code tự sinh
+            await this.generateSampleCode();
+            // Gán giá trị form mode thành form nhân bản
+            this.formMode = this.$_MISAEnum.formDuplicate;
+            // Hiển thị màn hình thêm mới
+            this.isShowAddProperty = true;
+            // Lấy giá trị data
+            this.selectedData = this.dataRender[index];
+            // Lưu index hàng được chọn
+            this.indexSelected = index;
+            // Lưu id hàng được chọn
+            this.idSelected = id;
         },
         /*
          * Ẩn trang chi tiết
@@ -620,7 +743,7 @@ export default {
             // Ẩn sau 3s
             setTimeout(() => {
                 this.isShowToastSuccess = false;
-            }, 4000);
+            }, 3000);
         },
         /*
          * Show toast hiển thị hành động thất bại
@@ -632,15 +755,16 @@ export default {
             // Ẩn sau 3s
             setTimeout(() => {
                 this.isShowToastError = false;
-            }, 4000);
+            }, 3000);
         },
         /*
          * Hiển thị trang thêm tài sản
          * Author: BATUAN (27/05/2023)
          */
-        showAddProperty() {
+        async showAddProperty() {
+            await this.generateSampleCode();
+            this.formMode = this.$_MISAEnum.formAdd;
             this.isShowAddProperty = true;
-            this.$store.commit('toggleMaskElement');
         },
         /*
          * Ẩn trang thêm tài sản
@@ -654,20 +778,35 @@ export default {
          * Author: BATUAN (27/05/2023)
          */
         async updateValueRowSelected(newValue) {
+            newValue.OriginalPrice = Number(newValue.OriginalPrice);
+            newValue.WearRateValue = Number(newValue.WearRateValue);
+            newValue.Quantity = Number(newValue.Quantity);
+            newValue.NumberYearUse = Number(newValue.NumberYearUse);
+            newValue.WearRate = Number(newValue.WearRate);
+
+            let listUpdate = [];
+            listUpdate.push(newValue);
             let isSuccess = false;
+            this.$store.commit('toggleMaskElementShow');
             // update giá trị trên db
             await request
-                .updateRecord(`Property/${newValue.PropertyId}`, newValue)
+                .updateRecord('Property', listUpdate)
                 .then(() => {
                     isSuccess = true;
                 })
                 .catch((err) => {
-                    this.showToastError(err.response.data.UserMessage);
+                    this.$store.commit('toggleMaskElementShow');
+                    this.handleException(err.statusCode, err.message, this.showDialog);
                 });
 
             if (isSuccess) {
+                await delay(300);
+                this.$store.commit('toggleMaskElementShow');
+                // Ẩn form
                 this.hideAddProperty();
-                this.showToastSuccess(this.MISAResource['vn-VI'].updatePropertySuccess);
+                // Show toast success
+                this.showToastSuccess(this.$_MISAResource['vn-VI'].updatePropertySuccess);
+                // Lấy lại danh sách hiển thị trên table
                 this.getPropertyWithFilter();
             }
         },
@@ -676,6 +815,11 @@ export default {
          * Author: BATUAN (12/06/2023)
          */
         clickOnRowTable(index, id, event) {
+            // Nếu là sự kiện double click thì bỏ qua
+            if (event.detail == 2) {
+                return;
+            }
+            // Sự kiện Ctrl + Click
             if (event.ctrlKey) {
                 if (!this.selectedRow.includes(id)) {
                     this.selectedRow.push(id);
@@ -702,12 +846,14 @@ export default {
                     this.selectedRow = this.selectedRow.filter((num) => {
                         return num != id;
                     });
-                    console.log(this.selectedRow);
                 }
             } else if (event.shiftKey) {
                 if (this.firstClickRow || this.firstClickRow === 0) {
                     this.secondClickRow = index;
                     if (this.secondClickRow > this.firstClickRow) {
+                        this.selectedRow = this.selectedRow.filter((id) => {
+                            return this.dataRender.some((item) => item.id === id);
+                        });
                         for (let i = this.firstClickRow; i <= this.secondClickRow; i++) {
                             const propertyId = this.dataRender[i].PropertyId;
                             if (!this.selectedRow.includes(propertyId)) {
@@ -730,10 +876,12 @@ export default {
                                     this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = true;
                                 }
                             }
-
                             this.checkFullChecked();
                         }
                     } else {
+                        this.selectedRow = this.selectedRow.filter((id) => {
+                            return this.dataRender.some((item) => item.id === id);
+                        });
                         for (let i = this.secondClickRow; i <= this.firstClickRow; i++) {
                             const propertyId = this.dataRender[i].PropertyId;
                             if (!this.selectedRow.includes(propertyId)) {
@@ -770,17 +918,31 @@ export default {
          * Author: BATUAN (14/06/2023)
          */
         async addNewProperty(newProperty) {
+            // chuyển đổi các trường sang dạng số
+            newProperty.OriginalPrice = Number(newProperty.OriginalPrice);
+            newProperty.WearRateValue = Number(newProperty.WearRateValue);
+            newProperty.Quantity = Number(newProperty.Quantity);
+            newProperty.NumberYearUse = Number(newProperty.NumberYearUse);
+            newProperty.WearRate = Number(newProperty.WearRate);
+            //biến cờ đánh dấu chưa thành công
+            let listNewProperty = [];
+            listNewProperty.push(newProperty);
             let isSuccess = false;
+            this.$store.commit('toggleMaskElementShow');
             await request
-                .insertRecord('Property', newProperty)
+                .insertRecord('Property', listNewProperty)
                 .then(() => (isSuccess = true))
-                .catch((err) => {
-                    this.showToastError(err.response.data.UserMessage);
+                .catch(async (err) => {
+                    this.$store.commit('toggleMaskElementShow');
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                    this.errorFieldName = err.errorField;
                 });
 
             if (isSuccess) {
                 this.hideAddProperty();
-                this.showToastSuccess(this.MISAResource['vn-VI'].addPropertySuccess);
+                await delay(300);
+                this.$store.commit('toggleMaskElementShow');
+                this.showToastSuccess(this.$_MISAResource['vn-VI'].addPropertySuccess);
                 await this.getPropertyWithFilter();
                 this.checkForCheckbox();
                 this.calculateNumberPage();
@@ -835,7 +997,7 @@ export default {
                 }
             });
 
-            if (check == true) {
+            if (check == true && this.dataRender.length > 0) {
                 this.$refs['checkbox-all'][0].isChecked = true;
             } else {
                 this.$refs['checkbox-all'][0].isChecked = false;
@@ -865,7 +1027,7 @@ export default {
         handleMouseOver(id) {
             setTimeout(() => {
                 this.hoveredRowIndex = id;
-            }, 50);
+            }, 54);
         },
         /*
          * Sự kiện khi thoát hover khỏi 1 hàng
@@ -902,78 +1064,118 @@ export default {
             );
         },
         /*
-         * Sự kiện khi click vào biểu tượng xóa
+         * Sự kiện khi click vào biểu tượng xóa nhiều
          * Author: BATUAN (08/06/2023)
          */
         deleteRowOnClickIcon() {
-            // reset giá trị trong dialog
-            this.textDialog = '';
-            this.beginText = '';
-            this.endText = '';
-
             if (this.selectedRow.length <= 0) {
-                this.isShowWarnDialog = true;
-                this.textDialog = this.MISAResource['vn-VI'].chooseAtLeastOne;
+                this.showDialog(this.$_MISAResource['vn-VI'].chooseAtLeastOne, '', {
+                    thirdBtnFunction: this.closeDialog,
+                    thirdDialogBtnText: this.$_MISAResource['vn-VI'].close,
+                });
             } else {
-                this.isShowDeleteDialog = true;
                 if (this.selectedRow.length == 1) {
-                    this.textDialog = this.MISAResource['vn-VI'].confirm;
-
                     let record = this.dataTable.find((data) => {
                         return data.PropertyId == this.selectedRow[0];
                     });
                     let code = record.PropertyCode;
                     let name = record.PropertyName;
 
-                    this.deleteMsg = `${code}-${name}`;
+                    this.textDialog = `${this.$_MISAResource['vn-VI'].confirm} <strong>${code}-${name} ? </strong>`;
                 } else {
-                    this.deleteMsg = '';
-                    this.beginText =
+                    let beginText =
                         this.selectedRow.length >= 10 ? this.selectedRow.length : `0${this.selectedRow.length}`;
-                    this.textDialog = this.MISAResource['vn-VI'].deleteMultipleMessage;
+                    this.textDialog = `<strong>${beginText}</strong> ${this.$_MISAResource['vn-VI'].deleteMultipleMessage}`;
                 }
+                this.showDialog(this.textDialog, '', {
+                    firstBtnFunction: this.closeDialog,
+                    firstDialogBtnText: this.$_MISAResource['vn-VI'].cancel,
+                    thirdBtnFunction: this.deleteRows,
+                    thirdDialogBtnText: this.$_MISAResource['vn-VI'].delete,
+                });
             }
+            this.isMultipleDelele = true;
         },
         /*
-         * Đóng dialog thông báo xóa
+         * Sự kiện khi click vào biểu tượng xóa ở hàng của table
          * Author: BATUAN (08/06/2023)
          */
-        closeDialog() {
-            this.isShowDeleteDialog = false;
+        deleteOneRow(id,index) {
+            let code = this.dataRender[index].PropertyCode;
+            let name = this.dataRender[index].PropertyName;
+
+            this.textDialog = `${this.$_MISAResource['vn-VI'].confirm} <strong>${code}-${name}?</strong>`;
+
+            this.showDialog(this.textDialog, [], {
+                firstBtnFunction: this.closeDialog,
+                firstDialogBtnText: this.$_MISAResource['vn-VI'].cancel,
+                thirdBtnFunction: () => this.deleteRows(id),
+                thirdDialogBtnText: this.$_MISAResource['vn-VI'].delete,
+            });
+
+            this.isMultipleDelele = false;
         },
         /*
          * Xóa các hàng được chọn
          * Author: BATUAN (08/06/2023)
          */
-        async deleteRow() {
-            const idsToDelete = [];
-            this.selectedRow.forEach((item) => {
-                idsToDelete.push(item);
-            });
+        async deleteRows(id) {
+            if (this.isMultipleDelele) {
+                //Xóa các bản ghi
+                await instance
+                    .delete(`Property`, { data: this.selectedRow })
+                    .then(async () => {
+                        this.showToastSuccess('Xóa thành công');
+                        // Reset list các hàng được chọn && set ô checkbox là unchecked
+                        for (let i = 0; i < this.selectedRow.length; i++) {
+                            if (
+                                this.$refs[`checkbox-${this.selectedRow[i]}`] &&
+                                this.$refs[`checkbox-${this.selectedRow[i]}`][0]
+                            )
+                                this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = false;
+                        }
+                        this.selectedRow = [];
 
-            //Xóa các bản ghi
-            await instance
-                .delete(`Property/${idsToDelete.join(', ')}`)
-                .then((res) => console.log(res))
-                .catch((err) => console.log(err));
+                        this.closeDialogAndForm();
 
-            // Ẩn dialog thông báo xóa
-            this.isShowDeleteDialog = false;
-            // Hiện toast message thông báo thành công
-            this.showToastSuccess('Xóa thành công');
-            // Reset list các hàng được chọn
-            for (let i = 0; i < this.selectedRow.length; i++) {
-                if (this.$refs[`checkbox-${this.selectedRow[i]}`] && this.$refs[`checkbox-${this.selectedRow[i]}`][0])
-                    this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = false;
+                        await this.getPropertyWithFilter();
+
+                        this.calculateNumberPage();
+
+                        this.$refs['checkbox-all'][0].isChecked = false;
+                    })
+                    .catch((err) => {
+                        this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                    });
             }
-            this.selectedRow = [];
+            // Xóa 1 bản ghi
+            else {
+                let row = [];
+                row.push(id)
+                await instance
+                    .delete(`Property`, { data: row })
+                    .then(async () => {
+                        // Hiện toast message thông báo thành công
+                        this.showToastSuccess('Xóa thành công');
+                        // Xóa hàng bị xóa khỏi danh sách các hàng đang được chọn (nếu có)
+                        this.selectedRow = this.selectedRow.filter((rowId) => {
+                            return id != rowId;
+                        });
+                        if (this.$refs[`checkbox-${id}`] && this.$refs[`checkbox-${id}`][0]) {
+                            this.$refs[`checkbox-${id}`][0].isChecked = false;
+                        }
+                        this.closeDialogAndForm();
 
-            // this.getAllProperty();
-            await this.getPropertyWithFilter();
+                        await this.getPropertyWithFilter();
 
-            this.calculateNumberPage();
+                        this.calculateNumberPage();
 
-            this.$refs['checkbox-all'][0].isChecked = false;
+                        this.$refs['checkbox-all'][0].isChecked = false;
+                    })
+                    .catch((err) => {
+                        this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                    });
+            }
         },
         /*
          * Sự kiện khi thay đổi giá trị của currentPage khi click sang trái hoặc phải ở phần paging
@@ -982,22 +1184,48 @@ export default {
         changeCurrentPage(newPage) {
             this.currentPage = newPage;
         },
-        /**
-         * Tính toán tổng các giá trị của các hàng trong bảng (Số lượng, Nguyên giá
-         * HM/KH lũy kế, Giá trị còn lại)
-         * Author: BATUAN (08/06/2023)
+        /*
+         * Sự kiện khi click vào ô checkbox
+         * Author: BATUAN (07/06/2023)
          */
-        calculateTotal(cols) {
-            try {
-                cols.forEach((col) => {
-                    this.totalProperties[col] = this.dataRender.reduce((total, item) => {
-                        return total + item[col];
-                    }, 0);
+        clickOnCheckbox(index, id) {
+            console.log(index);
+            if (this.$refs[`checkbox-${id}`][0].isChecked) {
+                this.selectedRow = this.selectedRow.filter((idRow) => {
+                    return idRow != id;
                 });
-            } catch (e) {
-                console.log(e);
+            } else {
+                this.selectedRow.push(id);
             }
+            this.checkForCheckbox();
+            this.checkFullChecked();
         },
+        /*
+         * Sự kiện khi click vào ô checkbox all
+         * Author: BATUAN (07/06/2023)
+         */
+        clickOnCheckBoxAll() {
+            if (this.$refs['checkbox-all'][0].isChecked) {
+                let propertyListId = [];
+                this.dataRender.forEach((element) => {
+                    propertyListId.push(element.PropertyId);
+                });
+
+                this.selectedRow = this.selectedRow.filter((id) => {
+                    return !propertyListId.includes(id);
+                });
+            } else if (!this.$refs['checkbox-all'][0].isChecked) {
+                for (let i = 0; i < this.dataRender.length; i++) {
+                    if (!this.selectedRow.includes(this.dataRender[i].PropertyId)) {
+                        this.selectedRow.push(this.dataRender[i].PropertyId);
+                    }
+                }
+            }
+            this.checkForCheckbox();
+
+            this.checkFullChecked();
+        },
+
         /*
          * Sự kiện khi scroll trong body của table
          * Author: BATUAN (14/06/2023)
@@ -1005,10 +1233,10 @@ export default {
         scrollHandler: function (event) {
             const fixedBody = this.$refs.fixedBody;
             const contentBody = this.$refs.contentBody;
-            if (event.target == fixedBody) {
-                contentBody.scrollTop = fixedBody.scrollTop;
-            } else {
+            if (event.target == contentBody) {
                 fixedBody.scrollTop = contentBody.scrollTop;
+            } else {
+                contentBody.scrollTop = fixedBody.scrollTop;
             }
         },
         /*
@@ -1019,14 +1247,23 @@ export default {
             // cập nhật lại con trỏ trỏ tới vị trí đầu tiên khi dùng Shift + Click
             this.firstClickRow = index;
 
-            if (this.selectedRow.length == 1 && this.selectedRow[0] == id) {
+            let isMultipleSelect = false;
+            let count = 0;
+            for (let i = 0; i < this.dataRender.length; i++) {
+                if (this.selectedRow.includes(this.dataRender[i].PropertyId)) {
+                    count++;
+                    if (count >= 2) {
+                        isMultipleSelect = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!isMultipleSelect && this.selectedRow.includes(id)) {
                 this.selectedRow = this.selectedRow.filter(
                     (item) => !this.dataRender.some((obj) => obj.PropertyId === item),
                 );
             } else {
-                // for (let i = 0; i < this.selectedRow.length; i++) {
-                //     this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = false;
-                // }
                 this.selectedRow = this.selectedRow.filter(
                     (item) => !this.dataRender.some((obj) => obj.PropertyId === item),
                 );
@@ -1035,7 +1272,7 @@ export default {
             }
         },
         /*
-         * Phương thức liên quan đến sự kiện check cho các ô check box khi các  hàng được chọn thay đổi
+         * Phương thức liên quan đến sự kiện check cho các ô check box khi các hàng được chọn thay đổi
          * Author: BATUAN (29/06/2023)
          */
         checkForCheckbox() {
@@ -1055,6 +1292,116 @@ export default {
 
             this.checkFullChecked();
         },
+
+        /*
+         * Show context menu
+         * Author: BATUAN (29/06/2023)
+         */
+        showContextMenu(event, index, id) {
+            this.indexSelected = index;
+            this.idSelected = id;
+            this.indexContextMenu = index;
+
+            const browserHeight = window.innerHeight;
+            const browserWidth = window.innerWidth;
+
+            // Tính toán vị trí context menu
+
+            const menuWidth = this.$store.getters.getContextMenuSize.x;
+            const menuHeight = this.$store.getters.getContextMenuSize.y;
+            let positionX = event.clientX;
+            let positionY = event.clientY;
+
+            // Kiểm tra xem context menu có bị che khuất không
+            if (positionX + menuWidth > browserWidth) {
+                positionX = browserWidth - menuWidth;
+            }
+
+            if (positionY + menuHeight > browserHeight) {
+                positionY = browserHeight - menuHeight;
+            }
+
+            this.contextMenuPosition = { x: positionX, y: positionY };
+
+            this.$store.commit('showContextMenu');
+
+            document.addEventListener('click', this.hideContextMenu);
+
+            document.addEventListener('wheel', this.hideContextMenu);
+
+            event.preventDefault();
+        },
+        /*
+         * Show context menu
+         * Author: BATUAN (29/06/2023)
+         */
+        hideContextMenu() {
+            this.$store.commit('hideContextMenu');
+            this.indexContextMenu = null;
+            document.removeEventListener('click', this.hideContextMenu);
+            document.removeEventListener('wheel', this.hideContextMenu);
+        },
+        /*
+         * Xử lý mã lỗi backend trả về
+         * Author: BATUAN (29/06/2023)
+         */
+        handleException(statusCode, message, documentInfo, showDialog) {
+            exception(statusCode, message, documentInfo, showDialog);
+        },
+        /*
+         * Sự kiện click chuột phải vào hàng để bôi đậm hàng khi hiện context menu
+         * Author: BATUAN (29/06/2023)
+         */
+        handleRightClick(index) {
+            return index;
+        },
+        /*
+         * Hiển thị dialog thông báo
+         * Author: BATUAN (29/06/2023)
+         */
+        showDialog(
+            textDialog,
+            documentInfo,
+            dialogActions = {
+                thirdDialogBtnText: 'Đóng',
+                thirdBtnFunction: this.closeDialog,
+            },
+        ) {
+            this.isShowModal = true;
+            this.documentInfoDialog = documentInfo;
+            this.textDialog = textDialog;
+            this.dialogActions = dialogActions;
+        },
+        /*
+         * Đóng dialog thông báo xóa
+         * Author: BATUAN (08/06/2023)
+         */
+        closeDialog() {
+            this.isShowModal = false;
+        },
+        closeDialogAndForm() {
+            this.isShowModal = false;
+            this.isShowDetail = false;
+            this.isShowAddProperty = false;
+        },
+        toggleMiniSetting() {
+            this.isShowMiniSetting = !this.isShowMiniSetting;
+        },
+        /*
+         * Sự kiện Ctrl + F để tìm kiếm
+         * Author: BATUAN (24/08/2023)
+         */
+        handleSearchByKeyBoard(event) {
+            if (event.key === 'f') {
+                {
+                    if (event.ctrlKey) {
+                        this.$refs.inputSearch.$el.focus();
+                        // Ngăn chặn hành vi mặc định của trình duyệt khi nhấn Ctrl + F
+                        event.preventDefault();
+                    }
+                }
+            }
+        },
     },
 };
 </script>
@@ -1062,4 +1409,8 @@ export default {
 <style>
 @import url(../../css/elementui/el-select.css);
 @import url(../../css/components/tooltip.css);
+@import url(../../css/main.css);
+.drop-down {
+    position: relative;
+}
 </style>

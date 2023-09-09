@@ -3,7 +3,8 @@
     top: 10px;
     right: 10px;
     height: 60px;
-    width: 360px;
+    min-width: 300px;
+    max-width: 360px;
     border-radius: 4px;
     display: flex;
     background-color: #FFF;

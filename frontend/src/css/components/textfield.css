@@ -7,16 +7,20 @@
     margin-bottom: 8px;
     font-size: 14px;
     font-weight: 500;
-    color: #1F1F1F;
+    color: #1f1f1f;
 }
 
 .text__input {
-    width: 260px;
-	height: 36px;
-	padding: 0px 12px;
-	border-radius: 4px;
+    width: 200px;
+    height: 36px;
+    padding: 0px 12px;
+    border-radius: 4px;
     border: 1px solid #afafaf;
     color: #000000;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: text;
 }
 
 .text__input-icon-end {
@@ -34,47 +38,51 @@
     background-position: left 8px center;
 }
 
-.text__input::placeholder{
-	color: #999999;
-  	font-size: 14px;
-	
+.text__input::placeholder {
+    color: #999999;
+    font-size: 14px;
 }
 
-.text__input:hover{
-	/* background-color: #e6e6e6; */
+.text__input:hover {
+    /* background-color: #e6e6e6; */
     border-color: var(--primary-color);
-  	cursor: pointer;
-
 }
-.text__input:focus{
-	border: 1px solid var(--primary-color);
-  	outline: none;
+.text__input:focus {
+    border: 1px solid var(--primary-color);
+    outline: none;
 }
 
 .text__input--error {
-    border-color: #E61D1D;
+    border-color: #e61d1d;
 }
 
-.text__input--not-allowed {
-    cursor: not-allowed;
-    pointer-events: none;
-}
+/* .text__input--not-allowed {
+   
+} */
 .input__value--left {
     text-align: right;
 }
 
-.text-field--disabled {
-    background-color: #e6e6e6;
-    pointer-events: none;
-}
-
-input[type="date"] {
+input[type='date'] {
     font-family: Roboto;
     font-size: 14px;
     width: 100%;
 }
 
-input:disabled {
+input:disabled{
+    cursor: not-allowed !important;
+    border:1px solid #afafaf;
     background-color: #e6e6e6;
-    pointer-events: none;
+}
+
+input:disabled:hover {
+    cursor: not-allowed !important;
+    border:1px solid #afafaf;
+    background-color: #e6e6e6;
+}
+
+@media (max-width: 1024px) {
+    .text__input {
+        width: 160px;
+    }
 }

@@ -13,6 +13,21 @@
     align-items: center;
     column-gap: 8px;
 }
+
+.btn--primary:hover {
+    background-color: #1688a6;
+    cursor:pointer;
+    outline: 2px solid #cce4ff;
+}
+
+.btn--primary:active {
+    background-color: rgb(22, 136, 166, 0.8);
+}
+
+.btn--primary:focus {
+    background-color: rgb(22, 136, 166, 0.9);
+}
+
 .btn--noborder {
     background-color: #FFFFFF;
     color: #000000;
@@ -20,8 +35,20 @@
     border: none;
 }
 
+.btn--noborder:hover {
+    background-color: rgb(245, 245, 245);
+}
+
+.btn--noborder:active {
+    background-color: rgb(245, 245, 245, 0.8);
+}
+
+.btn--noborder:focus {
+    background-color: rgb(245, 245, 245, 0.9);
+}
+
 .btn--primary {
-    background: var(--primary-color);
+    background-color: var(--primary-color);
 }
 
 .btn--sub {
@@ -30,7 +57,6 @@
     border: 1px solid #afafaf;
 }
 
-.btn--noborder:hover,
 .btn--sub:hover {
     border: 1px solid #2fb0d1;;
     background-color: transparent;
@@ -38,10 +64,20 @@
     color:#2fb0d1;;
 }
 
-.btn--primary:hover {
-    background-color: var(--hover-color);
+/* .btn--noborder:focus,
+.btn--sub:focus {
+    border: 1px solid #2fb0d1;;
+    background-color: transparent;
+    cursor: pointer;
+    color:#2fb0d1;;
+}  */
+
+
+
+/* .btn--primary:focus {
+    background-color: #1688a6;
     cursor:pointer;
-}
+} */
 
 .btn--icon {
     background-repeat: no-repeat;
@@ -87,6 +123,14 @@
     justify-content: center;
 }
 
+.btn--single:hover {
+    background-color: #f5f5f5;
+}
+
+.btn--single:active {
+    background-color: rgb(245, 245, 245, 0.8);
+}
+
 .btn--combo-next {
     background-image: url(../../assets/icon/btn-next-page.svg);
 }
@@ -111,4 +155,8 @@
     background-color: #FFF;
     width: 1px;
     top:0px;
+}
+
+.btn--setting {
+    position: relative;
 }

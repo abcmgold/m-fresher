@@ -1,13 +1,13 @@
 <template>
     <div class="header">
         <div class="header__left">
-            <div class="header-title">Danh sách tài sản</div>
+            <div class="header-title">{{ resource['vn-VI'].propertyList }}</div>
         </div>
         <div class="header__right">
             <div class="header__right-content">
-                <div class="header__right-content-text">Sở tài chính</div>
+                <div class="header__right-content-text">{{ resource['vn-VI'].departmentOfFinance }}</div>
                 <div class="header__right-content-select">
-                    <span class="header__right-content-select-label">Năm</span>
+                    <span class="header__right-content-select-label">{{ resource['vn-VI'].year }}</span>
                     <input
                         type="number"
                         min="1900"
@@ -23,27 +23,19 @@
             </div>
             <div class="header__right-icons">
                 <ul class="header__right-list">
-                    <el-tooltip effect="dark" content="Thông báo" placement="bottom-start">
-                        <li class="header__right-icon">
-                            <img src="../assets/icon/bell-icon.svg" />
-                        </li>
-                    </el-tooltip>
-                    <el-tooltip effect="dark" content="Cài đặt" placement="bottom-start">
-                        <li class="header__right-icon">
-                            <img src="../assets/icon/system-icon.svg" />
-                        </li>
-                    </el-tooltip>
-                    <el-tooltip effect="dark" content="Hỏi đáp" placement="bottom-start">
-                        <li class="header__right-icon">
-                            <img src="../assets/icon/support-icon.svg" />
-                        </li>
-                    </el-tooltip>
-                    <el-tooltip effect="dark" content="Thông tin cá nhân" placement="bottom-start">
-                        <li class="header__right-icon header__right-sub-icon">
-                            <img src="../assets/icon/user-icon.svg" />
-                            <div class="user__icon-down"></div>
-                        </li>
-                    </el-tooltip>
+                    <li v-tippy="resource['vn-VI'].notification" class="header__right-icon">
+                        <img src="../assets/icon/bell-icon.svg" />
+                    </li>
+                    <li v-tippy="resource['vn-VI'].setup" class="header__right-icon">
+                        <img src="../assets/icon/system-icon.svg" />
+                    </li>
+                    <li v-tippy="resource['vn-VI'].help" class="header__right-icon">
+                        <img src="../assets/icon/support-icon.svg" />
+                    </li>
+                    <li v-tippy="resource['vn-VI'].profile" class="header__right-icon header__right-sub-icon">
+                        <img src="../assets/icon/user-icon.svg" />
+                        <div class="user__icon-down"></div>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -51,8 +43,14 @@
 </template>
 
 <script scoped>
+import { MISAResource } from '../common/resource';
 export default {
     name: 'TheHeader',
+    data() {
+        return {
+            resource: MISAResource,
+        };
+    },
 };
 </script>
 

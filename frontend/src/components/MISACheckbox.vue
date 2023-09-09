@@ -1,6 +1,5 @@
 <template>
-    <div @click.stop class="checkbox" :class="{ checked: isChecked }" @click="handleCheckboxChange">
-        <!-- <input type="checkbox" v-model="isChecked" @change="handleCheckboxChange" /> -->
+    <div @click.stop class="checkbox" :class="{ checked: isChecked }">
     </div>
 </template>
 
@@ -14,11 +13,16 @@ export default {
         unSelectAllRow: Function,
         id: String,
         type: String,
+        storeFunction: Function,
+        isCheckedProp: Boolean
     },
     data() {
         return {
             isChecked: false,
         };
+    },
+    created() {
+        this.isChecked = this.isCheckedProp ? this.isCheckedProp : false;
     },
     methods: {
         /*
@@ -28,18 +32,28 @@ export default {
         handleCheckboxChange() {
             // Xử lý khi checkbox được chọn
             if (!this.isChecked) {
+                if (this.type == 'setting') {
+                    this.isChecked = true;
+                    this.storeFunction();
+                }
                 if (this.type == 'primary') {
                     this.isChecked = true;
                     this.$emit('selectAllRow');
                 } else {
+                    this.isChecked = true;
                     this.$emit('checkedCheckbox', this.id);
                 }
             } else {
                 // Xử lý khi checkbox bị bỏ chọn
+                if (this.type == 'setting') {
+                    this.isChecked = false;
+                    this.storeFunction();
+                }
                 if (this.type == 'primary') {
                     this.isChecked = false;
                     this.$emit('unSelectAllRow');
                 } else {
+                    this.isChecked = false;
                     this.$emit('uncheckedCheckbox', this.id);
                 }
             }

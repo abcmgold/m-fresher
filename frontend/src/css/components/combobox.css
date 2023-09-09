@@ -99,11 +99,11 @@
 }
 
 .combox__items-item-selected {
-    color:var(--primary);
+    color: var(--primary);
 }
 
 .combo-box--small .el-input__wrapper {
     height: 32px !important;
-    width: 55px !important;
+    width: 60px !important;
     border: none !important;
 }

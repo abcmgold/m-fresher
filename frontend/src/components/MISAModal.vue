@@ -9,9 +9,6 @@
 <script scoped>
 export default {
     name: 'MISAModal',
-    props: {
-        icon: String,
-    },
 };
 </script>
 

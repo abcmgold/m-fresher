@@ -2,12 +2,16 @@ import {createApp} from 'vue'
 import App from './App.vue'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
-import mitt from 'mitt'
+import VueTippy from "vue-tippy";
+import 'tippy.js/dist/tippy.css' // optional for styling
+
+import VTooltip from 'v-tooltip'
+
 /* import the fontawesome core */
-import { library } from '@fortawesome/fontawesome-svg-core'
+import {library} from '@fortawesome/fontawesome-svg-core'
 
 /* import font awesome icon component */
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
 
 
 import MISAButton from './components/MISAButton.vue'
@@ -24,15 +28,22 @@ import MISADatePicker from './components/MISADatepicker.vue'
 import MISAPagination from './components/MISAPagination.vue'
 import MISAMoneyInput from './components/MISAMoneyInput.vue'
 import MISAValidateText from './components/MISAValidateText.vue'
+import MISAContextMenu from './components/MISAContextMenu.vue'
+import MISASetting from './components/MISASetting.vue'
 
-import pressEscEvent from './common/directive.js'
+import {pressEscEvent, leftClickMouse, clickOutside, scrollOutside} from './common/directive.js'
+
+import ENUM from './common/enum';
+
+import { MISAResource } from './common/resource';
 
 import vueRouter from './router';
 
 import store from './store'
 
+
 /* import specific icons */
-import { faUserSecret, faSpinner, faCircleCheck } from '@fortawesome/free-solid-svg-icons'
+import {faUserSecret, faSpinner, faCircleCheck} from '@fortawesome/free-solid-svg-icons'
 /* add icons to the library */
 library.add(faUserSecret, faSpinner, faCircleCheck)
 
@@ -50,20 +61,38 @@ app.component('m-checkbox', MISACheckbox)
 app.component('m-date-picker', MISADatePicker)
 app.component('m-pagination', MISAPagination)
 app.component('m-validate-text', MISAValidateText)
+app.component('m-context-menu', MISAContextMenu)
 /* add font awesome icon component */
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.component('m-group-input', MISAGroupInput)
 app.component('m-money-input', MISAMoneyInput)
+app.component('m-setting', MISASetting)
+app.component('m-tooltip', VTooltip)
+
 
 // add directive
-app.directive('esc',pressEscEvent);
+app.directive('esc', pressEscEvent);
+app.directive('leftclick', leftClickMouse);
+app.directive('clickoutside', clickOutside);
+app.directive('scrolloutside', scrollOutside);
 
 // add store
 app.use(store)
 
-const emitter = mitt();
-app.config.globalProperties.$emitter = emitter;
-app.config.globalProperties.$propertyCodeValue = '00001';
+app.use(
+    VueTippy,
+    // optional
+    {
+      directive: 'tippy', // => v-tippy
+      component: 'tippy', // => <tippy/>
+    }
+  )
+
+app.use(VTooltip)
+
+
+app.config.globalProperties.$_MISAResource = MISAResource;
+app.config.globalProperties.$_MISAEnum = ENUM;
 
 app.use(ElementPlus)
 app.use(vueRouter)

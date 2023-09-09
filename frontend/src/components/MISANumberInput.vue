@@ -23,6 +23,8 @@
 </template>
 
 <script>
+import { formatRatio } from '@/common/common';
+import debounce from 'lodash/debounce';
 export default {
     name: 'MISANumberInput',
     props: {
@@ -41,27 +43,43 @@ export default {
     data() {
         return {
             error: false,
-            currentvalue: null,
+            currentvalue: 0,
         };
     },
     created() {
-        this.currentvalue = this.modelValue;
+        if (this.modelValue) {
+            this.currentvalue = this.formattedRatio(this.modelValue);
+        } else {
+            this.currentvalue = 0;
+        }
     },
+    mounted() {},
     watch: {
-        currentvalue: function (newValue) {
+        currentvalue: debounce(function (newValue) {
+            if (newValue) {
+                newValue = parseFloat(newValue.replace(',', '.'));
+            }
             this.$emit('update:modelValue', newValue);
+            this.currentvalue = this.formattedRatio(this.modelValue);
             this.error = false;
             if (this.$parent.hideErrorMessage) {
                 this.$parent.hideErrorMessage();
             }
-        },
+        },1000),
         modelValue: function (newValue) {
-            this.currentvalue = newValue;
+            this.currentvalue = this.formattedRatio(newValue);
         },
     },
     emit: ['update:modelValue'],
     methods: {
-         /*
+        /*
+         * Hàm format tỷ lệ
+         * Author: BATUAN (14/06/2023)
+         */
+        formattedRatio(value) {
+            return formatRatio(value);
+        },
+        /*
          * Sự kiện ngăn chặn người dùng nhập các ksi tự không hợp lệ vào ô input number
          * Author: BATUAN (14/06/2023)
          */
@@ -79,7 +97,7 @@ export default {
                 event.preventDefault(); // Chặn sự kiện nhập
             }
         },
-         /*
+        /*
          * Kiểm tra xem độ dài ô input vượt quá giới hạn hay chưa
          * Author: BATUAN (14/06/2023)
          */
@@ -89,7 +107,7 @@ export default {
                 this.currentvalue = this.currentvalue.slice(0, this.maxLength);
             }
         },
-         /*
+        /*
          * Tăng giá trị ô input khi ấn vào mũi tên tăng
          * Author: BATUAN (14/06/2023)
          */
@@ -99,7 +117,7 @@ export default {
         /*
          * Giảm giá trị ô input khi ấn vào mũi tên giảm
          * Author: BATUAN (14/06/2023)
-        */
+         */
         decreasingValue() {
             if (this.modelValue > 0) {
                 this.$emit('update:modelValue', Number(this.modelValue) - 1);
@@ -108,10 +126,10 @@ export default {
         /*
          * Sự kiện khi blur khỏi ô input
          * Author: BATUAN (14/06/2023)
-        */
+         */
         onBlurFunction() {
             if (this.isRequired) {
-                if (this.modelValue === undefined || this.modelValue == '') {
+                if (this.modelValue === undefined || this.modelValue === '') {
                     this.error = true;
                     if (this.$parent.showErrorMessage) {
                         this.$parent.showErrorMessage();
@@ -122,7 +140,7 @@ export default {
         /*
          * Sự kiện giá trị ô input thay đổi
          * Author: BATUAN (14/06/2023)
-        */
+         */
         onChangeFunction() {
             if (this.isRequired) {
                 this.error = false;
@@ -130,6 +148,13 @@ export default {
                     this.$parent.hideErrorMessage();
                 }
             }
+        },
+        /*
+         * Sự kiện tự động focus vào ô input
+         * Author: BATUAN (14/06/2023)
+         */
+        autoFocus() {
+            this.$refs.myInputNumber.focus();
         },
     },
 };
