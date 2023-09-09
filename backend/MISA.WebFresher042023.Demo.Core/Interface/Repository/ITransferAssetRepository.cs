@@ -47,6 +47,15 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
         /// CreatedBy: BATUAN (30/08/2023)
         Task<List<TransferAsset>> CheckExist(Guid propertyId, DateTime transferDate);
         /// <summary>
+        /// Danh sách các chứng từ dựa theo Id của chứng từ và thời gian chứng từ
+        /// </summary>
+        /// <param name="propertyId">Id tài sản</param>
+        /// <param name="oldTransferDate">Ngày chứng từ cũ</param>
+        /// <param name="transferDate">Ngày chứng từ</param>
+        /// <returns>Trả về danh sách các bản ghi có chứa tài sản điều chuyển theo id và có thời gian điều chuyển lớn hơn TransferDate</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
+        Task<List<TransferAsset>> CheckExistRange(Guid propertyId, DateTime oldTransferDate, DateTime transferDate);
+        /// <summary>
         /// Lấy ra chứng từ điều chuyển thông qua mã code
         /// </summary>
         /// <param name="transferAssetCode">Mã code của chứng từ</param>

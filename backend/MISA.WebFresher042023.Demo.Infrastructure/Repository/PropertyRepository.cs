@@ -73,13 +73,14 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
             return result;
         }
 
-        public async Task<List<PropertyReadonly>> GetCurrenPropertyInfo(int pageNumber, int pageSize, string? excludedIds)
+        public async Task<List<PropertyReadonly>> GetCurrenPropertyInfo(int pageNumber, int pageSize, string? searchInput, string? excludedIds)
         {
             DynamicParameters parameters = new DynamicParameters();
             parameters.Add("@PageNumber", pageNumber);
             parameters.Add("@PageSize", pageSize);
+            parameters.Add("@SearchInput", searchInput);
             parameters.Add("@ExcludedIds", excludedIds);
-            var result = await _unitOfWork.Connection.QueryAsync<PropertyReadonly>(sql: "CALL Proc_Property_GetCurrent(@PageNumber, @PageSize, @ExcludedIds)", parameters);
+            var result = await _unitOfWork.Connection.QueryAsync<PropertyReadonly>(sql: "CALL Proc_Property_GetCurrent(@PageNumber, @PageSize, @SearchInput, @ExcludedIds)", parameters);
 
             return result.ToList();
         }

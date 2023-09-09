@@ -53,10 +53,10 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
         {
             DynamicParameters? parameters = new DynamicParameters();
 
-            parameters.Add("@listId", listId);
+            parameters.Add("@ListId", listId);
 
             var result = await _unitOfWork.Connection.QueryFirstOrDefaultAsync<int>(
-                sql: "CALL Proc_TransferAssetDetail_CountRecord(@listId)", param: parameters);
+                sql: "CALL Proc_TransferAssetDetail_CountRecord(@ListId)", param: parameters);
 
             return result;
         }

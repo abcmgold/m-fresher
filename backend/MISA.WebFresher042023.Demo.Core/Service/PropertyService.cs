@@ -160,9 +160,9 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             }
         }
 
-        public async Task<List<PropertyReadonly>> GetCurrenPropertyInfo(int pageNumber, int pageSize, string? excludedIds)
+        public async Task<List<PropertyReadonly>> GetCurrenPropertyInfo(int pageNumber, int pageSize,string? searchInput, string? excludedIds)
         {
-            var res = await _propertyRepository.GetCurrenPropertyInfo(pageNumber, pageSize, excludedIds);
+            var res = await _propertyRepository.GetCurrenPropertyInfo(pageNumber, pageSize, searchInput, excludedIds);
 
             return res;
         }

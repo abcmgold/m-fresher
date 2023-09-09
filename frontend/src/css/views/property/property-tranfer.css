@@ -2,6 +2,11 @@
     background-color: white;
 }
 
+.property-tranfer--container .hasScrollBar {
+    width: 113px !important;
+}
+
+
 .tranfer__navbar {
     display: flex;
     align-items: center;

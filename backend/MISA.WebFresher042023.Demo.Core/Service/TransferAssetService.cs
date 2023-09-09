@@ -58,10 +58,10 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
             List<Receiver> receivers = _mapper.Map<List<Receiver>>(transferAssetCreateDto.ReceiverList);
 
-            Guid idTransfer = transferAsset.TransferAssetId;
+            var idTransfer = transferAsset.TransferAssetId;
 
             // Kiểm tra nghiệp vụ 
-            await transferAssetManager.CheckDuplicateTransferAssetInsertCode(transferAssetCreateDto);
+            await transferAssetManager.CheckDuplicateTransferAssetInsertCodeAsync(transferAssetCreateDto);
 
             transferAssetDetailManager.CheckListDeparment(transferAssetDetails);
 
@@ -107,15 +107,6 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
         public async Task<int> UpdateDocumentAsync(TransferAssetUpdateDto transferAssetUpdateDto)
         {
-            // Check trùng code
-            await transferAssetManager.CheckDuplicateTransferAssetUpdateCode(transferAssetUpdateDto);
-
-            // Map entityDto sang entity
-            List<TransferAssetDetail> transferAssetDetails = _mapper.Map<List<TransferAssetDetail>>(transferAssetUpdateDto.TransferAssetDetailList);
-            
-            // Kiểm tra danh sách chi tiết chứng từ có cái nào mà phòng ban chuyển đi giống ban đầu không
-            transferAssetDetailManager.CheckListDeparment(transferAssetDetails);
-
             // phân loại các tài sản trong chứng từ vào 3 loại: thêm mới, update, xóa
             List<TransferAssetDetailUpdateDto> transferAssetDetailUpdatesChange = new List<TransferAssetDetailUpdateDto>();
 
@@ -142,6 +133,43 @@ namespace MISA.WebFresher042023.Demo.Core.Service
                         break;
                 }
             }
+
+            // Check chứng từ có tồn tại hay không
+            var transferAssetCheck = await _transferAssetRepository.GetByIdAsync(transferAssetUpdateDto.TransferAssetId);
+            if (transferAssetCheck == null)
+            {
+                throw new NotFoundException();
+            }
+
+
+            // Nếu thời gian thay đổi thực hiện check
+            if (transferAssetCheck.TransferDate != transferAssetUpdateDto.TransferDate)
+            {
+                if (transferAssetCheck.TransferDate < transferAssetUpdateDto.TransferDate)
+                {
+                    await transferAssetManager.CheckTransferAssetChangeTransferDate(transferAssetUpdateDto.TransferAssetDetailList, transferAssetCheck.TransferDate, transferAssetUpdateDto.TransferDate);
+                }
+                else
+                {
+                    await transferAssetManager.CheckTransferAssetChangeTransferDate(transferAssetUpdateDto.TransferAssetDetailList, transferAssetUpdateDto.TransferDate, transferAssetCheck.TransferDate);
+                }
+
+            }
+
+            // Check các tài sản trong chứng từ được chỉnh sửa hay không
+            transferAssetUpdateDto.TransferAssetDetailList.RemoveAll(detail => detail.StatusRecord == StatusRecord.NoChange);
+
+            // Map entityDto sang entity
+            List<TransferAssetDetail> transferAssetDetails = _mapper.Map<List<TransferAssetDetail>>(source: transferAssetUpdateDto.TransferAssetDetailList);
+
+            await transferAssetManager.CheckTransferAssetUpdateOrInsert(transferAssetDetails, transferAssetUpdateDto.TransferDate);
+
+
+            // Kiểm tra danh sách chi tiết chứng từ có cái nào mà phòng ban chuyển đi giống ban đầu không
+            transferAssetDetailManager.CheckListDeparment(transferAssetDetails);
+
+            // Check trùng code
+            await transferAssetManager.CheckDuplicateTransferAssetUpdateCode(transferAssetUpdateDto);
 
             // Check các chi tiết chứng từ xóa với sửa có id nằm trong database hay không
             await transferAssetDetailManager.CheckExistTransferAssetDetail(transferAssetDetailUpdatesChange, transferAssetDetailUpdatesDelete);
@@ -215,11 +243,11 @@ namespace MISA.WebFresher042023.Demo.Core.Service
                 receiver.TransferAssetId = transferAsset.TransferAssetId;
             }
 
-            // Check tài sản trong chứng từ có được phép xóa hay không
-            foreach (var transferAssetDelete in transferAssetDetailUpdatesDelete)
-            {
-                await propertyManager.CheckGreaterTransferDate(transferAsset.TransferAssetId, transferAssetDelete.PropertyId);
-            }
+            //// Check tài sản trong chứng từ có được phép xóa hay không
+            //foreach (var transferAssetDelete in transferAssetDetailUpdatesDelete)
+            //{
+            //    await propertyManager.CheckGreaterTransferDate(transferAsset.TransferAssetId, transferAssetDelete.PropertyId);
+            //}
 
             try
             {

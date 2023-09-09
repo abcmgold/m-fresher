@@ -327,7 +327,54 @@ const MISAResource = {
         year: "Năm",
         propertyList: "Danh sách tài sản",
         edit: "Chỉnh sửa",
-        serverNotResponse: "Máy chủ không có phản hồi!"
+        serverNotResponse: "Máy chủ không có phản hồi!",
+
+        // resources trong file PropertyTransfer.vue
+        propertyTransfer: {
+            transfer: "Điều chuyển",
+            selected: "Đã chọn : ",
+            unselected: "Bỏ chọn",
+            delete: "Xóa",
+            detail: "Thông tin chi tiết",
+            generalInfo: "Thông tin chung"
+        },
+        // resource trong propertyTransferForm.vue
+        propertyTransferForm: {
+            generalInfo: "Thông tin chung",
+            transferAssetCode: "Mã chứng từ",
+            typeTransferAssetCode: "Nhập mã chứng từ",
+            transferDate: "Ngày điều chuyển",
+            typeTransferDate: "Nhập ngày điều chuyển",
+            transactionDate: "Ngày chứng từ",
+            typeTransactionDate: "Nhập ngày chứng từ",
+            note: "Ghi chú",
+            chooseReceiver: "Chọn ban giao nhận",
+            addMoreReceiver: "Thêm ban giao nhận từ lần nhập trước",
+            order: "STT",
+            fullName: "Họ và tên",
+            represent: "Đại diện",
+            position: "Chức vụ",
+            infoTransferAsset: "Thông tin tài sản điều chuyển",
+            selected: "Đã chọn: ",
+            unselected: "Bỏ chọn",
+            chooseProperty: "Chọn tài sản",
+            updateTransferAsset: "Sửa chứng từ điều chuyển",
+            insertTransferAsset: "Thêm chứng từ điều chuyển",
+            cancelAddTransferAsset: "Bạn có muốn hủy bỏ khai báo chứng từ này không ?",
+            cancelUpdateTransferAsset: "Bạn có muốn hủy bỏ chỉnh sửa chứng từ này không ?",
+            noChangeToSave: "Anh/Chị vui lòng thay đổi thông tin chứng từ để thực hiện cập nhật !"
+        },
+        // Resource trong ChoosenForm.vue
+        choosenForm: {
+            choosePropertyTransfer: 'Chọn tài sản điều chuyển',
+            newDepartment: "Bộ phận sử dụng mới",
+            chooseNewDepartment: "Chọn bộ phận sử dụng mới",
+            note: "Ghi chú",
+            selected: "Đã chọn : ",
+            unselected: "Bỏ chọn",
+            pleaseChooseTransferAsset: "Vui lòng chọn tài sản điều chuyển",
+            pleaseChooseNewDepartment: "Vui lòng chọn bộ phận điều chuyển mới"
+        }
     }
 }
 

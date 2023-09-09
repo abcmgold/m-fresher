@@ -22,13 +22,13 @@
         </div>
         <div class="dialog__list-btns">
             <div class="dialog__btn">
-                <button class="btn btn--sub" @click="dialogActions.firstBtnFunction" v-if="dialogActions.firstDialogBtnText">
+                <button class="btn btn--sub" ref="firstBtn" @click="dialogActions.firstBtnFunction" v-if="dialogActions.firstDialogBtnText">
                     {{ dialogActions.firstDialogBtnText }}
                 </button>
-                <button class="btn btn--noborder" @click="dialogActions.secondBtnFunction" v-if="dialogActions.secondDialogBtnText">
+                <button class="btn btn--noborder" ref="secondBtn" @click="dialogActions.secondBtnFunction" v-if="dialogActions.secondDialogBtnText">
                     {{ dialogActions.secondDialogBtnText }}
                 </button>
-                <button class="btn btn--primary" @click="dialogActions.thirdBtnFunction" v-if="dialogActions.thirdDialogBtnText">
+                <button class="btn btn--primary" ref="thirdBtn" @click="dialogActions.thirdBtnFunction" v-if="dialogActions.thirdDialogBtnText">
                     {{ dialogActions.thirdDialogBtnText }}
                 </button>
             </div>
@@ -56,7 +56,7 @@ export default {
         }
     },
     mounted() {
-        this.$refs.dialog.focus();
+        this.$refs.thirdBtn.focus();
     },
     data() {
         return {

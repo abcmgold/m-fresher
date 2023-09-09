@@ -23,7 +23,7 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
         /// <returns>Danh sách các chứng từ điều chuyển thỏa mãn</returns>
         public async Task<List<TransferAsset>> CheckExist(Guid propertyId, DateTime transactionDate)
         {
-            DynamicParameters parameters = new DynamicParameters();
+                var parameters = new DynamicParameters();
 
             parameters.Add("@PropertyId", propertyId);
             parameters.Add("@TransactionDate", transactionDate);
@@ -112,6 +112,20 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
             var res = await _unitOfWork.Connection.QueryFirstOrDefaultAsync<int>(sql: "CALL Proc_TransferAsset_IsHasGreaterTransferDate(@TransferDate)", param: parameters);
             
             return res;
+        }
+
+        public async Task<List<TransferAsset>> CheckExistRange(Guid propertyId, DateTime oldTransferDate, DateTime transferDate)
+        {
+            var parameters = new DynamicParameters();
+
+            parameters.Add("@PropertyId", propertyId);
+            parameters.Add("@OldTransferDate", oldTransferDate);
+            parameters.Add("@TransferDate", transferDate);
+
+            var result = await _unitOfWork.Connection.QueryAsync<TransferAsset>(
+                sql: "CALL Proc_TransferAsset_CheckInRangeTransferAsset(@PropertyId,@OldTransferDate, @TransferDate)",
+                param: parameters);
+            return result.ToList();
         }
     }
 }

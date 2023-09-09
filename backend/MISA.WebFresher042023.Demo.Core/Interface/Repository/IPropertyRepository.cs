@@ -40,6 +40,6 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
         /// </summary>
         /// <returns>Danh sách tài sản</returns>
         /// CreatedBy: BATUAN (21/08/2023)
-        Task<List<PropertyReadonly>> GetCurrenPropertyInfo(int pageNumber, int pageSize, string? excludedIds);
+        Task<List<PropertyReadonly>> GetCurrenPropertyInfo(int pageNumber, int pageSize,string? searchInput, string? excludedIds);
     }
 }

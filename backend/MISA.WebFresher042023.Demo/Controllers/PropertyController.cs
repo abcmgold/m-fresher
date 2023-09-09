@@ -92,9 +92,9 @@ namespace MISA.WebFresher042023.Demo.Controllers
         }
         [HttpGet]
         [Route("CurrentInfo")]
-        public async Task<ActionResult> GetCurrentInfo(int pageNumber, int pageSize, string? excludedIds)
+        public async Task<ActionResult> GetCurrentInfo(int pageNumber, int pageSize,string? searchInput, string? excludedIds)
         {
-            var res = await _propertyService.GetCurrenPropertyInfo(pageNumber, pageSize, excludedIds);
+            var res = await _propertyService.GetCurrenPropertyInfo(pageNumber, pageSize, searchInput, excludedIds);
 
             return Ok(value: res);
         }

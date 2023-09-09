@@ -13,12 +13,16 @@ export default {
         unSelectAllRow: Function,
         id: String,
         type: String,
-        storeFunction: Function
+        storeFunction: Function,
+        isCheckedProp: Boolean
     },
     data() {
         return {
             isChecked: false,
         };
+    },
+    created() {
+        this.isChecked = this.isCheckedProp ? this.isCheckedProp : false;
     },
     methods: {
         /*

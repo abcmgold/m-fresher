@@ -10,7 +10,17 @@
     >
         <div class="choosen-from">
             <div class="choosen-form-header">
-                <div class="choosen-form__title">Chọn tài sản điều chuyển</div>
+                <div class="choosen-form-header--left">
+                    <div class="choosen-form__title">
+                        {{ this.$_MISAResource['vn-VI'].choosenForm.choosePropertyTransfer }}
+                    </div>
+                    <m-text-input
+                        v-model="this.inputSearch"
+                        :placeholder="this.$_MISAResource['vn-VI'].searchProperty"
+                        individualClass="text__input-icon-start"
+                        ref="inputSearch"
+                    ></m-text-input>
+                </div>
                 <div
                     class="icon--close"
                     @click="
@@ -18,6 +28,8 @@
                             this.$emit('hideChoosenForm');
                         }
                     "
+                    :content="this.$_MISAResource['vn-VI'].close"
+                    v-tippy="{ placement: 'top' }"
                 ></div>
             </div>
             <div class="choosen-form__table">
@@ -94,27 +106,18 @@
                         </div>
                     </div>
                     <div class="table__content--sumary" v-if="this.$store.getters.getIsShowSummary">
-                        <div style="width: 50px">
-                        </div>
                         <div style="width: 50px"></div>
-                        <div style="width: 150px">
-                            
-                        </div>
-                        <div style="width: 200px">
-                   
-                        </div>
-                        <div style="width: 200px">
-                            
-                        </div>
+                        <div style="width: 50px"></div>
+                        <div style="width: 150px"></div>
+                        <div style="width: 200px"></div>
+                        <div style="width: 200px"></div>
                         <div class="text-align-right cell--item" style="width: 150px; font-weight: bold">
                             {{ this.formatedMoney(this.totalOriginalPrice) }}
                         </div>
                         <div class="text-align-right cell--item" style="width: 150px; font-weight: bold">
                             {{ this.formatedMoney(this.totalResidualPrice) }}
                         </div>
-                        <div style="width: 150px">
-                           
-                        </div>
+                        <div style="width: 150px"></div>
                     </div>
                     <div class="table__paging paging" v-if="this.$store.getters.getIsShowPaging">
                         <m-pagination
@@ -125,6 +128,9 @@
                             :totalRecords="this.totalRecords"
                             @changePageSize="changePageSize"
                         ></m-pagination>
+                    </div>
+                    <div v-if="this.listProperty.length == 0" class="table__content--empty">
+                        <div class="icon--empty"></div>
                     </div>
                     <div v-if="this.isLoadingData" class="grid-loading-container">
                         <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
@@ -149,12 +155,12 @@
             <div class="choosen-input">
                 <div class="row">
                     <div class="col-4">
-                        <m-group-input text="Bộ phận sử dụng mới" :isForce="true">
+                        <m-group-input :text="this.$_MISAResource['vn-VI'].choosenForm.newDepartment" :isForce="true">
                             <m-combo-box
                                 :dataSelect="this.departmentNames"
                                 ref=""
                                 :isRequired="true"
-                                placeholder="Chọn bộ phận sử dụng mới"
+                                :placeholder="this.$_MISAResource['vn-VI'].choosenForm.chooseNewDepartment"
                                 type="combo-box"
                                 :filterable="true"
                                 v-model="this.newDepartmentName"
@@ -162,7 +168,7 @@
                         </m-group-input>
                     </div>
                     <div class="col-8">
-                        <m-group-input text="Ghi chú">
+                        <m-group-input :text="this.$_MISAResource['vn-VI'].choosenForm.note">
                             <m-text-input
                                 ref=""
                                 :isRequired="false"
@@ -175,13 +181,32 @@
             </div>
             <div class="choosen-actions">
                 <div class="choosen-action__left">
-                    Đã chọn:&nbsp; <strong>{{ this.selectedRow.length }}</strong>
-                    <m-button individualClass="btn--noborder" label="Bỏ chọn" @click="removeAllSelected"></m-button>
+                    {{ this.$_MISAResource['vn-VI'].choosenForm.selected }}&nbsp;
+                    <strong>{{ this.selectedRow.length }}</strong>
+                    <m-button
+                        individualClass="btn--noborder"
+                        :label="this.$_MISAResource['vn-VI'].choosenForm.unselected"
+                        @click="removeAllSelected"
+                    ></m-button>
                 </div>
 
                 <div class="choosen-action__right">
-                    <m-button label="Hủy" individualClass="btn--sub"> </m-button>
-                    <m-button label="Đồng ý" individualClass="btn--primary" @click="handleChoosenProperty"> </m-button>
+                    <m-button
+                        :label="this.$_MISAResource['vn-VI'].cancel"
+                        individualClass="btn--sub"
+                        @click="
+                            () => {
+                                this.$emit('hideChoosenForm');
+                            }
+                        "
+                    >
+                    </m-button>
+                    <m-button
+                        :label="this.$_MISAResource['vn-VI'].yes"
+                        individualClass="btn--primary"
+                        @click="handleChoosenProperty"
+                    >
+                    </m-button>
                 </div>
             </div>
         </div>
@@ -195,11 +220,12 @@
 import request from '@/common/api';
 import { formatMoney } from '@/common/common';
 import { delay } from '@/common/common';
+import debounce from 'lodash/debounce';
 export default {
     name: 'ChoosenForm',
     props: {
         excludedIds: Array,
-        listTemporaryDelete: Array
+        listTemporaryDelete: Array,
     },
     emits: ['hideChoosenForm', 'updateListSelectedProperty'],
     data() {
@@ -236,7 +262,8 @@ export default {
             textDialog: '',
             dialogActions: {},
             totalOriginalPrice: 0,
-            totalResidualPrice: 0
+            totalResidualPrice: 0,
+            inputSearch: '',
         };
     },
     async created() {
@@ -245,11 +272,11 @@ export default {
         await this.getAllDepartments();
     },
     mounted() {
-        this.$refs.modal.$el.focus()
-    }, 
+        this.$refs.inputSearch.$el.focus();
+    },
     unmounted() {
         if (this.$parent) {
-            this.$parent.$refs.container.focus()
+            this.$parent.$refs.transferAssetCodeInput.$el.focus();
         }
     },
     watch: {
@@ -285,6 +312,12 @@ export default {
                 }
             }
         },
+        inputSearch: debounce(async function () {
+            await this.getListProperty();
+            this.checkForCheckbox();
+
+            this.checkFullChecked();
+        }, 1000),
     },
     methods: {
         /*
@@ -298,22 +331,33 @@ export default {
                 .getRecord(
                     `Property/CurrentInfo?pageNumber=${this.currentPage}&pageSize=${Number(
                         this.pageSize,
-                    )}&excludedIds=${tringId}`,
+                    )}&searchInput=${this.inputSearch}&excludedIds=${tringId}`,
                 )
                 .then(async (res) => {
+                    console.log(res);
                     await delay(500);
                     this.isLoadingData = false;
                     this.listProperty = res.data;
-                    this.totalRecords = res.data[0].TotalRecordCount;
-                    this.totalOriginalPrice = res.data[0].TotalPrice;
-                    this.totalResidualPrice = res.data[0].TotalResidualPrice;
-                    this.pageNumber = Math.ceil(this.totalRecords / this.pageSize);
+                    if (res.data.length > 0) {
+                        this.totalRecords = res.data[0].TotalRecordCount;
+                        this.totalOriginalPrice = res.data[0].TotalPrice;
+                        this.totalResidualPrice = res.data[0].TotalResidualPrice;
+                        this.pageNumber = Math.ceil(this.totalRecords / this.pageSize);
+                    } else {
+                        this.totalRecords = 0;
+                        this.totalOriginalPrice = 0;
+                        this.totalResidualPrice = 0;
+                        this.pageNumber = 1;
+                    }
+
                     if (this.listTemporaryDelete && this.listTemporaryDelete.length > 0) {
                         for (let i = 0; i < this.listProperty.length; i++) {
-                            for (let j = 0; j  < this.listTemporaryDelete.length; j++) {
+                            for (let j = 0; j < this.listTemporaryDelete.length; j++) {
                                 if (this.listTemporaryDelete[j].PropertyId == this.listProperty[i].PropertyId) {
-                                    this.listProperty[i].DepartmentTransferId = this.listTemporaryDelete[j].DepartmentId
-                                    this.listProperty[i].DepartmentTransferName = this.listTemporaryDelete[j].DepartmentName
+                                    this.listProperty[i].DepartmentTransferId =
+                                        this.listTemporaryDelete[j].DepartmentId;
+                                    this.listProperty[i].DepartmentTransferName =
+                                        this.listTemporaryDelete[j].DepartmentName;
                                     break;
                                 }
                             }
@@ -501,9 +545,9 @@ export default {
          */
         handleChoosenProperty() {
             if (this.selectedRow.length == 0) {
-                this.showDialog('Vui lòng chọn tài sản điều chuyển!');
+                this.showDialog(this.$_MISAResource['vn-VI'].choosenForm.pleaseChooseTransferAsset);
             } else if (!this.newDepartmentName) {
-                this.showDialog('Vui lòng chọn bộ phận sử dụng mới!');
+                this.showDialog(this.$_MISAResource['vn-VI'].choosenForm.pleaseChooseNewDepartment);
             } else {
                 let listSelectedProperty = [];
                 let checked = true;
@@ -573,7 +617,7 @@ export default {
         showDialog(
             textDialog,
             dialogActions = {
-                thirdDialogBtnText: 'Đóng',
+                thirdDialogBtnText: this.$_MISAResource['vn-VI'].close,
                 thirdBtnFunction: this.hideDialog,
             },
         ) {
@@ -587,14 +631,6 @@ export default {
          */
         hideDialog() {
             this.isShowDialog = false;
-        },
-        /*
-         * Tính toán giá trị còn lại của các tài sản
-         * Author: BATUAN (30/08/2023)
-         */
-        caculateResidualPrice(property) {
-            const currentDate = new Date();
-            return property.OriginalPrice - (currentDate.getFullYear() - property.FollowYear) * property.WearRateValue;
         },
     },
 };

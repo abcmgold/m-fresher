@@ -3,7 +3,7 @@
         <div class="tranfer__navbar">
             <div class="tranfer__navbar--left">
                 <div class="no-selected-document" v-if="!this.selectedRow.length">
-                    Điều chuyển
+                    {{ this.$_MISAResource['vn-VI'].propertyTransfer.transfer }}
                     <button class="btn btn btn--noborder content__btn--reload" @click="handleReload">
                         <div
                             class="icon--reload"
@@ -14,10 +14,20 @@
                 </div>
                 <div class="selected-document" v-if="this.selectedRow.length">
                     <div class="number-select">
-                        Đã chọn: <strong>{{ this.selectedRow.length }}</strong>
+                        {{ this.$_MISAResource['vn-VI'].propertyTransfer.selected }}
+                        <strong>{{ this.selectedRow.length }}</strong>
                     </div>
-                    <m-button individualClass="btn--noborder" label="Bỏ chọn" @click="removeAllSelected"></m-button>
-                    <m-button individualClass="btn--sub" label="Xóa" @click="deleteTransferAssets"></m-button>
+
+                    <m-button
+                        individualClass="btn--noborder"
+                        :label="this.$_MISAResource['vn-VI'].propertyTransfer.unselected"
+                        @click="removeAllSelected"
+                    ></m-button>
+                    <m-button
+                        individualClass="btn--sub"
+                        :label="this.$_MISAResource['vn-VI'].propertyTransfer.delete"
+                        @click="deleteTransferAssets"
+                    ></m-button>
                 </div>
             </div>
             <div class="tranfer__navbar--right">
@@ -25,7 +35,12 @@
                     :label="this.$_MISAResource['vn-VI'].addDocument"
                     :individualClass="'btn--primary'"
                     icon="icon--add"
-                    @click="() => this.showTransferForm(this.$_MISAEnum.formAdd)"
+                    @click="
+                        async () => {
+                            await this.getAutoTransferAssetcode();
+                            this.showTransferForm(this.$_MISAEnum.formAdd);
+                        }
+                    "
                 ></m-button>
                 <div
                     class="icon--question"
@@ -72,7 +87,7 @@
                         </template>
                     </div>
                 </div>
-                <div class="table__content--body" :style="{ height: documentTableHeight + 'px' }">
+                <div class="table__content--body" :style="{ height: documentTableHeight + 'px' }" ref="contentBody">
                     <div
                         v-for="(data, index) in this.transferAssetList"
                         :key="data.Id"
@@ -115,7 +130,7 @@
                         <div class="text-align-left cell--item" style="flex: 1">
                             <div class="text--surround">{{ data.Note }}</div>
                         </div>
-                        <div class="table-list-icons cell--item" style="width: 120px">
+                        <div class="table-list-icons cell--item" style="width: 120px"  :class="isHasScrollBar ? 'hasScrollBar' : ''">
                             <div
                                 v-tippy="$_MISAResource['vn-VI'].edit"
                                 class="table--icon table--icon-pencil"
@@ -189,7 +204,7 @@
         <div class="detail__document">
             <div class="detail__header">
                 <div class="detail__header--left">
-                    <div class="detail__label">Thông tin chi tiết</div>
+                    <div class="detail__label">{{ this.$_MISAResource['vn-VI'].propertyTransfer.detail }}</div>
                 </div>
                 <div class="detail__header--right">
                     <div class="detail_hidden__icon" v-if="this.isShowDetailDocument" @click="toggleDetailDocument">
@@ -284,12 +299,16 @@
                     @changePageSize="changePageSizeDetail"
                 ></m-pagination>
             </div>
+            <!-- <div v-if="this.transferAssetDetailList.length == 0" class="table__content--empty">
+                <div class="icon--empty"></div>
+            </div> -->
         </div>
     </div>
     <PropertyTransferForm
         v-if="this.isShowTransferForm"
         :formMode="this.formMode"
         :transferAssetProps="this.transferAsset"
+        :transferAssetAutoCode="this.transferAssetAutoCode"
         @hideTransferForm="hideTransferForm"
         @showToastSuccess="showToastSuccess"
         @createdNewTransferAsset="createdNewTransferAsset"
@@ -297,9 +316,7 @@
     ></PropertyTransferForm>
     <m-modal v-if="this.isShowDialog">
         <m-dialog
-            :type="this.typeDialog"
             :text="this.textDialog"
-            :status="this.statusDialog"
             :documentInfo="this.documentInfoDialog"
             :dialogActions="this.dialogActions"
         ></m-dialog>
@@ -360,9 +377,9 @@ export default {
             selectedRow: [],
             clickIndex: -1,
             currentPageDocument: 1,
-            pageSizeDocument: 20,
+            pageSizeDocument: '20',
             detailDocumentPage: 1,
-            detailDocumentPageSize: 20,
+            detailDocumentPageSize: '20',
             numberOfRecordsPerPage: [
                 {
                     label: '20',
@@ -390,7 +407,9 @@ export default {
             transferAsset: null,
             contextMenuPosition: {},
             idSelected: '',
-            indexSelected: -1
+            indexSelected: -1,
+            transferAssetAutoCode: '',
+            isHasScrollBar: false,
         };
     },
     watch: {
@@ -414,7 +433,30 @@ export default {
 
         await this.handleGetDetailDocument(0);
     },
+    updated() {
+        // Lấy tham chiếu đến phần tử chứa nội dung có thể cuộn
+        const scrollableContainer = this.$refs.contentBody;
+
+        if (scrollableContainer.offsetWidth > scrollableContainer.scrollWidth) {
+            this.isHasScrollBar = true;
+        }
+        else {
+            this.isHasScrollBar = false;
+        }
+    },
     methods: {
+        /*
+         * Gọi api lấy mã code tự động
+         * Author: BATUAN (27/08/2023)
+         */
+        async getAutoTransferAssetcode() {
+            await request
+                .getRecord('TransferAsset/GetAutoCode')
+                .then((response) => (this.transferAssetAutoCode = response.data))
+                .catch((err) => {
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                });
+        },
         /*
          * Lấy danh sách chi tiết của các chứng từ
          * Author: BATUAN (07/06/2023)
@@ -450,6 +492,10 @@ export default {
                     this.totalPrice = response.data.Total[0].TotalPrice;
                     if (response.data.Data.length > 0) {
                         this.totalResidualPrice = response.data.Data[0].TotalResidualPrice;
+                    }
+
+                    if (this.transferAssetList.length == 0 ) {
+                        this.transferAssetDetailList = [];
                     }
 
                     await delay(500);
@@ -790,7 +836,7 @@ export default {
             textDialog,
             documentInfo,
             dialogActions = {
-                thirdDialogBtnText: 'Đóng',
+                thirdDialogBtnText: this.$_MISAResource['vn-VI'].close,
                 thirdBtnFunction: this.hideDialog,
             },
         ) {
@@ -964,18 +1010,37 @@ export default {
             const currentDate = new Date();
             return property.OriginalPrice - (currentDate.getFullYear() - property.FollowYear) * property.WearRateValue;
         },
-        async changeCurrentPageDetail(newPage) {
+        /*
+         * Tính toán giá trị còn lại của các tài sản
+         * Author: BATUAN (30/08/2023)
+         */
+        changeCurrentPageDetail(newPage) {
             this.detailDocumentPage = newPage;
         },
-        async changePageSizeDetail(newPageSize) {
+        /*
+         * Sự kiện khi thay đổi pagesize
+         * Author: BATUAN (30/08/2023)
+         */
+        changePageSizeDetail(newPageSize) {
             this.detailDocumentPageSize = newPageSize;
         },
-        async changeCurrentPageDocument(newPage) {
+        /*
+         * Sự kiện thay đổi trang hiện tại trong paging
+         * Author: BATUAN (30/08/2023)
+         */
+        changeCurrentPageDocument(newPage) {
             this.currentPageDocument = newPage;
         },
-        async changePageSizeDocument(newPageSize) {
+        /*
+         * Sự kiện khi thay đổi pagesize
+         * Author: BATUAN (30/08/2023)
+         */ changePageSizeDocument(newPageSize) {
             this.pageSizeDocument = newPageSize;
         },
+        /*
+         * Sự kiện khi ấn nút nạp
+         * Author: BATUAN (30/08/2023)
+         */
         async handleReload() {
             await this.getDocumentByPaging();
 

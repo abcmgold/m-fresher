@@ -46,7 +46,9 @@ export default {
         errorMsg: String,
         type: String,
         filterable: Boolean,
+        isChecked: Boolean
     },
+    
     mounted() {
         this.selectedPropertyTypeName = this.modelValue;
     },
@@ -90,7 +92,6 @@ export default {
          * Author: BATUAN (14/06/2023)
          */
         autoBlur() {
-            // this.$refs.myComboBox.focus();
             this.$refs.myComboBox.blur();
         },
     },

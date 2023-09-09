@@ -91,7 +91,7 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
         /// <param name="code">Mã tài sản</param>
         /// <returns></returns>
         /// CreatedBy: BATUAN (05/09/2023)
-        public async Task CheckDuplicateTransferAssetInsertCode(TransferAssetCreateDto transferAssetCreateDto)
+        public async Task CheckDuplicateTransferAssetInsertCodeAsync(TransferAssetCreateDto transferAssetCreateDto)
         {
             var res = await _transferAssetRepository.GetTransferAssetByCodeAsync(transferAssetCreateDto.TransferAssetCode);
 
@@ -144,6 +144,37 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
                         infoTransferAssets.Add(string.Format(Resources.ResourceVN.InfoTransferAsset, transfer.TransferAssetCode, formattedDate));
                     }
                     throw new UserException(string.Format(Resources.ResourceVN.CheckTransferAsset, property.PropertyCode), (int)Enum.StatusCode.BadRequest, infoTransferAssets);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Check chứng từ có được phép thêm mới hoặc update không khi thực hiện thay đổi thời gian điều chuyển
+        /// </summary>
+        /// <param name="transferAssetDetails">Các chi tiết chứng từ</param>
+        /// <param name="oldTransferDate">Ngày điều chuyển của chứng từ hiện tại</param>
+        /// <param name="transferDate">Ngày điều chuyển của chứng từ khi chỉnh sửa</param>
+        /// <exception cref="UserException"></exception>
+        /// CreatedBy: BATUAN (07/09/2023)
+        public async Task CheckTransferAssetChangeTransferDate(List<TransferAssetDetailUpdateDto> transferAssetDetails, DateTime oldTransferDate, DateTime transferDate)
+        {
+            foreach (var transferAssetDetail in transferAssetDetails)
+            {
+                var res = await _transferAssetRepository.CheckExistRange(transferAssetDetail.PropertyId,oldTransferDate,  transferDate);
+
+                if (res.Count > 0)
+                {
+                    var property = await _propertyRepository.GetByIdAsync(transferAssetDetail.PropertyId);
+
+                    var infoTransferAssets = new List<string>();
+
+                    foreach (var transfer in res)
+                    {
+                        string formattedDate = transfer.TransferDate.ToString("dd/MM/yyyy");
+
+                        infoTransferAssets.Add(string.Format(Resources.ResourceVN.InfoTransferAsset, transfer.TransferAssetCode, formattedDate));
+                    }
+                    throw new UserException("Chứng từ không được phép cập nhật ngày điều chuyển !", (int)Enum.StatusCode.BadRequest, infoTransferAssets);
                 }
             }
         }
