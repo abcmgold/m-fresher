@@ -10,6 +10,7 @@
         locale="vi"
         @blur="onBlurFunction"
         @focus="onFocusFunction"
+        :disabled="this.isDisabled"
     ></VueDatePicker>
 </template>
 
@@ -26,6 +27,7 @@ export default {
             default: false,
         },
         errorMsg: String,
+        isDisabled: Boolean,
     },
     data() {
         return {

@@ -1,5 +1,5 @@
 <template>
-        <button :class="['btn', individualClass]">
+        <button :class="['btn', individualClass]" :disabled="this.isDisabled">
             <div v-if="icon" :class="[icon]"></div>
             <span v-if="label">{{ label }}</span>
         </button>
@@ -12,6 +12,7 @@ export default {
         label: String,
         individualClass: String,
         icon: String,
+        isDisabled: Boolean,
     },
 };
 </script>

@@ -67,7 +67,7 @@ namespace MISA.WebFresher042023.Demo.Controllers
         [HttpPut]
         public virtual async Task<ActionResult> Update(List<TransferAssetUpdateDto> transferAssetUpdateDtos)
         {
-            var res = await _documentService.UpdateDocumentAsync(transferAssetUpdateDtos[0]);
+            var res = await _documentService.UpdateDocumentAsync(documentUpdateDto: transferAssetUpdateDtos[0]);
 
             return StatusCode(200, res);
 

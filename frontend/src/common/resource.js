@@ -38,6 +38,8 @@ const MISAResource = {
         addProperties: "+ Thêm tài sản",
         addDocument: "Thêm chứng từ",
         dateError: "Giá trị ngày bắt đầu sử dụng phải lớn hơn hoặc bằng ngày mua",
+        order: "Số thứ tự",
+        noResult: "Không có kết quả",
         property: {
             propertyCode: 'Mã tài sản',
             propertyCodeError: 'Mã tài sản không được phép để trống',
@@ -82,103 +84,104 @@ const MISAResource = {
             purchaseDateError: 'Ngày mua không được phép để trống',
 
             useDate: 'Ngày bắt đầu sử dụng',
-            useDateError: 'Ngày bắt đầu sử dụng không được phép để trống'
+            useDateError: 'Ngày bắt đầu sử dụng không được phép để trống',
+
         },
 
         listHeader: [
             {
-                name: 'checkbox',
-                width: '50px',
-                align: 'text-align-center'
-            },
-            {
-                name: 'STT',
-                width: '50px',
-                fullName: 'Số thứ tự',
-                align: 'text-align-center'
-            },
-            {
                 name: 'Mã tài sản',
                 width: '150px',
-                align: 'text-align-left'
+                align: 'text-align-left',
+                field: 'PropertyCode'
             },
             {
                 name: 'Tên tài sản',
                 width: '300px',
-                align: 'text-align-left'
+                align: 'text-align-left',
+                field: 'PropertyName'
+
             }, {
                 name: 'Loại tài sản',
                 width: '250px',
-                align: 'text-align-left'
+                align: 'text-align-left',
+                field: 'PropertyTypeName'
             }, {
                 name: 'Bộ phận sử dụng',
                 width: '250px',
-                align: 'text-align-left'
+                align: 'text-align-left',
+                field: 'DepartmentName'
             }, {
                 name: 'Số lượng',
                 width: '100px',
-                align: 'text-align-right'
+                align: 'text-align-right',
+                field: 'Quantity',
+                money: true,
+                summaryField: 'TotalQuantity'
             }, {
                 name: 'Nguyên giá',
                 width: '150px',
-                align: 'text-align-right'
+                align: 'text-align-right',
+                field: 'OriginalPrice',
+                money: true,
+                summaryField: 'TotalOriginalPrice'
             }, {
                 name: 'HM/ KH lũy kế',
                 width: '150px',
                 fullName: 'Hao mòn/ Khấu hao lũy kế',
-                align: 'text-align-right'
+                align: 'text-align-right',
+                field: 'WearRateValue',
+                money: true,
+                summaryField: 'TotalWearRateValue'
             }, {
                 name: 'Giá trị còn lại',
                 width: '150px',
-                align: 'text-align-right'
-            }, {
-                name: 'Chức năng',
-                width: '120px',
-                align: 'text-align-right'
-            },
+                align: 'text-align-right',
+                field: 'ResidualPrice',
+                money: true,
+                summaryField: 'TotalResidualPrice',
+            }
         ],
         listHeaderTranfer: [
             {
-                name: 'checkbox',
-                style: 'width: 50px',
-                align: 'text-align-center'
-            },
-            {
-                name: 'STT',
-                style: 'width: 50px',
-                fullName: 'Số thứ tự',
-                align: 'text-align-center'
-            },
-            {
                 name: 'Mã chứng từ',
                 style: 'width: 150px',
-                align: 'text-align-left'
+                align: 'text-align-left',
+                field: 'TransferAssetCode',
+
             },
             {
                 name: 'Ngày chứng từ',
                 style: 'width: 200px',
-                align: 'text-align-center'
+                align: 'text-align-center',
+                field: 'TransactionDate',
+                date: true
             }, {
                 name: 'Ngày điều chuyển',
                 style: 'width: 200px',
-                align: 'text-align-center'
+                align: 'text-align-center',
+                field: 'TransferDate',
+                date: true
             }, {
                 name: 'Nguyên giá',
                 style: 'width: 150px',
-                align: 'text-align-right'
+                align: 'text-align-right',
+                field: 'OriginalPrice',
+                money: true,
+                summaryField: 'totalPrice'
             }, {
                 name: 'Giá trị còn lại',
                 style: 'width: 150px',
-                align: 'text-align-right'
+                align: 'text-align-right',
+                field: 'ResidualPrice',
+                money: true,
+                summaryField: 'totalResidualPrice'
             }, {
                 name: 'Ghi chú',
                 style: 'flex: 1',
-                align: 'text-align-left'
-            }, {
-                name: 'Chức năng',
-                style: 'width: 120px;',
-                align: 'text-align-center'
-            },
+                align: 'text-align-left',
+                field: 'Note',
+            }
         ],
         listChoosenTranfer: [
             {

@@ -39,7 +39,7 @@ namespace MISA.WebFresher042023.Demo.Core.Service
         public async Task<string> GetAutoIdAsync()
         {
             var id = await _propertyRepository.GetAutoIdAsync();
-            while (await this._propertyRepository.CheckDuplicatePropertyCode(id) != null)
+            while (await _propertyRepository.CheckDuplicatePropertyCode(id, null) == 1)
             {
 
                 string numberPart = Regex.Match(input: id, @"\d+$").Value;
@@ -72,18 +72,19 @@ namespace MISA.WebFresher042023.Demo.Core.Service
         {
             var propertyInsertDto = propertyCreate[0];
 
-            var property = _mapper.Map<List<Property>>(propertyCreate);
+            var property = _mapper.Map<Property>(propertyInsertDto);
+
 
             // Check trùng code hay không
-            var checkDuplicateCode = await propertyManager.CheckDuplicateInsertPropertyCode(propertyInsertDto);
+            var checkDuplicateCode = await propertyManager.CheckDuplicateCode(property);
 
-            if (checkDuplicateCode == false)
+            if (checkDuplicateCode == true)
             {
                 throw new UserException(Resources.ResourceVN.DuplicateDepartmentCode, 409, "propertyCodeInput");
             }
 
             // Check nghiệp vụ
-            var checkMajor = propertyManager.CheckMajor(property[0]);
+            var checkMajor = propertyManager.CheckMajor(property);
 
             if (checkMajor != null)
             {
@@ -92,8 +93,9 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             }
 
             // OK Insert thôi nào
-
-            var result = await _propertyRepository.InsertAsync(property);
+            var properties = _mapper.Map<List<Property>>(propertyCreate);
+            properties[0].PropertyId = Guid.NewGuid();
+            var result = await _propertyRepository.InsertAsync(properties);
 
             return result;
         }
@@ -103,9 +105,11 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
             var propertyUpdateDto = propertyUpdateDtos[0];
 
+            var prop = _mapper.Map<Property>(propertyUpdateDto);
+
             var property = _mapper.Map<List<Property>>(propertyUpdateDtos);
 
-            // check có tồn tại hay không
+            // Check tài sản có tồn tại hay không
             var pro = await _propertyRepository.GetByIdAsync(propertyUpdateDto.PropertyId);
 
             if (pro == null)
@@ -114,7 +118,7 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             }
 
             // Check trùng code hay không
-            var checkDuplicateCode = await propertyManager.CheckDuplicateUpdatePropertyCode(propertyUpdateDto);
+            var checkDuplicateCode = await propertyManager.CheckDuplicateCode(prop);
 
             if (checkDuplicateCode == true)
             {
@@ -160,7 +164,7 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             }
         }
 
-        public async Task<List<PropertyReadonly>> GetCurrenPropertyInfo(int pageNumber, int pageSize,string? searchInput, string? excludedIds)
+        public async Task<List<PropertyReadonly>> GetCurrenPropertyInfo(int pageNumber, int pageSize, string? searchInput, string? excludedIds)
         {
             var res = await _propertyRepository.GetCurrenPropertyInfo(pageNumber, pageSize, searchInput, excludedIds);
 

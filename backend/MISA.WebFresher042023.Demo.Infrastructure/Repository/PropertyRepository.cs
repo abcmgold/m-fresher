@@ -6,6 +6,8 @@ using MISA.WebFresher042023.Demo.Core.Interface.Repository;
 using System.Text.RegularExpressions;
 using MISA.WebFresher042023.Demo.Infrastructure.Interface;
 using MISA.WebFresher042023.Demo.Core.DtoReadonly;
+using static Dapper.SqlMapper;
+using MISA.WebFresher042023.Demo.Core.Dto.Property;
 
 namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
 {
@@ -18,22 +20,19 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
         {
         }
 
-        public async Task<Property> CheckDuplicatePropertyCode(string propertyCode)
+        public async Task<int> CheckDuplicatePropertyCode(string propertyCode, Guid? propertyId)
         {
 
             var parameters = new DynamicParameters();
             parameters.Add("@PropertyCode", propertyCode);
+            parameters.Add("@PropertyId", propertyId);
 
-            // Thực hiện truy vấn và lấy kết quả đầu tiên
-            var result = await _unitOfWork.Connection.QueryFirstOrDefaultAsync<Property>(
-                sql: "CALL Proc_Property_GetByCode(@PropertyCode)",
+            var result = await _unitOfWork.Connection.QueryFirstOrDefaultAsync<int>(
+                sql: "CALL Proc_Property_CheckDuplicateCode(@PropertyCode, @PropertyId)",
                 param: parameters
             );
-
             return result;
-
         }
-
 
         public async Task<object> GetByPagingAsync(int pageNumber, int pageSize, string? searchInput, string? propertyType, string? departmentName, string? excludeIds)
         {

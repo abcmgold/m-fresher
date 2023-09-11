@@ -76,7 +76,11 @@
                     </div>
                     <div class="general-info-delivery">
                         <div class="delivery-checkbox">
-                            <m-checkbox ref="checkbox-delivery" :isCheckedProp="this.isCheckboxDeliveryChecked" @click="handleMoreDeliveryOptions"></m-checkbox>
+                            <m-checkbox
+                                ref="checkbox-delivery"
+                                :isCheckedProp="this.isCheckboxDeliveryChecked"
+                                @click="handleMoreDeliveryOptions"
+                            ></m-checkbox>
                             <div>{{ this.$_MISAResource['vn-VI'].propertyTransferForm.chooseReceiver }}</div>
                         </div>
                         <div class="delivery-checkbox" v-if="this.isShowMoreDeliveryOptions">
@@ -437,7 +441,7 @@ export default {
             totalResidualPrice: 0,
             totalOriginalPrice: 0,
             listTemporaryDelete: [], // lưu danh sách tài sản xóa mềm (tài sản điều chuyển đã nằm trong database)
-            isCheckboxDeliveryChecked: false
+            isCheckboxDeliveryChecked: false,
         };
     },
     watch: {
@@ -458,8 +462,8 @@ export default {
                 );
                 // this.listReceiver = JSON.parse(JSON.stringify(this.transferAsset.ReceiverList));
                 this.listInitialReceiver = JSON.parse(JSON.stringify(this.transferAsset.ReceiverList));
-                this.isCheckboxDeliveryChecked = this.transferAsset.ReceiverList.length > 0 ? true : false
-                this.isShowMoreDeliveryOptions = this.isCheckboxDeliveryChecked ? true : false
+                this.isCheckboxDeliveryChecked = this.transferAsset.ReceiverList.length > 0 ? true : false;
+                this.isShowMoreDeliveryOptions = this.isCheckboxDeliveryChecked ? true : false;
                 break;
             case this.$_MISAEnum.formAdd:
                 this.title = this.$_MISAResource['vn-VI'].propertyTransferForm.insertTransferAsset;
@@ -481,7 +485,7 @@ export default {
     mounted() {
         this.$refs.transferAssetCodeInput.$el.focus();
 
-        console.log(this.$refs['checkbox-delivery'].isChecked)
+        console.log(this.$refs['checkbox-delivery'].isChecked);
         // if (this.transferAsset.ReceiverList && this.transferAsset.ReceiverList.length > 0) {
         //     this.$refs['checkbox-delivery'].isChecked = true;
         //     this.listReceiver = JSON.parse(JSON.stringify(this.transferAsset.ReceiverList));
@@ -624,6 +628,7 @@ export default {
                     this.transferAsset.ReceiverList[i].ReceiverOrder--;
                 }
             }
+            console.log(this.transferAsset.ReceiverList);
         },
         /*
          * Sự kiện khi click vào icon dịch chuyển dòng người nhận
@@ -1042,9 +1047,9 @@ export default {
          */
         checkInforReceiver() {
             this.transferAsset.receiverList = [];
-            this.receiverDelete = []
-            this.receiverUpdate = []
-            this.receiverNochange= []
+            this.receiverDelete = [];
+            this.receiverUpdate = [];
+            this.receiverNochange = [];
 
             this.transferAsset.ReceiverList.forEach((receiver) => {
                 if (receiver.ReceiverId == undefined || receiver.ReceiverId == '00000000-0000-0000-0000-000000000000') {
@@ -1321,7 +1326,14 @@ export default {
                         ReceiverOrder: 1,
                     });
                 } else if (this.formMode == this.$_MISAEnum.formUpdate) {
-                    this.transferAsset.ReceiverList = JSON.parse(JSON.stringify(this.listInitialReceiver));
+                    if (this.listInitialReceiver.length > 0) {
+                        this.transferAsset.ReceiverList = JSON.parse(JSON.stringify(this.listInitialReceiver));
+                    } else {
+                        this.transferAsset.ReceiverList = []
+                        this.transferAsset.ReceiverList.push({
+                            ReceiverOrder: 1,
+                        });
+                    }
                 }
             } else {
                 this.$refs.checkboxAddReceiver.isChecked = true;

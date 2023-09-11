@@ -34,6 +34,7 @@
                                     type="text-field"
                                     :maxLength="this.enum.maxLengthCode"
                                     @keydown="this.keydownShiftTab($event)"
+                                    :isDisabled="this.isDisableInput"
                                 ></m-text-input>
                             </m-group-input>
                         </div>
@@ -52,6 +53,7 @@
                                     :isRequired="true"
                                     type="text-field"
                                     :maxLength="this.enum.maxLengthText"
+                                    :isDisabled="this.isDisableInput"
                                 ></m-text-input>
                             </m-group-input>
                         </div>
@@ -74,6 +76,7 @@
                                     type="combo-box"
                                     url="Department"
                                     :filterable="true"
+                                    :isDisabled="this.isDisableInput"
                                 ></m-combo-box>
                             </m-group-input>
                         </div>
@@ -109,6 +112,7 @@
                                 type="combo-box"
                                 url="PropertyType"
                                 :filterable="true"
+                                :isDisabled="this.isDisableInput"
                             ></m-combo-box>
                         </m-group-input>
                     </div>
@@ -142,6 +146,7 @@
                                     :isShowIcon="true"
                                     type="number-field"
                                     :maxLength="this.enum.maxLengthNumber"
+                                    :isDisabled="this.isDisableInput"
                                 ></m-money-input>
                             </m-group-input>
                         </div>
@@ -160,6 +165,7 @@
                                     individualClass="input__value--left"
                                     type="number-field"
                                     :maxLength="this.enum.maxLengthNumber"
+                                    :isDisabled="this.isDisableInput"
                                 ></m-money-input>
                             </m-group-input>
                         </div>
@@ -178,6 +184,7 @@
                                     individualClass="input__value--left"
                                     type="number-field"
                                     :maxLength="this.enum.maxLengthNumber"
+                                    :isDisabled="this.isDisableInput"
                                 ></m-money-input>
                             </m-group-input>
                         </div>
@@ -198,6 +205,7 @@
                                     :isShowIcon="true"
                                     type="number-field"
                                     :maxLength="this.enum.maxLengthNumber"
+                                    :isDisabled="this.isDisableInput"
                                 ></m-number-input>
                             </m-group-input>
                         </div>
@@ -215,6 +223,7 @@
                                     individualClass="input__value--left"
                                     type="number-field"
                                     :maxLength="this.enum.maxLengthNumber"
+                                    :isDisabled="this.isDisableInput"
                                 ></m-money-input>
                             </m-group-input>
                         </div>
@@ -247,6 +256,7 @@
                                 type="date"
                                 :isRequired="true"
                                 v-model="property.PurchaseDate"
+                                :isDisabled="this.isDisableInput"
                             ></m-date-picker>
                         </m-group-input>
                     </div>
@@ -261,6 +271,7 @@
                                     type="date"
                                     :isRequired="true"
                                     v-model="property.FollowDate"
+                                    :isDisabled="this.isDisableInput"
                                 ></m-date-picker>
                             </m-group-input>
                         </div>
@@ -272,6 +283,7 @@
                     individualClass="btn--primary"
                     :label="this.MISAResource['vn-VI'].save"
                     @click="this.addProperty"
+                    :isDisabled="this.isDisableInput"
                 ></m-button>
                 <m-button
                     individualClass="btn--noborder"
@@ -343,6 +355,7 @@ export default {
                 secondBtnFunction: null,
                 thirdBtnFunction: null,
             },
+            isDisableInput: 0
         };
     },
     created() {
@@ -363,6 +376,7 @@ export default {
             case this.enum.formUpdate:
                 this.title = this.MISAResource['vn-VI'].updateProperty;
                 this.property = { ...this.selectedRow };
+                this.isDisableInput = !this.property.EditMode
                 break;
             case this.enum.formDuplicate:
                 this.title = this.MISAResource['vn-VI'].addProperty;
@@ -483,11 +497,13 @@ export default {
          * Author: BATUAN (30/05/2023)
          */
         validateData() {
+            console.log('validateData');
             let validate = true;
             let refName = '';
             for (const ref in this.$refs) {
                 if (this.$refs[ref].isRequired) {
                     if (this.$refs[ref].modelValue === '' || this.$refs[ref].modelValue === undefined) {
+                        console.log(ref, this.$refs[ref].modelValue)
                         validate = false;
                         refName = ref;
                         break;
@@ -504,6 +520,8 @@ export default {
          * Author: BATUAN (30/05/2023)
          */
         validateMajor() {
+            console.log('Major')
+
             let check = true;
             let refName = null;
             if (
@@ -512,6 +530,7 @@ export default {
                 this.textDialog = this.MISAResource['vn-VI'].wearRateError;
                 check = false;
                 refName = 'numberYearsUseInput';
+                console.log(this.property.WearRate.toFixed(2))
             }
             if (Number(this.property.WearRateValue) > Number(this.property.OriginalPrice)) {
                 this.textDialog = this.MISAResource['vn-VI'].wearRateValueError;

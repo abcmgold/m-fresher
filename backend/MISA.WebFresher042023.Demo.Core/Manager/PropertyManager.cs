@@ -27,33 +27,16 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
         }
 
         /// <summary>
-        /// Check trùng code không khi thêm mới
+        /// Check trùng code
         /// </summary>
-        /// <param name="propertyCreateDto">Tài sản thêm mới</param>
-        /// <returns>True: không trùng| False: trùng code</returns>
+        /// <param name="property">Tài sản thêm mới</param>
+        /// <returns>False: không trùng| True: trùng code</returns>
         /// CreatedBy: BATUAN (30/08/2023)
-        public async Task<Boolean> CheckDuplicateInsertPropertyCode(PropertyCreateDto propertyCreateDto)
+        public async Task<bool> CheckDuplicateCode(Property property)
         {
-            var result = await _propertyRepository.CheckDuplicatePropertyCode(propertyCreateDto.PropertyCode);
+            var result = await _propertyRepository.CheckDuplicatePropertyCode(propertyCode: property.PropertyCode, property.PropertyId);
 
-            if (result != null)
-            {
-                return false;
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Check trùng code không khi update
-        /// </summary>
-        /// <param name="propertyUpdateDto">Tài sản cập nhật</param>
-        /// <returns>false: không trùng| true: trùng code</returns>
-        /// CreatedBy: BATUAN (30/08/2023)
-        public async Task<bool> CheckDuplicateUpdatePropertyCode(PropertyUpdateDto propertyUpdateDto)
-        {
-            var result = await _propertyRepository.CheckDuplicatePropertyCode(propertyUpdateDto.PropertyCode);
-
-            if (result != null && result.PropertyId != propertyUpdateDto.PropertyId)
+            if (result == 1) 
             {
                 return true;
             }
@@ -76,7 +59,7 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
                     ErrorField = "wearRateValueInput"
                 };
             }
-            else if (property.NumberYearUse != 1 / property.WearRate * 100)
+            else if (property.NumberYearUse != Math.Round(1 / property.WearRate * 100, 2))
             {
                 return new ErrorInfo
                 {

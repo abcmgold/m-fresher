@@ -97,6 +97,15 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ID phòng ban.
+        /// </summary>
+        public static string DepartmentId {
+            get {
+                return ResourceManager.GetString("DepartmentId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ID mã bộ phận sử dụng không vượt quá 36 ký tự.
         /// </summary>
         public static string DepartmentIdLength {
@@ -115,6 +124,15 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Tên phòng ban.
+        /// </summary>
+        public static string DepartmentName {
+            get {
+                return ResourceManager.GetString("DepartmentName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Tên bộ phận sử dụng không được vượt quá 255 kí tự.
         /// </summary>
         public static string DepartmentNameLength {
@@ -129,6 +147,15 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         public static string DepartmentNameRequired {
             get {
                 return ResourceManager.GetString("DepartmentNameRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tên phòng ban chuyển đi.
+        /// </summary>
+        public static string DepartmentTransferName {
+            get {
+                return ResourceManager.GetString("DepartmentTransferName", resourceCulture);
             }
         }
         
@@ -160,7 +187,7 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Không thể xóa chứng từ &lt;strong&gt;{0}&lt;/strong&gt; do tài sản &lt;strong&gt;{1}&lt;/strong&gt; nằm trong chứng từ này cũng thuộc chứng từ khác có thời gian tạo mới hơn !.
+        ///   Looks up a localized string similar to Không thể xóa chứng từ &lt;strong&gt;{0}&lt;/strong&gt; do tài sản &lt;strong&gt;{1}&lt;/strong&gt; đã phát sinh chứng từ mới hơn!.
         /// </summary>
         public static string ErrorMesageDeleteTransferAsset {
             get {
@@ -187,11 +214,29 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} không được để trống !.
+        /// </summary>
+        public static string FieldRequired {
+            get {
+                return ResourceManager.GetString("FieldRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ngày theo dõi không được trống.
         /// </summary>
         public static string FollowDateRequired {
             get {
                 return ResourceManager.GetString("FollowDateRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Họ và tên.
+        /// </summary>
+        public static string FullName {
+            get {
+                return ResourceManager.GetString("FullName", resourceCulture);
             }
         }
         
@@ -250,6 +295,15 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nguyên giá.
+        /// </summary>
+        public static string OriginalPrice {
+            get {
+                return ResourceManager.GetString("OriginalPrice", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Giá trị nguyên giá nằm trong khoảng 0 - 999999999999999999.
         /// </summary>
         public static string OriginalPriceRange {
@@ -264,6 +318,15 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         public static string OriginalPriceRequired {
             get {
                 return ResourceManager.GetString("OriginalPriceRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Chức vụ.
+        /// </summary>
+        public static string Positon {
+            get {
+                return ResourceManager.GetString("Positon", resourceCulture);
             }
         }
         
@@ -291,6 +354,15 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         public static string PropertyCodeRequired {
             get {
                 return ResourceManager.GetString("PropertyCodeRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ID tài sản.
+        /// </summary>
+        public static string PropertyId {
+            get {
+                return ResourceManager.GetString("PropertyId", resourceCulture);
             }
         }
         
@@ -408,6 +480,96 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         public static string QuantityRequired {
             get {
                 return ResourceManager.GetString("QuantityRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} phải nằm trong khoảng từ {1} - {2}!.
+        /// </summary>
+        public static string Range {
+            get {
+                return ResourceManager.GetString("Range", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ID người nhận.
+        /// </summary>
+        public static string ReceiverId {
+            get {
+                return ResourceManager.GetString("ReceiverId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Đại diện.
+        /// </summary>
+        public static string Represent {
+            get {
+                return ResourceManager.GetString("Represent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ngày chứng từ.
+        /// </summary>
+        public static string TransactionDate {
+            get {
+                return ResourceManager.GetString("TransactionDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mã chứng từ.
+        /// </summary>
+        public static string TransferAssetCode {
+            get {
+                return ResourceManager.GetString("TransferAssetCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ID tài sản điều chuyển.
+        /// </summary>
+        public static string TransferAssetDetailId {
+            get {
+                return ResourceManager.GetString("TransferAssetDetailId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Danh sách tài sản điều chuyển.
+        /// </summary>
+        public static string TransferAssetDetailList {
+            get {
+                return ResourceManager.GetString("TransferAssetDetailList", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ID chứng từ.
+        /// </summary>
+        public static string TransferAssetId {
+            get {
+                return ResourceManager.GetString("TransferAssetId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Ngày điều chuyển.
+        /// </summary>
+        public static string TransferDate {
+            get {
+                return ResourceManager.GetString("TransferDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cập nhật ngày điều chuyển không thành công do tài sản &lt;strong&gt;{0}&lt;/strong&gt; nằm trong chứng từ khác!.
+        /// </summary>
+        public static string UpdateFail {
+            get {
+                return ResourceManager.GetString("UpdateFail", resourceCulture);
             }
         }
         

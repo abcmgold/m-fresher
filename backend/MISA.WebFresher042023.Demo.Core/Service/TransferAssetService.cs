@@ -108,30 +108,16 @@ namespace MISA.WebFresher042023.Demo.Core.Service
         public async Task<int> UpdateDocumentAsync(TransferAssetUpdateDto transferAssetUpdateDto)
         {
             // phân loại các tài sản trong chứng từ vào 3 loại: thêm mới, update, xóa
-            List<TransferAssetDetailUpdateDto> transferAssetDetailUpdatesChange = new List<TransferAssetDetailUpdateDto>();
+            var transferAssetDetailUpdatesChange = new List<TransferAssetDetailUpdateDto>();
 
-            List<TransferAssetDetailUpdateDto> transferAssetDetailUpdatesDelete = new();
+            var transferAssetDetailUpdatesDelete = new List<TransferAssetDetailUpdateDto>();
 
-            List<TransferAssetDetailUpdateDto> transferAssetDetailUpdatesInsert = new();
+            var transferAssetDetailUpdatesInsert = new List<TransferAssetDetailUpdateDto>();
 
-            foreach (TransferAssetDetailUpdateDto transfer in transferAssetUpdateDto.TransferAssetDetailList)
+            foreach (var transfer in transferAssetUpdateDto.TransferAssetDetailList)
             {
-                switch (transfer.StatusRecord)
-                {
-                    case StatusRecord.Update:
-                        transferAssetDetailUpdatesChange.Add(transfer);
-                        break;
+                ProcessList(transferAssetDetailUpdatesChange, transferAssetDetailUpdatesInsert,transferAssetDetailUpdatesDelete,  transfer.StatusRecord, transfer);
 
-                    case StatusRecord.Insert:
-                        transferAssetDetailUpdatesInsert.Add(transfer);
-                        break;
-
-                    case StatusRecord.Delete:
-                        transferAssetDetailUpdatesDelete.Add(transfer);
-                        break;
-                    default:
-                        break;
-                }
             }
 
             // Check chứng từ có tồn tại hay không
@@ -176,61 +162,47 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
             // phân loại danh sách người nhận vào 3 loại: thêm mới, update, xóa
 
-            List<ReceiverUpdateDto> receverChange = new();
+            var receverChange = new List<ReceiverUpdateDto>();
 
-            List<ReceiverUpdateDto> receverDelete = new();
+            var receverDelete = new List<ReceiverUpdateDto>();
 
-            List<ReceiverUpdateDto> receverInsert = new();
+            var receverInsert = new List<ReceiverUpdateDto>();
+
 
 
             if (transferAssetUpdateDto.ReceiverList != null)
             {
                 foreach (ReceiverUpdateDto receiver in transferAssetUpdateDto.ReceiverList)
                 {
-                    switch (receiver.StatusRecord)
-                    {
-                        case StatusRecord.Update:
-                            receverChange.Add(receiver);
-                            break;
-
-                        case StatusRecord.Insert:
-                            receverInsert.Add(receiver);
-                            break;
-
-                        case StatusRecord.Delete:
-                            receverDelete.Add(receiver);
-                            break;
-                        default:
-                            break;
-                    }
+                    ProcessList(receverChange, receverInsert, receverDelete, receiver.StatusRecord, receiver);
                 }
             }
 
             // Tạo danh sách id các chi tiết chứng từ bị xóa
-            List<Guid> propertyIds = transferAssetDetailUpdatesDelete.Select(p => p.TransferAssetDetailId).ToList();
+            var propertyIds = transferAssetDetailUpdatesDelete.Select(p => p.TransferAssetDetailId).ToList();
 
-            string transferAssetDetailDeleteIds = string.Join(", ", propertyIds);
+            var transferAssetDetailDeleteIds = string.Join(", ", propertyIds);
 
             // Tạo danh sách id người nhận bị xóa
-            List<Guid> receiverDeleteIds = receverDelete.Select(p => p.ReceiverId).ToList();
+            var receiverDeleteIds = receverDelete.Select(p => p.ReceiverId).ToList();
 
-            string receiverConcateDeleteIds = string.Join(", ", receiverDeleteIds);
+            var receiverConcateDeleteIds = string.Join(", ", receiverDeleteIds);
 
             // map các entityDto sang entity
-            TransferAsset transferAsset = _mapper.Map<TransferAsset>(transferAssetUpdateDto);
+            var transferAsset = _mapper.Map<TransferAsset>(transferAssetUpdateDto);
 
             var transferAssetList = new List<TransferAsset>
             {
                 transferAsset
             };
 
-            List<TransferAssetDetail> transferAssetDetailChange = _mapper.Map<List<TransferAssetDetail>>(transferAssetDetailUpdatesChange);
+            var transferAssetDetailChange = _mapper.Map<List<TransferAssetDetail>>(transferAssetDetailUpdatesChange);
 
-            List<TransferAssetDetail> transferAssetDetailInsert = _mapper.Map<List<TransferAssetDetail>>(transferAssetDetailUpdatesInsert);
+            var transferAssetDetailInsert = _mapper.Map<List<TransferAssetDetail>>(transferAssetDetailUpdatesInsert);
 
-            List<Receiver> receiverChange = _mapper.Map<List<Receiver>>(receverChange);
+            var receiverChange = _mapper.Map<List<Receiver>>(receverChange);
 
-            List<Receiver> receiverInsert = _mapper.Map<List<Receiver>>(receverInsert);
+            var receiverInsert = _mapper.Map<List<Receiver>>(receverInsert);
 
             foreach (var transferAssetDetail in transferAssetDetailInsert)
             {
@@ -285,6 +257,28 @@ namespace MISA.WebFresher042023.Demo.Core.Service
                 throw;
             }
         }
+        public void ProcessList<T>(List<T> listChange, List<T> listInsert, List<T> listDelete, Enum.StatusRecord statusRecord, T entity)
+        {
+
+            switch (statusRecord)
+            {
+                case StatusRecord.Update:
+                    listChange.Add(entity);
+                    break;
+
+                case StatusRecord.Insert:
+                    listInsert.Add(entity);
+                    break;
+
+                case StatusRecord.Delete:
+                    listDelete.Add(entity);
+                    break;
+
+                default:
+                    break;
+
+            }
+        }
         /// <summary>
         /// Xóa nhiều chứng từ
         /// </summary>
@@ -301,7 +295,7 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
             // Check ok, thực hiện xóa nhiều
 
-            string concatenatedIds = string.Join(", ", transferAssetIdList);
+            var concatenatedIds = string.Join(", ", transferAssetIdList);
 
             try
             {
@@ -365,7 +359,7 @@ namespace MISA.WebFresher042023.Demo.Core.Service
         {
             var code = await _transferAssetRepository.GetGreatestCode();
 
-            if (code == null) return "DC0001";
+            if (code == null) return "CT000001";
 
             string numberPart = Regex.Match(input: code, @"\d+$").Value;
 

@@ -129,17 +129,26 @@
   <data name="DepartmentCodeRequired" xml:space="preserve">
     <value>Mã bộ phận sử dụng không được trống</value>
   </data>
+  <data name="DepartmentId" xml:space="preserve">
+    <value>ID phòng ban</value>
+  </data>
   <data name="DepartmentIdLength" xml:space="preserve">
     <value>ID mã bộ phận sử dụng không vượt quá 36 ký tự</value>
   </data>
   <data name="DepartmentIdRequired" xml:space="preserve">
     <value>ID mã bộ phận sử dụng không được trống</value>
   </data>
+  <data name="DepartmentName" xml:space="preserve">
+    <value>Tên phòng ban</value>
+  </data>
   <data name="DepartmentNameLength" xml:space="preserve">
     <value>Tên bộ phận sử dụng không được vượt quá 255 kí tự</value>
   </data>
   <data name="DepartmentNameRequired" xml:space="preserve">
     <value>Tên bộ phận sử dụng không được trống</value>
+  </data>
+  <data name="DepartmentTransferName" xml:space="preserve">
+    <value>Tên phòng ban chuyển đi</value>
   </data>
   <data name="DiffirentDepartment" xml:space="preserve">
     <value>Bộ phận chuyển đi phải khác bộ phận hiện tại</value>
@@ -151,7 +160,7 @@
     <value>Ngày điều chuyển phải lớn hơn hoặc bằng ngày chứng từ</value>
   </data>
   <data name="ErrorMesageDeleteTransferAsset" xml:space="preserve">
-    <value>Không thể xóa chứng từ &lt;strong&gt;{0}&lt;/strong&gt; do tài sản &lt;strong&gt;{1}&lt;/strong&gt; nằm trong chứng từ này cũng thuộc chứng từ khác có thời gian tạo mới hơn !</value>
+    <value>Không thể xóa chứng từ &lt;strong&gt;{0}&lt;/strong&gt; do tài sản &lt;strong&gt;{1}&lt;/strong&gt; đã phát sinh chứng từ mới hơn!</value>
   </data>
   <data name="ErrorServer" xml:space="preserve">
     <value>Lỗi server. Vui lòng liên hệ bộ phận hỗ trợ!</value>
@@ -159,8 +168,14 @@
   <data name="ExistTransferAssetCode" xml:space="preserve">
     <value>Mã chứng từ điều chuyển đã tồn tại</value>
   </data>
+  <data name="FieldRequired" xml:space="preserve">
+    <value>{0} không được để trống !</value>
+  </data>
   <data name="FollowDateRequired" xml:space="preserve">
     <value>Ngày theo dõi không được trống</value>
+  </data>
+  <data name="FullName" xml:space="preserve">
+    <value>Họ và tên</value>
   </data>
   <data name="InfoTransferAsset" xml:space="preserve">
     <value>- Chứng từ điều chuyển &lt;strong&gt;{0}&lt;/strong&gt; &lt;strong&gt;({1})&lt;/strong&gt;</value>
@@ -180,11 +195,17 @@
   <data name="NumberYearUseRequired" xml:space="preserve">
     <value>Số năm sử dụng không được trống</value>
   </data>
+  <data name="OriginalPrice" xml:space="preserve">
+    <value>Nguyên giá</value>
+  </data>
   <data name="OriginalPriceRange" xml:space="preserve">
     <value>Giá trị nguyên giá nằm trong khoảng 0 - 999999999999999999</value>
   </data>
   <data name="OriginalPriceRequired" xml:space="preserve">
     <value>Nguyên giá không được trống</value>
+  </data>
+  <data name="Positon" xml:space="preserve">
+    <value>Chức vụ</value>
   </data>
   <data name="PriceError" xml:space="preserve">
     <value>Giá trị hao mòn phải nhỏ hơn hoặc bằng nguyên giá</value>
@@ -194,6 +215,9 @@
   </data>
   <data name="PropertyCodeRequired" xml:space="preserve">
     <value>Mã tài sản không được trống</value>
+  </data>
+  <data name="PropertyId" xml:space="preserve">
+    <value>ID tài sản</value>
   </data>
   <data name="PropertyIdLength" xml:space="preserve">
     <value>ID tài sản không được vượt quá 36 kí tự</value>
@@ -233,6 +257,36 @@
   </data>
   <data name="QuantityRequired" xml:space="preserve">
     <value>Số lượng không được trống</value>
+  </data>
+  <data name="Range" xml:space="preserve">
+    <value>{0} phải nằm trong khoảng từ {1} - {2}!</value>
+  </data>
+  <data name="ReceiverId" xml:space="preserve">
+    <value>ID người nhận</value>
+  </data>
+  <data name="Represent" xml:space="preserve">
+    <value>Đại diện</value>
+  </data>
+  <data name="TransactionDate" xml:space="preserve">
+    <value>Ngày chứng từ</value>
+  </data>
+  <data name="TransferAssetCode" xml:space="preserve">
+    <value>Mã chứng từ</value>
+  </data>
+  <data name="TransferAssetDetailId" xml:space="preserve">
+    <value>ID tài sản điều chuyển</value>
+  </data>
+  <data name="TransferAssetDetailList" xml:space="preserve">
+    <value>Danh sách tài sản điều chuyển</value>
+  </data>
+  <data name="TransferAssetId" xml:space="preserve">
+    <value>ID chứng từ</value>
+  </data>
+  <data name="TransferDate" xml:space="preserve">
+    <value>Ngày điều chuyển</value>
+  </data>
+  <data name="UpdateFail" xml:space="preserve">
+    <value>Cập nhật ngày điều chuyển không thành công do tài sản &lt;strong&gt;{0}&lt;/strong&gt; nằm trong chứng từ khác!</value>
   </data>
   <data name="WearRateError" xml:space="preserve">
     <value>Tỷ lệ hao mòn phải bằng 1/Số năm sử dụng</value>

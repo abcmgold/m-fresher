@@ -12,11 +12,23 @@
     justify-content: center;
     align-items: center;
     column-gap: 8px;
+    cursor:pointer;
+
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    background-color: #1688a6;
+}
+
+.btn:disabled:hover {
+    cursor: not-allowed;
+    background-color: #1688a6;
+    outline: none;
 }
 
 .btn--primary:hover {
     background-color: #1688a6;
-    cursor:pointer;
     outline: 2px solid #cce4ff;
 }
 
@@ -26,6 +38,7 @@
 
 .btn--primary:focus {
     background-color: rgb(22, 136, 166, 0.9);
+    outline: 2px solid #cce4ff;
 }
 
 .btn--noborder {

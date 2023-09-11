@@ -174,7 +174,7 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
 
                         infoTransferAssets.Add(string.Format(Resources.ResourceVN.InfoTransferAsset, transfer.TransferAssetCode, formattedDate));
                     }
-                    throw new UserException("Chứng từ không được phép cập nhật ngày điều chuyển !", (int)Enum.StatusCode.BadRequest, infoTransferAssets);
+                    throw new UserException(string.Format(Resources.ResourceVN.UpdateFail, property.PropertyCode), (int)Enum.StatusCode.BadRequest, infoTransferAssets);
                 }
             }
         }

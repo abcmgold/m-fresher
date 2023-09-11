@@ -57,22 +57,31 @@
         <div class="tranfer__content" :class="{ 'hidden-detail': !this.isShowDetailDocument }">
             <div class="table__content">
                 <div class="table__content--header">
-                    <div
-                        class="table__content--header-item cell--item"
-                        v-for="(header, index) in this.listHeaderTranfer"
-                        :class="{ 'cell--item--checkbox': header.name == 'checkbox' }"
-                        :key="index"
-                        :style="header.style"
-                    >
-                        <template v-if="header.name === 'checkbox'">
-                            <m-checkbox
-                                ref="checkbox-all"
-                                type="primary"
-                                :class="header.align"
-                                @click="clickOnCheckBoxAll"
-                            ></m-checkbox>
-                        </template>
-                        <template v-else>
+                    <div class="cell--item--checkbox table__content--header-item cell--item" style="width: 50px">
+                        <m-checkbox
+                            ref="checkbox-all"
+                            type="primary"
+                            class="text-align-center"
+                            style="width: 50px"
+                            @click="clickOnCheckBoxAll"
+                        ></m-checkbox>
+                    </div>
+                    <div class="cell--item table__content--header-item" style="width: 50px">
+                        <div
+                            class="text-align-center"
+                            :content="this.$_MISAResource['vn-VI'].order"
+                            v-tippy="{ placement: 'bottom' }"
+                        >
+                            STT
+                        </div>
+                    </div>
+                    <draggable :list="this.listHeaderTranfer" class="table__content--header">
+                        <div
+                            class="table__content--header-item cell--item"
+                            v-for="(header, index) in this.listHeaderTranfer"
+                            :key="index"
+                            :style="header.style"
+                        >
                             <el-tooltip
                                 v-if="header.fullName"
                                 effect="dark"
@@ -84,7 +93,10 @@
                             <div v-else :class="header.align">
                                 {{ header.name }}
                             </div>
-                        </template>
+                        </div>
+                    </draggable>
+                    <div class="cell--item table__content--header-item" style="width: 120px">
+                        <div class="text-align-center">Chức năng</div>
                     </div>
                 </div>
                 <div class="table__content--body" :style="{ height: documentTableHeight + 'px' }" ref="contentBody">
@@ -112,25 +124,27 @@
                             ></m-checkbox>
                         </div>
                         <div class="text-align-center cell--item" style="width: 50px">{{ index + 1 }}</div>
-                        <div class="text-align-left cell--item" style="width: 150px">
-                            <div class="text--surround">{{ data.TransferAssetCode }}</div>
+
+                        <div
+                            v-for="header in this.listHeaderTranfer"
+                            class="cell--item"
+                            :class="header.align"
+                            :style="header.style"
+                            :key="header.id"
+                        >
+                            <div v-if="header.date">
+                                {{ this.formatedCurrentDate(data[header.field]) }}
+                            </div>
+                            <div v-if="header.money">
+                                {{ this.formatedMoney(data[header.field]) }}
+                            </div>
+                            <div v-if="!header.date && !header.money">{{ data[header.field] }}</div>
                         </div>
-                        <div class="text-align-center cell--item" style="width: 200px">
-                            <div class="text--surround">{{ this.formatedCurrentDate(data.TransactionDate) }}</div>
-                        </div>
-                        <div class="text-align-center cell--item" style="width: 200px">
-                            <div class="text--surround">{{ this.formatedCurrentDate(data.TransferDate) }}</div>
-                        </div>
-                        <div class="text-align-right cell--item" style="width: 150px">
-                            <div class="text--surround">{{ this.formatedMoney(data.OriginalPrice) }}</div>
-                        </div>
-                        <div class="text-align-right cell--item" style="width: 150px">
-                            <div class="text--surround">{{ this.formatedMoney(data.ResidualPrice) }}</div>
-                        </div>
-                        <div class="text-align-left cell--item" style="flex: 1">
-                            <div class="text--surround">{{ data.Note }}</div>
-                        </div>
-                        <div class="table-list-icons cell--item" style="width: 120px"  :class="isHasScrollBar ? 'hasScrollBar' : ''">
+                        <div
+                            class="table-list-icons cell--item"
+                            style="width: 120px"
+                            :class="isHasScrollBar ? 'hasScrollBar' : ''"
+                        >
                             <div
                                 v-tippy="$_MISAResource['vn-VI'].edit"
                                 class="table--icon table--icon-pencil"
@@ -152,19 +166,22 @@
                     </div>
                 </div>
                 <div class="table__content--sumary">
-                    <div class="text-align-center cell--item" style="width: 50px"></div>
                     <div style="width: 50px"></div>
-                    <div style="width: 150px"></div>
-                    <div style="width: 200px"></div>
-                    <div style="width: 200px"></div>
-                    <div style="width: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
-                        {{ this.formatedMoney(this.totalPrice) }}
+                    <div style="width: 50px"></div>
+
+                    <div
+                        v-for="header in this.listHeaderTranfer"
+                        :style="header.style"
+                        :class="header.align"
+                        style="font-weight: bold; padding: 0px 16px; height: 42px"
+                        :key="header.id"
+                    >
+                        <div v-if="header.summaryField">
+                            {{ this.formatedMoney(this.summaryTotal[header.summaryField]) }}
+                        </div>
                     </div>
-                    <div style="width: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
-                        {{ this.formatedMoney(this.totalResidualPrice) }}
-                    </div>
-                    <div style="flex: 1" class="text-align-right"></div>
-                    <div style="width: 120px; font-weight: bold; padding: 0px 16px" class="text-align-right"></div>
+
+                    <div style="width: 120px"></div>
                 </div>
             </div>
             <div class="table__paging paging" v-if="this.$store.getters.getIsShowPaging">
@@ -347,11 +364,13 @@ import request from '@/common/api';
 import exception from '@/common/exception';
 import { formatMoney, formatCurrentDate } from '@/common/common';
 import { delay } from '@/common/common';
+import { VueDraggableNext } from 'vue-draggable-next';
 
 export default {
     name: 'PropertyTransfer',
     components: {
         PropertyTransferForm,
+        draggable: VueDraggableNext,
     },
     data() {
         return {
@@ -395,8 +414,7 @@ export default {
                 },
             ],
             pageNumberDocument: 0,
-            totalPrice: 0,
-            totalResidualPrice: 0,
+            summaryTotal: {},
             isLoadingDataDocument: false,
             isLoadingDataDetail: false,
             isShowDialog: false,
@@ -439,8 +457,7 @@ export default {
 
         if (scrollableContainer.offsetWidth > scrollableContainer.scrollWidth) {
             this.isHasScrollBar = true;
-        }
-        else {
+        } else {
             this.isHasScrollBar = false;
         }
     },
@@ -450,18 +467,25 @@ export default {
          * Author: BATUAN (27/08/2023)
          */
         async getAutoTransferAssetcode() {
+            this.$store.commit('toggleMaskElementShow');
+
             await request
                 .getRecord('TransferAsset/GetAutoCode')
                 .then((response) => (this.transferAssetAutoCode = response.data))
                 .catch((err) => {
                     this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
+
+            await delay(300);
+            this.$store.commit('toggleMaskElementShow');
         },
         /*
-         * Lấy danh sách chi tiết của các chứng từ
+         * Lấy danh sách chi tiết của chứng từ
          * Author: BATUAN (07/06/2023)
          */
         async getTransferAssetDetail(id) {
+            this.$store.commit('toggleMaskElementShow');
+
             await request
                 .getRecord(`TransferAsset/GetInfo?transferAssetId=${id}`)
                 .then((res) => {
@@ -470,6 +494,9 @@ export default {
                 .catch((err) => {
                     this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
+
+            await delay(300);
+            this.$store.commit('toggleMaskElementShow');
         },
         /*
          * Gọi api lấy danh sách chứng từ
@@ -486,15 +513,14 @@ export default {
                 .then(async (response) => {
                     // lưu dữ liệu data hiển thị
                     this.transferAssetList = response.data.Data;
-                    // lưu tổng số bản ghi
                     this.totalRecordDocuments = response.data.Total[0].NumberRecords;
-                    // lưu giá trị tổng số
-                    this.totalPrice = response.data.Total[0].TotalPrice;
+                    // lưu giá trị summary
+                    this.summaryTotal.totalPrice = response.data.Total[0].TotalPrice;
                     if (response.data.Data.length > 0) {
-                        this.totalResidualPrice = response.data.Data[0].TotalResidualPrice;
+                        this.summaryTotal.totalResidualPrice = response.data.Data[0].TotalResidualPrice;
                     }
-
-                    if (this.transferAssetList.length == 0 ) {
+                    else {
+                        this.summaryTotal.totalResidualPrice = 0;
                         this.transferAssetDetailList = [];
                     }
 
@@ -525,8 +551,8 @@ export default {
                     this.totalRecordDetail = this.transferAssetDetailList[0].TotalRecords;
                     this.pageNumbersDetail = Math.ceil(this.totalRecordDetail / this.detailDocumentPageSize);
                 })
-                .catch(() => {
-                    // this.handleException(err.statusCode, err.message, this.showDialog);
+                .catch((err) => {
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
         },
         /*
@@ -669,6 +695,9 @@ export default {
             if (this.transferAssetList.length > 0) {
                 await this.getDetailDocument();
             }
+            else {
+                this.totalRecordDetail = 0;
+            }
         },
         /*
          * Sự kiện click vào hàng của table
@@ -742,9 +771,9 @@ export default {
             });
 
             if (check == true && this.transferAssetList.length > 0) {
-                this.$refs['checkbox-all'][0].isChecked = true;
+                this.$refs['checkbox-all'].isChecked = true;
             } else {
-                this.$refs['checkbox-all'][0].isChecked = false;
+                this.$refs['checkbox-all'].isChecked = false;
             }
         },
         /*
@@ -782,8 +811,8 @@ export default {
          * Author: BATUAN (07/06/2023)
          */
         clickOnCheckBoxAll() {
-            if (this.$refs['checkbox-all'][0].isChecked) {
-                this.$refs['checkbox-all'][0].isChecked = false;
+            if (this.$refs['checkbox-all'].isChecked) {
+                this.$refs['checkbox-all'].isChecked = false;
                 let transferAssetListId = [];
                 this.transferAssetList.forEach((element) => {
                     transferAssetListId.push(element.TransferAssetId);
@@ -793,7 +822,7 @@ export default {
                     return !transferAssetListId.includes(item.TransferAssetId);
                 });
                 this.checkForCheckbox();
-            } else if (!this.$refs['checkbox-all'][0].isChecked) {
+            } else if (!this.$refs['checkbox-all'].isChecked) {
                 for (let i = 0; i < this.transferAssetList.length; i++) {
                     if (
                         !this.selectedRow.some(
@@ -908,10 +937,11 @@ export default {
             });
             await request
                 .deleteRecord('TransferAsset', { data: listId })
-                .then(() => {
+                .then(async () => {
                     this.showToastSuccess('Xóa thành công');
                     this.hideDialog();
-                    this.getDocumentByPaging();
+                    await this.getDocumentByPaging();
+                    await this.handleGetDetailDocument(0);
                     this.selectedRow = [];
                 })
                 .catch((err) => {
@@ -930,7 +960,8 @@ export default {
                 .then(async () => {
                     this.showToastSuccess('Xóa thành công');
                     this.hideDialog();
-                    this.getDocumentByPaging();
+                    await this.getDocumentByPaging();
+                    await this.handleGetDetailDocument(0);
                     this.selectedRow = [];
                 })
                 .catch((err) => {

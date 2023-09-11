@@ -301,7 +301,6 @@
 
 .table__content--sumary div {
     border-right: 1px solid #e9e9e9;
-    border-top: 1px solid #e9e9e9;
 }
 
 .table__content--empty {
@@ -373,6 +372,10 @@
 
 .detail__content {
     position: relative;
+}
+
+.detail__content .table__content--row {
+    cursor: default;
 }
 
 .detail__content .grid-loading-container {
