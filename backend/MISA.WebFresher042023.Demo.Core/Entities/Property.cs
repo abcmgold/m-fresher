@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using MISA.WebFresher042023.Demo.Core.Enum;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace MISA.WebFresher042023.Demo.Core.Entities
@@ -9,9 +10,6 @@ namespace MISA.WebFresher042023.Demo.Core.Entities
     /// CreatedBy: BATUAN (14/06/2023)
     public class Property : BaseEntity
     {
-        public Property() { 
-            PropertyId = Guid.NewGuid();
-        }
         /// <summary>
         /// Id tài sản
         /// </summary>
@@ -82,6 +80,11 @@ namespace MISA.WebFresher042023.Demo.Core.Entities
         /// Ngày bắt đầu sử dụng
         /// </summary>
         public DateTime FollowDate { get; set; }
+
+        /// <summary>
+        /// Biến check tài sản được chỉnh sửa hay không
+        /// </summary>
+        public EditMode? EditMode { get; set; }
     }
 
 }

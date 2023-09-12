@@ -33,7 +33,7 @@
                 class="back-ground__icon"
                 filterable
                 :title="departmentUseFilter"
-                :no-match-text="'Không có kết quả'"
+                :no-match-text="this.$_MISAResource['vn-VI'].noResult"
             >
                 <el-option
                     v-for="item in Departments"
@@ -89,22 +89,31 @@
     <div class="content__body">
         <div class="table__content">
             <div class="table__content--header">
-                <div
-                    class="table__content--header-item cell--item"
-                    :class="{ 'cell--item--checkbox': header.name == 'checkbox' }"
-                    v-for="(header, index) in this.listHeader"
-                    :key="index"
-                    :style="{ minWidth: header.width }"
-                >
-                    <template v-if="header.name === 'checkbox'">
-                        <m-checkbox
-                            ref="checkbox-all"
-                            type="primary"
-                            :class="header.align"
-                            @click="clickOnCheckBoxAll"
-                        ></m-checkbox>
-                    </template>
-                    <template v-else>
+                <div class="cell--item--checkbox table__content--header-item cell--item" style="minWidth: 50px">
+                    <m-checkbox
+                        ref="checkbox-all"
+                        type="primary"
+                        class="text-align-center"
+                        style="width: 50px"
+                        @click="clickOnCheckBoxAll"
+                    ></m-checkbox>
+                </div>
+                <div class="cell--item table__content--header-item" style="minWidth: 50px">
+                    <div
+                        class="text-align-center"
+                        :content="this.$_MISAResource['vn-VI'].order"
+                        v-tippy="{ placement: 'bottom' }"
+                    >
+                        STT
+                    </div>
+                </div>
+                <draggable :list="listHeader" class="table__content--header">
+                    <div
+                        class="table__content--header-item cell--item"
+                        v-for="(header, index) in this.listHeader"
+                        :key="index"
+                        :style="{ minWidth: header.width }"
+                    >
                         <el-tooltip
                             v-if="header.fullName"
                             effect="dark"
@@ -116,8 +125,8 @@
                         <div v-else :class="header.align">
                             {{ header.name }}
                         </div>
-                    </template>
-                </div>
+                    </div>
+                </draggable>
             </div>
             <div class="table__content--body" style="width: 1670px" ref="contentBody" @scroll="scrollHandler($event)">
                 <div
@@ -142,31 +151,17 @@
                         ></m-checkbox>
                     </div>
                     <div class="text-align-center cell--item" style="minWidth: 50px">{{ index + 1 }}</div>
-                    <div class="text-align-left cell--item" style="minWidth: 150px">
-                        <div class="text--surround">{{ data.PropertyCode }}</div>
-                    </div>
-                    <div class="text-align-left cell--item" style="minWidth: 300px">
-                        <div class="text--surround">{{ data.PropertyName }}</div>
-                    </div>
-                    <div class="text-align-left cell--item" style="minWidth: 250px">
-                        <div class="text--surround">{{ data.PropertyTypeName }}</div>
-                    </div>
-                    <div class="text-align-left cell--item" style="minWidth: 250px">
-                        <div class="text--surround">{{ data.DepartmentName }}</div>
-                    </div>
-                    <div class="text-align-right cell--item" style="minWidth: 100px">
-                        <div class="text--surround">{{ this.formatedMoney(data.Quantity) }}</div>
-                    </div>
-                    <div class="text-align-right cell--item" style="minWidth: 150px">
-                        <div class="text--surround">{{ this.formatedMoney(data.OriginalPrice) }}</div>
-                    </div>
-                    <div class="text-align-right cell--item" style="minWidth: 150px">
-                        <div class="text--surround">{{ this.formatedMoney(data.WearRateValue) }}</div>
-                    </div>
-                    <div class="text-align-right cell--item" style="minWidth: 150px">
-                        <div class="text--surround">
-                            {{ this.formatedMoney(data.OriginalPrice - data.WearRateValue) }}
+                    <div
+                        v-for="header in this.listHeader"
+                        class="cell--item"
+                        :class="header.align"
+                        :style="{ minWidth: header.width }"
+                        :key="header.id"
+                    >
+                        <div v-if="header.money">
+                            {{ this.formatedMoney(data[header.field]) }}
                         </div>
+                        <div v-else>{{ data[header.field] }}</div>
                     </div>
                     <div class="cell--item" style="minWidth: 120px"></div>
                 </div>
@@ -174,24 +169,19 @@
             <div style="width: 1666px" class="table__content--sumary" v-if="this.$store.getters.getIsShowSummary">
                 <div class="text-align-center cell--item" style="minWidth: 50px"></div>
                 <div style="minWidth: 50px"></div>
-                <div style="minWidth: 150px"></div>
-                <div style="minWidth: 300px"></div>
-                <div style="minWidth: 250px"></div>
-                <div style="minWidth: 250px"></div>
-                <div style="minWidth: 100px; font-weight: bold; padding: 0px 16px" class="text-align-right">
-                    {{ this.formatedMoney(this.totalSummary.TotalQuantity) }}
+
+                <div
+                    v-for="header in this.listHeader"
+                    :style="{ minWidth: header.width }"
+                    :class="header.align"
+                    style="font-weight: bold; padding: 0px 16p; height: 47px"
+                    :key="header.id"
+                >
+                    <div v-if="header.summaryField">
+                        {{ this.formatedMoney(this.totalSummary[header.summaryField]) }}
+                    </div>
                 </div>
-                <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
-                    {{ this.formatedMoney(this.totalSummary.TotalOriginalPrice) }}
-                </div>
-                <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
-                    {{ this.formatedMoney(this.totalSummary.TotalWearRateValue) }}
-                </div>
-                <div style="minWidth: 150px; font-weight: bold; padding: 0px 16px" class="text-align-right">
-                    {{
-                        this.formatedMoney(this.totalSummary.TotalOriginalPrice - this.totalSummary.TotalWearRateValue)
-                    }}
-                </div>
+
                 <div style="minWidth: 120px"></div>
             </div>
         </div>
@@ -213,13 +203,13 @@
                     <div
                         v-tippy="$_MISAResource['vn-VI'].edit"
                         class="table--icon table--icon-pencil"
-                        @click="this.showDetail(index, data.id)"
+                        @click="this.showDetail(index, data.PropertyId)"
                     ></div>
                     <div
                         v-tippy="$_MISAResource['vn-VI'].duplicate"
                         @click.stop
                         class="table--icon table--icon-duplicate"
-                        @click="this.showDuplicate(index, data.id)"
+                        @click="this.showDuplicate(index, data.PropertyId)"
                     ></div>
                 </div>
             </div>
@@ -310,11 +300,13 @@ import request from '@/common/api';
 import debounce from 'lodash/debounce';
 import { directive } from 'vue-tippy';
 import exception from '@/common/exception';
+import { VueDraggableNext } from 'vue-draggable-next';
 
 export default {
     name: 'EstateList',
     components: {
         PropertyAdd,
+        draggable: VueDraggableNext,
     },
     directives: {
         tippy: directive,
@@ -466,7 +458,7 @@ export default {
             for (let i = 0; i < this.selectedRow.length; i++) {
                 this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = false;
             }
-            this.$refs['checkbox-all'][0].isChecked = false;
+            this.$refs['checkbox-all'].isChecked = false;
             this.selectedRow = [];
 
             for (let i = 0; i < this.selectedRow.length; i++) {
@@ -627,10 +619,15 @@ export default {
                 .then((response) => {
                     // lưu dữ liệu data hiển thị
                     this.dataRender = response.data.Data;
+                    this.dataRender.forEach((data) => {
+                        data.ResidualPrice = data.OriginalPrice - data.WearRateValue;
+                    });
                     // lưu tổng số bản ghi
                     this.totalRecords = response.data.Total[0].TotalRecord;
                     // lưu giá trị tổng số
                     this.totalSummary = response.data.Total[0];
+                    this.totalSummary.TotalResidualPrice =
+                        this.totalSummary.TotalOriginalPrice - this.totalSummary.TotalWearRateValue;
                     // lưu dữ liệu vào mảng phục vụ việc truy xuất khi sang trang khác(xóa nhiều)
                     this.dataRender.forEach((data) => {
                         this.dataTable.push(data);
@@ -694,19 +691,39 @@ export default {
          * Author: BATUAN (27/05/2023)
          */
         async showDetail(index, id) {
-            this.$store.commit('toggleMaskElementShow');
-            await delay(300);
-            this.$store.commit('toggleMaskElementShow');
+            // this.$store.commit('toggleMaskElementShow');
+            // await delay(300);
+            // this.$store.commit('toggleMaskElementShow');
             // Gán form mode thành form update
             this.formMode = this.$_MISAEnum.formUpdate;
-            // Hiển thị màn hình update(giống thêm mới)
-            this.isShowAddProperty = true;
-            // Lấy giá trị data để hiển thị lên màn chi tiết
-            this.selectedData = this.dataRender[index];
-            // Lưu index hàng được chọn
-            this.indexSelected = index;
+             // Lưu index hàng được chọn
+             this.indexSelected = index;
             // Lưu id hàng được chọn
             this.idSelected = id;
+            // Lấy giá trị data để hiển thị lên màn chi tiết
+            await this.getPropertyById(id);
+            // Hiển thị màn hình update(giống thêm mới)
+            this.isShowAddProperty = true;
+            console.log(this.selectedData)
+           
+        }
+        /*
+         * Lấy dữ liệu tài sản theo id
+         * Author: BATUAN (16/06/2023)
+         */,
+        async getPropertyById(id) {
+            this.$store.commit('toggleMaskElementShow');
+            await instance
+                .get(`Property/${id}`)
+                .then((res) => {
+                    this.selectedData = res.data;
+                })
+                .catch((err) => {
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                });
+
+            await delay(300);
+            this.$store.commit('toggleMaskElementShow');
         },
         /*
          * Hiển thị trang chi tiết(nhân bản)
@@ -796,7 +813,7 @@ export default {
                 })
                 .catch((err) => {
                     this.$store.commit('toggleMaskElementShow');
-                    this.handleException(err.statusCode, err.message, this.showDialog);
+                    this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
 
             if (isSuccess) {
@@ -998,9 +1015,9 @@ export default {
             });
 
             if (check == true && this.dataRender.length > 0) {
-                this.$refs['checkbox-all'][0].isChecked = true;
+                this.$refs['checkbox-all'].isChecked = true;
             } else {
-                this.$refs['checkbox-all'][0].isChecked = false;
+                this.$refs['checkbox-all'].isChecked = false;
             }
         },
         /*
@@ -1100,7 +1117,7 @@ export default {
          * Sự kiện khi click vào biểu tượng xóa ở hàng của table
          * Author: BATUAN (08/06/2023)
          */
-        deleteOneRow(id,index) {
+        deleteOneRow(id, index) {
             let code = this.dataRender[index].PropertyCode;
             let name = this.dataRender[index].PropertyName;
 
@@ -1142,7 +1159,8 @@ export default {
 
                         this.calculateNumberPage();
 
-                        this.$refs['checkbox-all'][0].isChecked = false;
+                        console.log(this.$refs['checkbox-all'])
+                        // this.$refs['checkbox-all'][0].isChecked = false;
                     })
                     .catch((err) => {
                         this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
@@ -1151,10 +1169,12 @@ export default {
             // Xóa 1 bản ghi
             else {
                 let row = [];
-                row.push(id)
+                row.push(id);
                 await instance
                     .delete(`Property`, { data: row })
-                    .then(async () => {
+                    .then(async (res) => {
+                        console.log(res)
+
                         // Hiện toast message thông báo thành công
                         this.showToastSuccess('Xóa thành công');
                         // Xóa hàng bị xóa khỏi danh sách các hàng đang được chọn (nếu có)
@@ -1170,9 +1190,11 @@ export default {
 
                         this.calculateNumberPage();
 
-                        this.$refs['checkbox-all'][0].isChecked = false;
+                        this.$refs['checkbox-all'].isChecked = false;
+
                     })
                     .catch((err) => {
+                        console.log(err)
                         this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                     });
             }
@@ -1205,7 +1227,7 @@ export default {
          * Author: BATUAN (07/06/2023)
          */
         clickOnCheckBoxAll() {
-            if (this.$refs['checkbox-all'][0].isChecked) {
+            if (this.$refs['checkbox-all'].isChecked) {
                 let propertyListId = [];
                 this.dataRender.forEach((element) => {
                     propertyListId.push(element.PropertyId);
@@ -1214,7 +1236,7 @@ export default {
                 this.selectedRow = this.selectedRow.filter((id) => {
                     return !propertyListId.includes(id);
                 });
-            } else if (!this.$refs['checkbox-all'][0].isChecked) {
+            } else if (!this.$refs['checkbox-all'].isChecked) {
                 for (let i = 0; i < this.dataRender.length; i++) {
                     if (!this.selectedRow.includes(this.dataRender[i].PropertyId)) {
                         this.selectedRow.push(this.dataRender[i].PropertyId);

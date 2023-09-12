@@ -31,9 +31,9 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
         /// Check mã code đã tồn tại trong db hay chưa?
         /// </summary>
         /// <param name="propertyCode">Mã code của property</param>
-        /// <returns>true or false</returns>
+        /// <returns>1: Đã tồn tại|| 0: Chưa tồn tại</returns>
         /// CreatedBy: BATUAN (21/06/2023)
-        Task<Property> CheckDuplicatePropertyCode(string propertyCode);
+        Task<int> CheckDuplicatePropertyCode(string propertyCode, Guid? propertyId);
 
         /// <summary>
         /// Lấy danh sách tài sản với phòng ban mới

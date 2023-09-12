@@ -8,6 +8,7 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
     /// <summary>
     /// Lớp check nghiệp vụ khi thao tác với tài sản điều chuyển
     /// </summary>
+    /// CreatedBy: BATUAN (28/08/2023)
     public class TransferAssetDetailManager
     {
         private readonly ITransferAssetDetailRepository _transferAssetDetailRepository;
@@ -21,7 +22,7 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
         /// Kiểm tra xem các tài sản điều chuyển có tài sản nào có bộ phận mới và cũ trùng nhau không
         /// </summary>
         /// <param name="transferAssetDetaiList">Danh sách tài sản điều chuyển</param>
-        /// <exception cref="UserException"></exception>
+        /// <exception cref="UserException">Exception thông báo lỗi người dùng do tài sản trùng bộ phận cũ và mới</exception>
         /// CreateBy: BATUAN (30/08/2023)
         public void CheckListDeparment(List<TransferAssetDetail> transferAssetDetaiList)
         {

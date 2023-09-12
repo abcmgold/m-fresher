@@ -27,20 +27,18 @@
                 "
             >
             </MISASidebarItem>
-            <ul class="sidenav-collapse" v-if="this.isShowPropertyMenu">
-                <li
+            <div class="sidenav-collapse" v-if="this.isShowPropertyMenu">
+                <router-link :to="item.link"
                     class="sidenav-item"
                     v-for="(item, index) in this.propertyMenuList"
                     :class="{ 'sidebar-child-selected': this.index == index }"
                     :key="item.name"
                     @click="handleClickItemsChild(index)"
                 >
-                    <router-link :to="item.link">
                         <div class="icon--point-to"></div>
                         {{ item.name }}
-                    </router-link>
-                </li>
-            </ul>
+                </router-link>
+            </div>
 
             <MISASidebarItem
                 router="/"
@@ -144,6 +142,7 @@ export default {
             this.isShowPropertyMenu = !this.isShowPropertyMenu;
         },
         handleItemClick(itemKey) {
+            this.isSmallSidebar = false;
             this.index = -1;
             this.selectedItems = [];
             if (this.selectedItems.includes(itemKey)) {
@@ -151,7 +150,7 @@ export default {
             } else {
                 this.selectedItems.push(itemKey);
             }
-            // this.setBigSidebar = true;
+
         },
         handleClickItemsChild(index) {
             this.index = index;

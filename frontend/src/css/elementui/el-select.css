@@ -76,6 +76,14 @@ body .el-select .el-input__wrapper.is-focus {
     max-width: 200px;
 }
 
+.el-input.is-disabled .el-input__inner {
+    -webkit-text-fill-color: black !important;
+}
+
+.el-input.is-disabled .el-input__wrapper {
+    background-color: #e6e6e6 !important;
+}
+
 @media (max-width: 1024px) {
     .el-select.back-ground__icon {
         width: 160px !important;

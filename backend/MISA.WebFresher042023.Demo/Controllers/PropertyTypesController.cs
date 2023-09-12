@@ -6,11 +6,13 @@ using MISA.WebFresher042023.Demo.Core.HandleException;
 using MISA.WebFresher042023.Demo.Core.Interface.Service;
 using MySqlConnector;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace MISA.WebFresher042023.Demo.Controllers
 {
-
+    /// <summary>
+    /// Lớp controller của mã loại tài sản
+    /// </summary>
+    /// CreatedBy: BATUAN (16/06/2023)
     [Route("api/v1/[controller]")]
     [ApiController]
     public class PropertyTypeController : BaseController<PropertyTypeDto, PropertyTypeUpdateDto, PropertyTypeCreateDto>

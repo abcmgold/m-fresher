@@ -7,6 +7,7 @@
             :class="[{ 'number-field__input--error': error }, individualClass, , { 'text__input--icon': isShowIcon }]"
             v-model="currentvalue"
             v-on:blur="onBlurFunction"
+            :disabled="isDisabled"
             @input="
                 () => {
                     checkMaxLength();
@@ -36,6 +37,7 @@ export default {
         isShowIcon: Boolean,
         type: String,
         maxLength: Number,
+        isDisabled: Boolean,
     },
     data() {
         return {

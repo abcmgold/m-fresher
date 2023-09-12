@@ -28,36 +28,6 @@ namespace MISA.WebFresher042023.Demo.Controllers
         #endregion
 
         #region Methods
-        ///// <summary>
-        ///// Thêm tài sản
-        ///// </summary>
-        ///// <param name="property">tài sản được thêm</param>
-        ///// <returns></returns>
-        ///// CreatedBy: BATUAN (14/06/2023)
-        //// POST api/<PropertiesController>
-        //[HttpPost]
-        //public async Task<ActionResult> Post(PropertyCreateDto property)
-        //{
-
-        //    var res = await _propertyService.InsertPropertyAsync(property);
-            
-        //    return StatusCode(201, res);
-        //}
-        ///// <summary>
-        ///// Sửa tài sản
-        ///// </summary>
-        ///// <param name="property">Dữ liệu tài sản đã được sửa</param>
-        ///// <returns></returns>
-        ///// CreatedBy: BATUAN (14/06/2023)
-        //// PUT api/<PropertiesController>/5
-        //[HttpPut("{id}")]
-        //public async Task<ActionResult> Update(Guid id, PropertyUpdateDto property)
-        //{
-        //    var res = await _propertyService.UpdatePropertyAsync(id, property);
-
-        //    return StatusCode(200, res);
-
-        //}
 
         /// <summary>
         /// API phân trang + tìm kiếm

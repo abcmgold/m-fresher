@@ -62,7 +62,7 @@ namespace MISA.WebFresher042023.Demo.Middleware
             }
             else if (ex is UserException)
             {
-                UserException userException = (UserException)ex;
+                var userException = (UserException)ex;
                 string userMessage = userException.Message;
                 string? errorField = userException.ErrorField;
                 int errorCode = userException.ErrorCode;

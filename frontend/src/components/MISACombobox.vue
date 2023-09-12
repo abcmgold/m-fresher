@@ -11,6 +11,7 @@
         :filterable="this.filterable"
         :value="modelValue"
         :no-match-text="'Không có kết quả'"
+        :disabled="this.isDisabled"
         @change="
             () => {
                 this.$emit(
@@ -46,7 +47,8 @@ export default {
         errorMsg: String,
         type: String,
         filterable: Boolean,
-        isChecked: Boolean
+        isChecked: Boolean,
+        isDisabled: Boolean
     },
     
     mounted() {

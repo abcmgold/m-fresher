@@ -58,6 +58,11 @@ export default {
     mounted() {
         this.$refs.thirdBtn.focus();
     },
+    // unmounted() {
+    //     if (this.$parent) {
+    //         this.$parent.$refs.firstFo.$el.focus();
+    //     }
+    // },
     data() {
         return {
             isShowDetailText: true,

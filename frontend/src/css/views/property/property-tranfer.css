@@ -18,6 +18,10 @@
     position: relative;
 }
 
+.tranfer__content .table__content--header {
+    flex: 1;
+}
+
 .tranfer__navbar--left {
     display: flex;
     align-items: center;

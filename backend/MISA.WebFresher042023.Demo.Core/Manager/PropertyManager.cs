@@ -1,20 +1,14 @@
-﻿using Microsoft.AspNetCore.Http.Features;
-using MISA.WebFresher042023.Demo.Core.Dto.Property;
-using MISA.WebFresher042023.Demo.Core.DtoReadonly;
+﻿using MISA.WebFresher042023.Demo.Core.DtoReadonly;
 using MISA.WebFresher042023.Demo.Core.Entities;
 using MISA.WebFresher042023.Demo.Core.HandleException;
 using MISA.WebFresher042023.Demo.Core.Interface.Repository;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MISA.WebFresher042023.Demo.Core.Manager
 {
     /// <summary>
     /// Lớp kiểm tra các nghiệp vụ khi thao tác với tài sản
     /// </summary>
+    /// CreatedBy: BATUAN (28/08/2023)
     public class PropertyManager
     {
         private readonly IPropertyRepository _propertyRepository;
@@ -27,33 +21,16 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
         }
 
         /// <summary>
-        /// Check trùng code không khi thêm mới
+        /// Check trùng code
         /// </summary>
-        /// <param name="propertyCreateDto">Tài sản thêm mới</param>
-        /// <returns>True: không trùng| False: trùng code</returns>
+        /// <param name="property">Tài sản thêm mới</param>
+        /// <returns>False: không trùng | True: trùng code</returns>
         /// CreatedBy: BATUAN (30/08/2023)
-        public async Task<Boolean> CheckDuplicateInsertPropertyCode(PropertyCreateDto propertyCreateDto)
+        public async Task<bool> CheckDuplicateCode(Property property)
         {
-            var result = await _propertyRepository.CheckDuplicatePropertyCode(propertyCreateDto.PropertyCode);
+            var result = await _propertyRepository.CheckDuplicatePropertyCode(propertyCode: property.PropertyCode, property.PropertyId);
 
-            if (result != null)
-            {
-                return false;
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Check trùng code không khi update
-        /// </summary>
-        /// <param name="propertyUpdateDto">Tài sản cập nhật</param>
-        /// <returns>false: không trùng| true: trùng code</returns>
-        /// CreatedBy: BATUAN (30/08/2023)
-        public async Task<bool> CheckDuplicateUpdatePropertyCode(PropertyUpdateDto propertyUpdateDto)
-        {
-            var result = await _propertyRepository.CheckDuplicatePropertyCode(propertyUpdateDto.PropertyCode);
-
-            if (result != null && result.PropertyId != propertyUpdateDto.PropertyId)
+            if (result == 1) 
             {
                 return true;
             }
@@ -76,7 +53,7 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
                     ErrorField = "wearRateValueInput"
                 };
             }
-            else if (property.NumberYearUse != 1 / property.WearRate * 100)
+            else if (property.NumberYearUse != Math.Round(1 / property.WearRate * 100, 2))
             {
                 return new ErrorInfo
                 {
@@ -136,24 +113,19 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
         }
 
         /// <summary>
-        /// Kiểm tra tài sản có được chứa trong chứng từ nào có ngày điều chuyển lớn hơn ngày điều chuyển truyền vào không
+        /// Kiểm tra tài sản có được chứa trong chứng từ nào có ngày điều chuyển lớn hơn ngày điều chuyển của chứng từ hiện tại không
         /// </summary>
         /// <param name="transferAssetId">id của chứng từ điều chuyển</param>
-        /// <param name="propertyId">id của tài sản</param>
+        /// <param name="propertyId">List Id của tài sản</param>
         /// <returns>Danh sách các chứng từ chứa tài sản</returns>
         /// CreatedBy: BATUAN (30/08/2023)
-        public async Task CheckGreaterTransferDate(Guid transferAssetId, Guid propertyId)
+        public async Task CheckGreaterTransferDate(Guid transferAssetId, List<Guid> propertyId)
         {
-            // Lấy ra dữ liệu chứng từ
-            var transferAsset = await _transferAssetRepository.GetByIdAsync(transferAssetId);
-            // Lấy ra dữ liệu tài sản
-            var property = await _propertyRepository.GetByIdAsync(propertyId);
-            // Kiểm tra xem tài sản có nằm trong chứng từ nào thỏa mãn không
-            if (transferAsset != null && property != null)
-            {
-                var res = await _transferAssetRepository.CheckExist(propertyId, transferAsset.TransferDate);
+            var listIdProperty = string.Join(", ", propertyId);
 
-                res.RemoveAll(element => element.TransferAssetId == transferAsset.TransferAssetId);
+            var transferAsset = await _transferAssetRepository.GetByIdAsync(transferAssetId);
+
+            var res = await _transferAssetRepository.CheckExist(listIdProperty, transferAsset.TransferDate);
 
                 if (res.Count > 0)
                 {
@@ -165,9 +137,9 @@ namespace MISA.WebFresher042023.Demo.Core.Manager
 
                         infoTransferAssets.Add(string.Format(Resources.ResourceVN.InfoTransferAsset, transfer.TransferAssetCode, formattedDate));
                     }
-                    throw new UserException(string.Format(Resources.ResourceVN.NotUpdateOrDelete, property.PropertyCode), (int)Enum.StatusCode.BadRequest, infoTransferAssets);
+                    throw new UserException(string.Format(Resources.ResourceVN.NotUpdateOrDelete, res[0].PropertyCode), (int)Enum.StatusCode.BadRequest, infoTransferAssets);
                 }
-            }
+            
         }
     }
 }

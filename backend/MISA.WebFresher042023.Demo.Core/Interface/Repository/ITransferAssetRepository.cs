@@ -1,4 +1,5 @@
-﻿using MISA.WebFresher042023.Demo.Core.DtoReadonly;
+﻿using MISA.WebFresher042023.Demo.Core.Dto.Document;
+using MISA.WebFresher042023.Demo.Core.DtoReadonly;
 using MISA.WebFresher042023.Demo.Core.Entities;
 using System;
 using System.Collections.Generic;
@@ -39,13 +40,13 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
         /// CreatedBy: BATUAN (30/08/2023)
         Task<List<TransferAssetPropertyReadonly>> GetByPropertyId(string listId);
         /// <summary>
-        /// Danh sách các chứng từ dựa theo Id của chứng từ và thời gian chứng từ
+        /// Check tài sản trong chứng từ có tồn tại trong tài sản khác có ngày điều chuyển lớn hơn không
         /// </summary>
-        /// <param name="propertyId">Id tài sản</param>
-        /// <param name="transferDate">Ngày chứng từ</param>
-        /// <returns>Trả về danh sách các bản ghi có chứa tài sản điều chuyển theo id và có thời gian điều chuyển lớn hơn TransferDate</returns>
-        /// CreatedBy: BATUAN (30/08/2023)
-        Task<List<TransferAsset>> CheckExist(Guid propertyId, DateTime transferDate);
+        /// <param name="listPropertyId">Danh sách Id của tài sản</param>
+        /// <param name="transferDate">Ngày điều chuyển chứng từ</param>
+        /// <returns>Danh sách tài sản</returns>
+        /// CreatedBy: BATUAN (28/08/2023)
+        public Task<List<TransferAseetCheckDeleteDto>> CheckExist(string listPropertyId, DateTime transferDate);
         /// <summary>
         /// Danh sách các chứng từ dựa theo Id của chứng từ và thời gian chứng từ
         /// </summary>
@@ -55,13 +56,7 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
         /// <returns>Trả về danh sách các bản ghi có chứa tài sản điều chuyển theo id và có thời gian điều chuyển lớn hơn TransferDate</returns>
         /// CreatedBy: BATUAN (30/08/2023)
         Task<List<TransferAsset>> CheckExistRange(Guid propertyId, DateTime oldTransferDate, DateTime transferDate);
-        /// <summary>
-        /// Lấy ra chứng từ điều chuyển thông qua mã code
-        /// </summary>
-        /// <param name="transferAssetCode">Mã code của chứng từ</param>
-        /// <returns>Chứng từ điều chuyển</returns>
-        /// CreatedBy: BATUAN (30/08/2023)
-        Task<TransferAsset> GetTransferAssetByCodeAsync(string transferAssetCode);
+
         /// <summary>
         /// Sinh mã code tự động cho chứng từ điều chuyển
         /// </summary>
@@ -75,6 +70,21 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
         /// <returns>0: Không tồn tại|| 1: Tồn tại</returns>
         /// CreatedBy: BATUAN (30/08/2023)
         public Task<int> CheckGreaterTransferDate(DateTime transferDate);
+        /// <summary>
+        /// Check chứng từ được phép xóa hay không
+        /// </summary>
+        /// <param name="listId">Danh sách các id của các chứng từ</param>
+        /// <returns></returns>
+        /// CreatedBy: BATUAN (28/08/2023)
+        public Task<List<TransferAseetCheckDeleteDto>> CheckExistGreater(string listId);
+        /// <summary>
+        /// Check trùng code
+        /// </summary>
+        /// <param name="transferAssetCode">Mã code chứng từ</param>
+        /// <param name="transferAssetId">Id của chứng từ (nếu có)</param>
+        /// <returns>1: Trùng code || 0: Không trùng code</returns>
+        /// CreatedBy: BATUAN (28/08/2023)
+        public Task<int> CheckDuplicatePropertyCode(string transferAssetCode, Guid? transferAssetId);
 
     }
 

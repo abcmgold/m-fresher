@@ -20,7 +20,7 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
 
             return (List<TEntity>)result;
         }
-        public async Task<TEntity> GetByIdAsync(Guid id)
+        public virtual async Task<TEntity> GetByIdAsync(Guid id)
         {
             var tableName = typeof(TEntity).Name;
 

@@ -270,13 +270,10 @@
     height: 40px;
     border-radius: 4px;
     margin: 2px 0px;
-}
-
-.sidenav-item a {
-    color: #869ab8;
     display: flex;
     align-items: center;
     column-gap: 6px;
+    color: #869ab8;
     line-height: 40px;
 }
 
@@ -285,11 +282,11 @@
     cursor: pointer;
 }
 
-.sidenav-item:hover a {
+.sidenav-item:hover {
     color: white;
 }
 
-.sidebar-child-selected a {
+.sidenav-collapse .router-link-active{
     color: white;
 }
 
@@ -318,10 +315,10 @@
     visibility: visible;
 }
 
-.sidebar-child-selected .icon--point-to {
+.sidenav-collapse .router-link-active .icon--point-to {
     visibility: visible;
 }
 
-.sidebar-child-selected {
+.sidenav-collapse .router-link-active {
     background-color: #444754;
 }
