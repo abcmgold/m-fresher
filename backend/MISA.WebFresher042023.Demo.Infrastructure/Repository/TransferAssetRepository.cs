@@ -1,12 +1,8 @@
 ﻿using Dapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using MISA.WebFresher042023.Demo.Core.DtoReadonly;
 using MISA.WebFresher042023.Demo.Core.Entities;
 using MISA.WebFresher042023.Demo.Core.Interface.Repository;
 using MISA.WebFresher042023.Demo.Infrastructure.Interface;
-using MySqlConnector;
-using System.Net.WebSockets;
 
 namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
 {
@@ -15,21 +11,34 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
         public TransferAssetRepository(IUnitOfWork unitOfWork) : base(unitOfWork)
         {
         }
+       
+        public async Task<List<TransferAseetCheckDeleteDto>> CheckExist(string listPropertyId, DateTime transferDate)
+        {
+                var parameters = new DynamicParameters();
+
+            parameters.Add("@ListId", listPropertyId);
+            parameters.Add("@TransferDate", transferDate);
+
+            var result = await _unitOfWork.Connection.QueryAsync<TransferAseetCheckDeleteDto>(
+                sql: "CALL Proc_TransferAssetDetail_GetTransferAssetGreaterDate(@ListId, @TransferDate)",
+                param: parameters);
+            return result.ToList();
+        }
+
         /// <summary>
         /// Lấy ra danh sách các chứng từ chứa tài sản ở trong đó và có ngày chứng từ lớn hơn ngày chứng từ của tài sản hiện tại
         /// </summary>
         /// <param name="propertyId">Id của tài sản</param>
         /// <param name="transactionDate">Ngày chứng từ</param>
         /// <returns>Danh sách các chứng từ điều chuyển thỏa mãn</returns>
-        public async Task<List<TransferAsset>> CheckExist(Guid propertyId, DateTime transactionDate)
+        public async Task<List<TransferAseetCheckDeleteDto>> CheckExistGreater(string listId)
         {
-                var parameters = new DynamicParameters();
+            var parameters = new DynamicParameters();
 
-            parameters.Add("@PropertyId", propertyId);
-            parameters.Add("@TransactionDate", transactionDate);
+            parameters.Add("@listId", listId);
 
-            var result = await _unitOfWork.Connection.QueryAsync<TransferAsset>(
-                sql: "CALL Proc_TransferAsset_CheckInTransferAsset(@PropertyId, @TransactionDate)",
+            var result = await _unitOfWork.Connection.QueryAsync<TransferAseetCheckDeleteDto>(
+                sql: "CALL Proc_TransferAsset_CheckDelete(@listId)",
                 param: parameters);
             return result.ToList();
         }
@@ -92,15 +101,18 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
             return res.ToList();
         }
 
-        public async Task<TransferAsset> GetTransferAssetByCodeAsync(string transferAssetCode)
+        public async Task<int> CheckDuplicatePropertyCode(string transferAssetCode, Guid? transferAssetId)
         {
-            DynamicParameters parameters = new();
 
+            var parameters = new DynamicParameters();
             parameters.Add("@TransferAssetCode", transferAssetCode);
+            parameters.Add("@TransferAssetId", transferAssetId);
 
-            var res = await _unitOfWork.Connection.QueryFirstOrDefaultAsync<TransferAsset>(sql: "CALL Proc_TransferAsset_GetByCode(@TransferAssetCode)", param: parameters);
-
-            return res;
+            var result = await _unitOfWork.Connection.QueryFirstOrDefaultAsync<int>(
+                sql: "CALL Proc_TransferAsset_CheckDuplicateCode(@TransferAssetCode, @TransferAssetId)",
+                param: parameters
+            );
+            return result;
         }
 
         public async Task<int> CheckGreaterTransferDate(DateTime transferDate)

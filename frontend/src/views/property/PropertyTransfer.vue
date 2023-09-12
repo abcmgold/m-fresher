@@ -547,9 +547,11 @@ export default {
                     // lưu dữ liệu data hiển thị
                     await delay(500);
                     this.isLoadingDataDetail = false;
-                    this.transferAssetDetailList = response.data;
-                    this.totalRecordDetail = this.transferAssetDetailList[0].TotalRecords;
-                    this.pageNumbersDetail = Math.ceil(this.totalRecordDetail / this.detailDocumentPageSize);
+                    if (response.data) {
+                        this.transferAssetDetailList = response.data;
+                        this.totalRecordDetail = this.transferAssetDetailList[0].TotalRecords;
+                        this.pageNumbersDetail = Math.ceil(this.totalRecordDetail / this.detailDocumentPageSize);
+                    }  
                 })
                 .catch((err) => {
                     this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);

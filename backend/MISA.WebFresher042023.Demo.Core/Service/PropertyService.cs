@@ -80,7 +80,7 @@ namespace MISA.WebFresher042023.Demo.Core.Service
 
             if (checkDuplicateCode == true)
             {
-                throw new UserException(Resources.ResourceVN.DuplicateDepartmentCode, 409, "propertyCodeInput");
+                throw new UserException(Resources.ResourceVN.DuplicateDepartmentCode, (int)Enum.StatusCode.DuplicateCode, "propertyCodeInput");
             }
 
             // Check nghiệp vụ

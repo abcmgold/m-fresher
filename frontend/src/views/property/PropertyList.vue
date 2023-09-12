@@ -458,7 +458,7 @@ export default {
             for (let i = 0; i < this.selectedRow.length; i++) {
                 this.$refs[`checkbox-${this.selectedRow[i]}`][0].isChecked = false;
             }
-            this.$refs['checkbox-all'][0].isChecked = false;
+            this.$refs['checkbox-all'].isChecked = false;
             this.selectedRow = [];
 
             for (let i = 0; i < this.selectedRow.length; i++) {
@@ -1159,7 +1159,8 @@ export default {
 
                         this.calculateNumberPage();
 
-                        this.$refs['checkbox-all'][0].isChecked = false;
+                        console.log(this.$refs['checkbox-all'])
+                        // this.$refs['checkbox-all'][0].isChecked = false;
                     })
                     .catch((err) => {
                         this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
@@ -1171,7 +1172,9 @@ export default {
                 row.push(id);
                 await instance
                     .delete(`Property`, { data: row })
-                    .then(async () => {
+                    .then(async (res) => {
+                        console.log(res)
+
                         // Hiện toast message thông báo thành công
                         this.showToastSuccess('Xóa thành công');
                         // Xóa hàng bị xóa khỏi danh sách các hàng đang được chọn (nếu có)
@@ -1187,9 +1190,11 @@ export default {
 
                         this.calculateNumberPage();
 
-                        this.$refs['checkbox-all'][0].isChecked = false;
+                        this.$refs['checkbox-all'].isChecked = false;
+
                     })
                     .catch((err) => {
+                        console.log(err)
                         this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                     });
             }

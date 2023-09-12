@@ -205,7 +205,7 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mã chứng từ điều chuyển đã tồn tại.
+        ///   Looks up a localized string similar to Mã chứng từ điều chuyển đã tồn tại!.
         /// </summary>
         public static string ExistTransferAssetCode {
             get {
@@ -250,7 +250,7 @@ namespace MISA.WebFresher042023.Demo.Core.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Anh/Chị không thể xóa do tài sản &lt;strong&gt;{0}&lt;/strong&gt; đã phát sinh chứng từ !.
+        ///   Looks up a localized string similar to Không thể xóa do tài sản &lt;strong&gt;{0}&lt;/strong&gt; đã phát sinh chứng từ !.
         /// </summary>
         public static string NotDeleteProperty {
             get {

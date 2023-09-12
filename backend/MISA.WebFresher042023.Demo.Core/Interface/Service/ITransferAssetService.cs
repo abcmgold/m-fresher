@@ -41,20 +41,12 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Service
         /// <returns>Thông tin chứng từ kèm với danh sách tài sản điều chuyển và người nhận</returns>
         /// CreatedBy: BATUAN (30/08/2023)
         public Task<TransferAssetReadonly> GetInfoTransferAsset(Guid transferAssetId);
-
         /// <summary>
-        /// Hàm check 1 tài sản điều chuyển có được xóa ở form chỉnh sửa hay không
+        /// Hàm check tài sản điều chuyển có được xóa ở form chỉnh sửa hay không
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Tài sản không được xóa và thông tin</returns>
         /// CreatedBy: BATUAN (30/08/2023)
-        public Task CheckDeleteOrNot(Guid transferAssetId, Guid propertyId);
-        /// <summary>
-        /// Hàm check các tài sản điều chuyển có được xóa ở form chỉnh sửa hay không
-        /// </summary>
-        /// <param name="transferAssetIds"></param>
-        /// <returns></returns>
-        /// CreatedBy: BATUAN (30/08/2023)
-        public Task CheckDeleteMultiOrNot(Guid transferAssetId, List<Guid> propertyIds);
+        public Task CheckDeleteOrNot(Guid transferAssetId, List<Guid> propertyId);
         /// <summary>
         /// Sinh mã code tự động
         /// </summary>

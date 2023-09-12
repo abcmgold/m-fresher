@@ -166,7 +166,7 @@
     <value>Lỗi server. Vui lòng liên hệ bộ phận hỗ trợ!</value>
   </data>
   <data name="ExistTransferAssetCode" xml:space="preserve">
-    <value>Mã chứng từ điều chuyển đã tồn tại</value>
+    <value>Mã chứng từ điều chuyển đã tồn tại!</value>
   </data>
   <data name="FieldRequired" xml:space="preserve">
     <value>{0} không được để trống !</value>
@@ -181,7 +181,7 @@
     <value>- Chứng từ điều chuyển &lt;strong&gt;{0}&lt;/strong&gt; &lt;strong&gt;({1})&lt;/strong&gt;</value>
   </data>
   <data name="NotDeleteProperty" xml:space="preserve">
-    <value>Anh/Chị không thể xóa do tài sản &lt;strong&gt;{0}&lt;/strong&gt; đã phát sinh chứng từ !</value>
+    <value>Không thể xóa do tài sản &lt;strong&gt;{0}&lt;/strong&gt; đã phát sinh chứng từ !</value>
   </data>
   <data name="NotExistTransferAssetDetail" xml:space="preserve">
     <value>Danh sách tài sản điều chuyển tồn tại tài sản điều chuyển không có trong hệ thống !</value>
