@@ -228,7 +228,7 @@
                                 </template>
                             </div>
                         </div>
-                        <div class="table__content--body" @scroll="handleScrollBodyTable">
+                        <div class="table__content--body" ref="contentFormBody" @scroll="handleScrollBodyTable">
                             <div
                                 v-for="(data, index) in this.propertyTransferListPaging"
                                 :key="data.TransferAssetDetailId"
@@ -260,7 +260,9 @@
                                     <div class="text--surround">{{ this.formatedMoney(data.ResidualPrice) }}</div>
                                 </div>
                                 <div class="text-align-left cell--item" style="width: 180px">
-                                    <div class="text--surround">{{ data.DepartmentName }}</div>
+                                    <div class="text--surround" :title="data.DepartmentName">
+                                        {{ data.DepartmentName }}
+                                    </div>
                                 </div>
                                 <div class="text-align-right cell--item" style="width: 220px">
                                     <m-combo-box
@@ -270,6 +272,7 @@
                                         :filterable="true"
                                         v-model="data.DepartmentTransferName"
                                         :dataSelect="this.departmentNames"
+                                        :title="data.DepartmentTransferName"
                                     ></m-combo-box>
                                 </div>
                                 <div class="text-align-left cell--item" style="flex: 1">
@@ -280,7 +283,11 @@
                                         :maxLength="this.$_MISAEnum.maxLengthText"
                                     ></m-text-input>
                                 </div>
-                                <div class="table-list-icons cell--item" style="width: 100px">
+                                <div
+                                    class="table-list-icons cell--item"
+                                    style="width: 100px"
+                                    :class="isHasScrollBar ? 'has-scroll-bar' : ''"
+                                >
                                     <div
                                         v-tippy="$_MISAResource['vn-VI'].delete"
                                         @click.stop
@@ -442,6 +449,8 @@ export default {
             totalOriginalPrice: 0,
             listTemporaryDelete: [], // lưu danh sách tài sản xóa mềm (tài sản điều chuyển đã nằm trong database)
             isCheckboxDeliveryChecked: false,
+            isHasScrollBar: false,
+            errorField: ''
         };
     },
     watch: {
@@ -481,6 +490,16 @@ export default {
         this.clickIndex = 0;
 
         this.firstClickRow = this.clickIndex;
+    },
+    updated() {
+        // Lấy tham chiếu đến phần tử chứa nội dung có thể cuộn
+        const scrollableContainer = this.$refs.contentFormBody;
+
+        if (scrollableContainer.offsetWidth > scrollableContainer.scrollWidth) {
+            this.isHasScrollBar = true;
+        } else {
+            this.isHasScrollBar = false;
+        }
     },
     mounted() {
         this.$refs.transferAssetCodeInput.$el.focus();
@@ -628,7 +647,6 @@ export default {
                     this.transferAsset.ReceiverList[i].ReceiverOrder--;
                 }
             }
-            console.log(this.transferAsset.ReceiverList);
         },
         /*
          * Sự kiện khi click vào icon dịch chuyển dòng người nhận
@@ -842,11 +860,8 @@ export default {
          */
         async createNewTransferAsset() {
             if (this.validateData() && this.validateDataMajor()) {
-                this.transferAsset.OriginalPrice = 0;
-                for (let i = 0; i < this.transferAsset.TransferAssetDetailList.length; i++) {
-                    this.transferAsset.OriginalPrice += this.transferAsset.TransferAssetDetailList[i].OriginalPrice;
-                }
-
+                this.transferAsset.OriginalPrice = this.totalOriginalPrice;
+                
                 this.$emit('createdNewTransferAsset', this.transferAsset);
             }
         },
@@ -1094,6 +1109,7 @@ export default {
                 this.checkInforTransferAssetDetail();
                 this.checkInforReceiver();
                 this.$emit('updateTransferAsset', listTransferAsset);
+                // console.log(listTransferAsset)
             }
         },
         /*
@@ -1329,7 +1345,7 @@ export default {
                     if (this.listInitialReceiver.length > 0) {
                         this.transferAsset.ReceiverList = JSON.parse(JSON.stringify(this.listInitialReceiver));
                     } else {
-                        this.transferAsset.ReceiverList = []
+                        this.transferAsset.ReceiverList = [];
                         this.transferAsset.ReceiverList.push({
                             ReceiverOrder: 1,
                         });
@@ -1381,31 +1397,27 @@ export default {
                     if (JSON.stringify(this.transferAsset) == JSON.stringify(this.transferAssetProps)) {
                         this.$emit('hideTransferForm');
                     } else {
-                        this.showDialog(
-                            this.$_MISAResource['vn-VI'].propertyTransferForm.cancelUpdateTransferAsset,
-                            [],
-                            {
-                                firstDialogBtnText: this.$_MISAResource['vn-VI'].cancel,
-                                firstBtnFunction: () => {
-                                    this.hideDialog();
-                                },
-                                thirdDialogBtnText: this.$_MISAResource['vn-VI'].yes,
-                                thirdBtnFunction: () => {
-                                    this.$emit('hideTransferForm');
-                                },
+                        this.showDialog(this.$_MISAResource['vn-VI'].saveOrNot, [], {
+                            firstDialogBtnText: this.$_MISAResource['vn-VI'].dontSave,
+                            firstBtnFunction: () => {
+                                this.$emit('hideTransferForm');
                             },
-                        );
+                            thirdDialogBtnText: this.$_MISAResource['vn-VI'].save,
+                            thirdBtnFunction: () => {
+                                this.handleUpdateTransferAsset();
+                            },
+                        });
                     }
                     break;
                 case this.$_MISAEnum.formAdd:
-                    this.showDialog(this.$_MISAResource['vn-VI'].propertyTransferForm.cancelAddTransferAsset, [], {
-                        firstDialogBtnText: this.$_MISAResource['vn-VI'].cancel,
+                    this.showDialog(this.$_MISAResource['vn-VI'].saveOrNot, [], {
+                        firstDialogBtnText: this.$_MISAResource['vn-VI'].dontSave,
                         firstBtnFunction: () => {
-                            this.hideDialog();
-                        },
-                        thirdDialogBtnText: this.$_MISAResource['vn-VI'].yes,
-                        thirdBtnFunction: () => {
                             this.$emit('hideTransferForm');
+                        },
+                        thirdDialogBtnText: this.$_MISAResource['vn-VI'].save,
+                        thirdBtnFunction: () => {
+                            this.handleUpdateTransferAsset();
                         },
                     });
                     break;

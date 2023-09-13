@@ -211,3 +211,11 @@
 .row-only-selected {
     background-color: #d1edf4;
 }
+
+.transfer-form .has-scroll-bar {
+    width: 93px !important;
+}
+
+.general-navbar__table .table__content--row:hover .table--icon {
+    background-color: white;
+}

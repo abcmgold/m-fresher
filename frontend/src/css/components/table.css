@@ -401,3 +401,9 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+.cell--item__child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

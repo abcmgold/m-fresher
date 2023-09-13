@@ -132,13 +132,13 @@
                             :style="header.style"
                             :key="header.id"
                         >
-                            <div v-if="header.date">
+                            <div v-if="header.date" class="cell--item__child">
                                 {{ this.formatedCurrentDate(data[header.field]) }}
                             </div>
-                            <div v-if="header.money">
+                            <div v-if="header.money" class="cell--item__child">
                                 {{ this.formatedMoney(data[header.field]) }}
                             </div>
-                            <div v-if="!header.date && !header.money">{{ data[header.field] }}</div>
+                            <div v-if="!header.date && !header.money" class="cell--item__child" :title="data[header.field]">{{ data[header.field] }}</div>
                         </div>
                         <div
                             class="table-list-icons cell--item"
@@ -262,27 +262,27 @@
                         >
                             <div class="text-align-center cell--item" style="width: 50px">{{ index + 1 }}</div>
                             <div class="text-align-left cell--item" style="width: 120px">
-                                <div class="text--surround">{{ data.PropertyCode }}</div>
+                                <div class="text--surround" :title="data.PropertyCode">{{ data.PropertyCode }}</div>
                             </div>
                             <div class="text-align-left cell--item" style="width: 120px">
-                                <div class="text--surround">{{ data.PropertyName }}</div>
+                                <div class="text--surround" :title="data.PropertyName">{{ data.PropertyName }}</div>
                             </div>
                             <div class="text-align-right cell--item" style="width: 120px">
-                                <div class="text--surround">{{ this.formatedMoney(data.OriginalPrice) }}</div>
+                                <div class="text--surround" :title="this.formatedMoney(data.OriginalPrice)">{{ this.formatedMoney(data.OriginalPrice) }}</div>
                             </div>
                             <div class="text-align-right cell--item" style="width: 120px">
-                                <div class="text--surround">
+                                <div class="text--surround" :title="this.formatedMoney(this.caculateResidualPrice(data))">
                                     {{ this.formatedMoney(this.caculateResidualPrice(data)) }}
                                 </div>
                             </div>
                             <div class="text-align-left cell--item" style="width: 180px">
-                                <div class="text--surround">{{ data.DepartmentName }}</div>
+                                <div class="text--surround" :title="data.DepartmentName">{{ data.DepartmentName }}</div>
                             </div>
                             <div class="text-align-left cell--item" style="width: 200px">
-                                <div class="text--surround">{{ data.DepartmentTransferName }}</div>
+                                <div class="text--surround" :title="data.DepartmentTransferName">{{ data.DepartmentTransferName }}</div>
                             </div>
                             <div class="text-align-left cell--item" style="flex: 1">
-                                <div class="text--surround">{{ data.Reason }}</div>
+                                <div class="text--surround" :title="data.Reason">{{ data.Reason }}</div>
                             </div>
                         </div>
                     </div>
@@ -322,6 +322,7 @@
         </div>
     </div>
     <PropertyTransferForm
+        ref="propertyTransferForm"
         v-if="this.isShowTransferForm"
         :formMode="this.formMode"
         :transferAssetProps="this.transferAsset"
@@ -1023,6 +1024,7 @@ export default {
                 .catch(async (err) => {
                     await delay(200);
                     this.$store.commit('toggleMaskElementShow');
+                    this.$refs.propertyTransferForm.errorField = err.errorField 
                     this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
         },
