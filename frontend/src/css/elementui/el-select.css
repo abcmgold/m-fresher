@@ -89,3 +89,11 @@ body .el-select .el-input__wrapper.is-focus {
         width: 160px !important;
     }
 }
+
+.input:disabled {
+    border: none !important;
+}
+
+.el-select .el-input.is-disabled .el-input__inner {
+    border: none !important;
+}

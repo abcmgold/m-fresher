@@ -37,9 +37,12 @@ const MISAResource = {
         reload: "Cập nhật dữ liệu",
         addProperties: "+ Thêm tài sản",
         addDocument: "Thêm chứng từ",
-        dateError: "Giá trị ngày bắt đầu sử dụng phải lớn hơn hoặc bằng ngày mua",
+        dateError: "Giá trị ngày bắt đầu sử dụng phải lớn hơn hoặc bằng ngày mua!",
         order: "Số thứ tự",
         noResult: "Không có kết quả",
+        saveOrNot: 'Thông tin đã thay đổi, bạn có muốn lưu không?',
+        dontSave: 'Không lưu',
+
         property: {
             propertyCode: 'Mã tài sản',
             propertyCodeError: 'Mã tài sản không được phép để trống',
@@ -85,7 +88,6 @@ const MISAResource = {
 
             useDate: 'Ngày bắt đầu sử dụng',
             useDateError: 'Ngày bắt đầu sử dụng không được phép để trống',
-
         },
 
         listHeader: [
