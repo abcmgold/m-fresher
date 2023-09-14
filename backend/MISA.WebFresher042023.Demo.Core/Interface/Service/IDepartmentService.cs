@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace MISA.WebFresher042023.Demo.Core.Interface.Service
 {
     /// <summary>
-    /// Interface của department service
+    /// Interface của DepartmentService
     /// </summary>
     /// CreatedBy: BATUAN(20/06/2023)
     public interface IDepartmentService : IBaseService<DepartmentDto, DepartmentUpdateDto, DepartmentCreateDto>

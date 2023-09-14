@@ -436,6 +436,13 @@ export default {
         };
     },
     async created() {
+        await request.getRecord('ConfigTable?tableName=PropertyTable')
+        .then (res => {
+            console.log(res)
+        })
+        .catch(error => {
+            console.log(error)
+        })
         // Lấy ra list header
         this.listHeader = this.$_MISAResource['vn-VI'].listHeader;
         // Lấy ra danh sách phòng ban để đưa vào combo box

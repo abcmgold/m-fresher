@@ -16,6 +16,14 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             _propertyTransferRepository = propertyTransferRepository;
         }
 
+        /// <summary>
+        /// Phân trang bản ghi lấy theo Id của chứng từ
+        /// </summary>
+        /// <param name="documentId">Id chứng từ</param>
+        /// <param name="pageNumber">Trang số mấy?</param>
+        /// <param name="pageSize">Kích thước trang</param>
+        /// <returns>Danh sách chi tiết chứng từ</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         public async Task<List<TransferAssetDetailDto>> GetPropertyTransferByDocumentId(Guid documentId, int pageNumber, int pageSize)
         {
             List<TransferAssetDetail> propertyTransferList = await _propertyTransferRepository.GetPropertyTransferByDocumentId(documentId, pageNumber, pageSize);

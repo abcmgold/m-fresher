@@ -58,24 +58,17 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
         Task<List<TransferAsset>> CheckExistRange(Guid propertyId, DateTime oldTransferDate, DateTime transferDate);
 
         /// <summary>
-        /// Sinh mã code tự động cho chứng từ điều chuyển
+        /// Lấy mã chứng từ điều chuyển lớn nhất
         /// </summary>
-        /// <returns>Chuỗi mã chứng từ mới</returns>
-        /// CreatedBy: BATUAN (30/08/2023)
-        Task<string> GetGreatestCode();
-        /// <summary>
-        /// Kiểm tra xem có tồn tại chứng từ nào có thời gian điều chuyển lớn hơn transferDate hay không
-        /// </summary>
-        /// <param name="transferDate">Thời gian điều chuyển</param>
-        /// <returns>0: Không tồn tại|| 1: Tồn tại</returns>
-        /// CreatedBy: BATUAN (30/08/2023)
-        public Task<int> CheckGreaterTransferDate(DateTime transferDate);
-        /// <summary>
-        /// Check chứng từ được phép xóa hay không
-        /// </summary>
-        /// <param name="listId">Danh sách các id của các chứng từ</param>
         /// <returns></returns>
-        /// CreatedBy: BATUAN (28/08/2023)
+        Task<string> GetGreatestCode();
+        
+        /// <summary>
+        /// Lấy ra danh sách các chứng từ chứa tài sản ở trong đó và có ngày chứng từ lớn hơn ngày chứng từ của tài sản hiện tại
+        /// </summary>
+        /// <param name="propertyId">Id của tài sản</param>
+        /// <param name="transactionDate">Ngày chứng từ</param>
+        /// <returns>Danh sách các chứng từ điều chuyển thỏa mãn</returns>
         public Task<List<TransferAseetCheckDeleteDto>> CheckExistGreater(string listId);
         /// <summary>
         /// Check trùng code

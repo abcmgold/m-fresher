@@ -15,15 +15,21 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
     public interface IPropertyRepository : IBaseRepository<Property>
     {
         /// <summary>
-        /// Get lastest code in proprety
+        /// Lấy mã code mới nhất trong cơ sở dữ liệu
         /// </summary>
-        /// <returns>Lastest code</returns>
+        /// <returns>Chuỗi code mới nhất</returns>
         /// CreatedBy: BATUAN (19/06/2023)
         Task<string> GetAutoIdAsync();
+
         /// <summary>
-        /// Paging
+        /// Phân trang tài sản
         /// </summary>
-        /// <returns>list property</returns>
+        /// <param name="pageNumber">Trang hiện tại</param>
+        /// <param name="pageSize">Số bản ghi 1 trang</param>
+        /// <param name="searchInput">Nội dung tìm kiếm</param>
+        /// <param name="propertyType">Nội dung tìm kiếm</param>
+        /// <param name="departmentName">Nội dung tìm kiếm</param>
+        /// <returns>Danh sách tài sản phân trang</returns>
         /// CreatedBy: BATUAN (19/06/2023)
         Task<object> GetByPagingAsync(int pageNumber, int pageSize, string? searchInput, string? propertyType, string? departmentName, string? excludeIds);
 

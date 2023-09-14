@@ -11,6 +11,7 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Repository
     /// Interface base của repository
     /// </summary>
     /// <typeparam name="TEntity">Sematic type cho entity</typeparam>
+    /// CreatedBy: BATUAN (20/06/2023)
     public interface IBaseRepository<TEntity>
     {
         /// <summary>

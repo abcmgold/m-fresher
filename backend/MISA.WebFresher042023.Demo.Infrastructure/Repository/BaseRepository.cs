@@ -5,6 +5,11 @@ using System.Data;
 
 namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
 {
+    /// <summary>
+    /// Lớp thực thi của BaseRepository
+    /// </summary>
+    /// <typeparam name="TEntity">Sematic type cho entity</typeparam>
+    /// CreatedBy: BATUAN (20/06/2023)
     public abstract class BaseRepository<TEntity> : IBaseRepository<TEntity>
     {
         protected readonly IUnitOfWork _unitOfWork;
@@ -12,6 +17,12 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
         {
             _unitOfWork = unitOfWork;
         }
+
+        /// <summary>
+        /// Lấy tất cả bản ghi
+        /// </summary>
+        /// <returns>Danh sách bản ghi</returns>
+        /// CreatedBy: BATUAN (19/06/2023)
         public async Task<List<TEntity>> GetAsync()
         {
             var tableName = typeof(TEntity).Name;
@@ -20,6 +31,12 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
 
             return (List<TEntity>)result;
         }
+
+        /// <summary>
+        /// Lấy bản ghi theo id
+        /// </summary>
+        /// <returns>Bản ghi</returns>
+        /// CreatedBy: BATUAN (19/06/2023)
         public virtual async Task<TEntity> GetByIdAsync(Guid id)
         {
             var tableName = typeof(TEntity).Name;
@@ -32,6 +49,12 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
 
             return result;
         }
+
+        /// <summary>
+        /// Xóa bản ghi
+        /// </summary>
+        /// <returns></returns>
+        /// CreatedBy: BATUAN (19/06/2023)
         public async Task<int> DeleteAsync(string id)
         {
             var tableName = typeof(TEntity).Name;
@@ -49,15 +72,11 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
 
         }
 
-        public async Task<int> UpdateAsync(TEntity entity)
-        {
-            var listEntity = new List<TEntity>() { entity };
-
-            var result = await UpdateAsync(listEntity);
-
-            return result;
-        }
-
+        /// <summary>
+        /// Chỉnh sửa bản ghi
+        /// </summary>
+        /// <returns></returns>
+        /// CreatedBy: BATUAN (19/06/2023)
         public async Task<int> UpdateAsync(List<TEntity> entity)
         {
             var name = typeof(TEntity).Name;
@@ -69,6 +88,11 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
             return result;
         }
 
+        /// <summary>
+        /// Thêm mới bản ghi
+        /// </summary>
+        /// <returns></returns>
+        /// CreatedBy: BATUAN (19/06/2023)
         public async Task<int> InsertAsync(List<TEntity> entityCreates)
         {
 

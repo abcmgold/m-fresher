@@ -9,6 +9,7 @@ using MISA.WebFresher042023.Demo.Core.Interface.Service;
 using MISA.WebFresher042023.Demo.Core.Entities;
 using MISA.WebFresher042023.Demo.Infrastructure.Interface;
 using MISA.WebFresher042023.Demo.Infrastructure.UnitOfWork;
+using MISA.WebFresher042023.Demo.Core.ConvertTime;
 
 WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 
@@ -36,11 +37,16 @@ builder.Services.AddControllers()
     .AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNamingPolicy = null;
+}).AddJsonOptions(option =>
+{
+    option.JsonSerializerOptions.PropertyNamingPolicy = null;
+
+    option.JsonSerializerOptions.Converters.Add(new LocalTimeZone());
 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddSwaggerGen();   
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -61,6 +67,9 @@ builder.Services.AddScoped<ITransferAssetDetailRepository, TransferAssetDetailRe
 
 builder.Services.AddScoped<IReceiverRepository, ReceiverRepository>();
 builder.Services.AddScoped<IReceiverService, ReceiverService>();
+
+builder.Services.AddScoped<IConfigTableRepository, ConfigTableRepository>();
+builder.Services.AddScoped<IConfigTableService, ConfigTableService>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
