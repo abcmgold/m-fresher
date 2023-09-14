@@ -26,7 +26,7 @@ namespace MISA.WebFresher042023.Demo.Core.Interface.Service
         /// <param name="documentCreateDto">Chứng từ được tạo mới</param>
         /// <returns>1: Thành công || Exception: Thất bại</returns>
         /// CreatedBy: BATUAN (30/08/2023)
-        public Task<int> AddDocumentAsync(TransferAssetCreateDto documentCreateDto);
+        public Task<int> AddDocumentAsync(TransferAssetCreateDto transferAssetCreateDto);
         /// <summary>
         /// Cập nhật một chứng từ điều chuyển
         /// </summary>

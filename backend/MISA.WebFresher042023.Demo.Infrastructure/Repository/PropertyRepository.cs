@@ -20,6 +20,12 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
         {
         }
 
+        /// <summary>
+        /// Check mã code đã tồn tại trong db hay chưa?
+        /// </summary>
+        /// <param name="propertyCode">Mã code của property</param>
+        /// <returns>1: Đã tồn tại|| 0: Chưa tồn tại</returns>
+        /// CreatedBy: BATUAN (21/06/2023)
         public async Task<int> CheckDuplicatePropertyCode(string propertyCode, Guid? propertyId)
         {
 
@@ -34,6 +40,16 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
             return result;
         }
 
+        /// <summary>
+        /// Phân trang tài sản
+        /// </summary>
+        /// <param name="pageNumber">Trang hiện tại</param>
+        /// <param name="pageSize">Số bản ghi 1 trang</param>
+        /// <param name="searchInput">Nội dung tìm kiếm</param>
+        /// <param name="propertyType">Nội dung tìm kiếm</param>
+        /// <param name="departmentName">Nội dung tìm kiếm</param>
+        /// <returns>Danh sách tài sản phân trang</returns>
+        /// CreatedBy: BATUAN (19/06/2023)
         public async Task<object> GetByPagingAsync(int pageNumber, int pageSize, string? searchInput, string? propertyType, string? departmentName, string? excludeIds)
         {
 
@@ -60,8 +76,11 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
             return new { Data = result, Total = total };
         }
 
-
-
+        /// <summary>
+        /// Lấy mã code mới nhất trong cơ sở dữ liệu
+        /// </summary>
+        /// <returns>Chuỗi code mới nhất</returns>
+        /// CreatedBy: BATUAN (19/06/2023)
         public async Task<string> GetAutoIdAsync()
         {
 
@@ -72,6 +91,11 @@ namespace MISA.WebFresher042023.Demo.Infrastructure.Repository
             return result;
         }
 
+        /// <summary>
+        /// Lấy danh sách tài sản với phòng ban mới
+        /// </summary>
+        /// <returns>Danh sách tài sản</returns>
+        /// CreatedBy: BATUAN (21/08/2023)
         public async Task<List<PropertyReadonly>> GetCurrenPropertyInfo(int pageNumber, int pageSize, string? searchInput, string? excludedIds)
         {
             DynamicParameters parameters = new DynamicParameters();

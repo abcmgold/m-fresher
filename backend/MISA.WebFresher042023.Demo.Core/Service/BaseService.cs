@@ -12,6 +12,10 @@ using System.Threading.Tasks;
 
 namespace MISA.WebFresher042023.Demo.Core.Service
 {
+    /// <summary>
+    /// Lớp thực thi của BaseService
+    /// </summary>
+    /// CreatedBy: BATUAN (20/06/2023)
     public abstract class BaseService<TEntity, TEntityDto, TEntityUpdateDto, TEntityCreateDto> : IBaseService<TEntityDto, TEntityUpdateDto, TEntityCreateDto>
     {
         protected readonly IBaseRepository<TEntity> _baseRepository;

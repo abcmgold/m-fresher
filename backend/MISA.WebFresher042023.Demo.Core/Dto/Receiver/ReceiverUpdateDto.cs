@@ -13,22 +13,12 @@ namespace MISA.WebFresher042023.Demo.Core.Dto.Hanover
 {
     public class ReceiverUpdateDto
     {
-        //[Required(ErrorMessageResourceType = typeof(ResourceVN), ErrorMessageResourceName = nameof(ResourceVN.FieldRequired))]
-        //[Display(ResourceType = typeof(ResourceVN), Name = nameof(ResourceVN.ReceiverId))]
         public Guid ReceiverId { get; set; }
-
-        //[Required(ErrorMessageResourceType = typeof(ResourceVN), ErrorMessageResourceName = nameof(ResourceVN.FieldRequired))]
-        //[Display(ResourceType = typeof(ResourceVN), Name = nameof(ResourceVN.ReceiverId))]
         public string FullName { get; set; }
-
-        //[Required(ErrorMessageResourceType = typeof(ResourceVN), ErrorMessageResourceName = nameof(ResourceVN.FieldRequired))]
-        //[Display(ResourceType = typeof(ResourceVN), Name = nameof(ResourceVN.Represent))]
         public string Represent { get; set; }
-
-        //[Required(ErrorMessageResourceType = typeof(ResourceVN), ErrorMessageResourceName = nameof(ResourceVN.FieldRequired))]
-        //[Display(ResourceType = typeof(ResourceVN), Name = nameof(ResourceVN.Positon))]
         public string Position { get; set; }
         public int ReceiverOrder { get; set; }
+        public Guid TransferAssetId { get; set; }
         public StatusRecord StatusRecord { get; set; }
     }
 }

@@ -35,6 +35,13 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             propertyManager = new PropertyManager(_propertyRepository, _transferAssetRepository);
         }
 
+        /// <summary>
+        /// Phân trang danh sách chứng từ điều chuyển
+        /// </summary>
+        /// <param name="pageNumber">Trang hiện tại</param>
+        /// <param name="pageSize">Số bản ghi trong một trang</param>
+        /// <returns>Danh sách bản ghi</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         public async Task<object> GetByPaging(int pageNumber, int pageSize)
         {
             var result = await _transferAssetRepository.GetByPaging(pageNumber, pageSize);
@@ -42,6 +49,12 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             return result;
         }
 
+        /// <summary>
+        /// Tạo mới một chứng từ
+        /// </summary>
+        /// <param name="documentCreateDto">Chứng từ được tạo mới</param>
+        /// <returns>1: Thành công || Exception: Thất bại</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         public async Task<int> AddDocumentAsync(TransferAssetCreateDto transferAssetCreateDto)
         {
             // Map các entityDto về entity
@@ -117,6 +130,12 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             }
         }
 
+        /// <summary>
+        /// Cập nhật một chứng từ điều chuyển
+        /// </summary>
+        /// <param name="documentUpdateDto">Chứng từ được cập nhật</param>
+        /// <returns>1: Thành công || Exception: Thất bại</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         public async Task<int> UpdateDocumentAsync(TransferAssetUpdateDto transferAssetUpdateDto)
         {
             // Map các entityDto về dto
@@ -213,10 +232,23 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             var receiverConcateDeleteIds = string.Join(", ", receiverDeleteIds);
 
             // Thêm các giá trị mặc định
+
+            transferAsset.ModifiedDate = DateTime.Now;
+
+            foreach(var transferAssetDetail in transferAssetDetailChange)
+            {
+                transferAssetDetail.ModifiedDate = DateTime.Now;
+            }
+
             foreach (var transferAssetDetail in transferAssetDetailInsert)
             {
                 transferAssetDetail.TransferAssetDetailId = Guid.NewGuid();
                 transferAssetDetail.CreatedDate = DateTime.Now;
+            }
+
+            foreach (var receiver in receiverChange)
+            {
+                receiver.ModifiedDate = DateTime.Now;
             }
 
             foreach (var receiver in receiverInsert)
@@ -325,6 +357,12 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             }
         }
 
+        /// <summary>
+        /// Lấy thông tin của chứng từ điều chuyển theo Id
+        /// </summary>
+        /// <param name="transferAssetId">Id chứng từ</param>
+        /// <returns>Thông tin chứng từ kèm với danh sách tài sản điều chuyển và người nhận</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         public async Task<TransferAssetReadonly> GetInfoTransferAsset(Guid transferAssetId)
         {
             var transferAsset = await _transferAssetRepository.GetByIdAsync(transferAssetId);
@@ -352,11 +390,21 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             return transferAssetContainer;
         }
 
+        /// <summary>
+        /// Hàm check tài sản điều chuyển có được xóa ở form chỉnh sửa hay không
+        /// </summary>
+        /// <returns>Tài sản không được xóa và thông tin</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         public async Task CheckDeleteOrNot(Guid transferAssetId, List<Guid> propertyId)
         {
             await propertyManager.CheckGreaterTransferDate(transferAssetId, propertyId);
         }
 
+        /// <summary>
+        /// Sinh mã code tự động
+        /// </summary>
+        /// <returns>Chuỗi mã code của chứng từ</returns>
+        /// CreatedBy: BATUAN (30/08/2023)
         public async Task<string> GetAutoTransferAssetCode()
         {
             var code = await _transferAssetRepository.GetGreatestCode();

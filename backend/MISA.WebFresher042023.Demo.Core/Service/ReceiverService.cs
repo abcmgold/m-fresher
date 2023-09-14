@@ -23,6 +23,11 @@ namespace MISA.WebFresher042023.Demo.Core.Service
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Lấy danh sách người nhận ở chứng từ điều chuyển mới nhất
+        /// </summary>
+        /// <returns>Danh sách người nhận</returns>
+        /// Created By: BATUAN (29/08/2023)
         public async Task<List<ReceiverDto>> GetLastestReceivers()
         {
             var receivers = await _receiverRepository.GetLastestReceivers();
