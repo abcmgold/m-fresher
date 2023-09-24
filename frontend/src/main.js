@@ -31,11 +31,18 @@ import MISAValidateText from './components/MISAValidateText.vue'
 import MISAContextMenu from './components/MISAContextMenu.vue'
 import MISASetting from './components/MISASetting.vue'
 
-import {pressEscEvent, leftClickMouse, clickOutside, scrollOutside} from './common/directive.js'
+import {
+    pressEscEvent,
+    leftClickMouse,
+    clickOutside,
+    scrollOutside,
+    resizeColumnDirective,
+    resizeRowDirective
+} from './common/directive.js'
 
 import ENUM from './common/enum';
 
-import { MISAResource } from './common/resource';
+import {MISAResource} from './common/resource';
 
 import vueRouter from './router';
 
@@ -75,18 +82,18 @@ app.directive('esc', pressEscEvent);
 app.directive('leftclick', leftClickMouse);
 app.directive('clickoutside', clickOutside);
 app.directive('scrolloutside', scrollOutside);
+app.directive('resizecol', resizeColumnDirective)
+app.directive('resizerow', resizeRowDirective)
 
 // add store
 app.use(store)
 
-app.use(
-    VueTippy,
-    // optional
+app.use(VueTippy,
+// optional
     {
-      directive: 'tippy', // => v-tippy
-      component: 'tippy', // => <tippy/>
-    }
-  )
+    directive: 'tippy', // => v-tippy
+    component: 'tippy', // => <tippy/>
+})
 
 app.use(VTooltip)
 

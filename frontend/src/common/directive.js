@@ -73,9 +73,97 @@ const scrollOutside = {
     }
 };
 
+// Định nghĩa directive Vue.js
+const resizeColumnDirective = {
+    mounted(el) {
+      let startX;
+      let startWidth;
+      const RESIZE_THRESHOLD = 5; // Adjust this value to change the cursor detection area width
+  
+      el.addEventListener("mousedown", (e) => {
+        if (el.style.cursor === "col-resize") {
+          startX = e.clientX;
+          startWidth = el.clientWidth;
+  
+          document.addEventListener("mousemove", resizeColumn);
+          document.addEventListener("mouseup", stopResize);
+        }
+      });
+  
+      el.addEventListener("mousemove", updateCursor);
+  
+      function updateCursor(e) {
+        const offset = el.getBoundingClientRect().right - e.clientX;
+  
+        if (offset < RESIZE_THRESHOLD) {
+          el.style.cursor = "col-resize";
+        } else {
+          el.style.cursor = "auto";
+        }
+      }
+  
+      function resizeColumn(e) {
+        const width = startWidth + (e.clientX - startX);
+        el.style.minWidth = `${width}px`;
+      }
+  
+      function stopResize() {
+        el.style.cursor = "auto";
+        document.removeEventListener("mousemove", resizeColumn);
+        document.removeEventListener("mouseup", stopResize);
+      }
+    },
+  };
+  
+  const resizeRowDirective = {
+    mounted(el) {
+      let startY;
+      let startHeight;
+      const RESIZE_THRESHOLD = 5; // Adjust this value to change the cursor detection area height
+  
+      el.addEventListener("mousedown", (e) => {
+        if (el.style.cursor === "row-resize") {
+          startY = e.clientY;
+          startHeight = el.clientHeight;
+  
+          document.addEventListener("mousemove", resizeRow);
+          document.addEventListener("mouseup", stopResize);
+        }
+      });
+  
+      el.addEventListener("mousemove", updateCursor);
+  
+      function updateCursor(e) {
+        const offset = el.getBoundingClientRect().bottom - e.clientY;
+  
+        if (offset < RESIZE_THRESHOLD) {
+          el.style.cursor = "row-resize";
+        } else {
+          el.style.cursor = "auto";
+        }
+      }
+  
+      function resizeRow(e) {
+        const height = startHeight + (e.clientY - startY);
+        el.style.minHeight = `${height}px`;
+      }
+  
+      function stopResize() {
+        el.style.cursor = "auto";
+        document.removeEventListener("mousemove", resizeRow);
+        document.removeEventListener("mouseup", stopResize);
+      }
+    },
+  };
+
+  
+
+
 export {
     clickOutside,
     pressEscEvent,
     leftClickMouse,
-    scrollOutside
+    scrollOutside,
+    resizeColumnDirective,
+    resizeRowDirective
 };

@@ -42,7 +42,13 @@ const MISAResource = {
         noResult: "Không có kết quả",
         saveOrNot: 'Thông tin đã thay đổi, bạn có muốn lưu không?',
         dontSave: 'Không lưu',
-
+        noData: 'Không có dữ liệu',
+        deleteSuccess: 'Xóa thành công',
+        addTransferAssetSuccess: 'Thêm chứng từ thành công',
+        updateTransferAssetSuccess: 'Chỉnh sửa chứng từ thành công',
+        moveUp: "Di chuyển lên",
+        moveDown: "Di chuyển xuống",
+        addReceiverField: "Thêm mới",
         property: {
             propertyCode: 'Mã tài sản',
             propertyCodeError: 'Mã tài sản không được phép để trống',
@@ -238,20 +244,20 @@ const MISAResource = {
             },
             {
                 name: 'Tên tài sản',
-                style: 'width: 120px',
+                style: 'width: 160px',
                 align: 'text-align-left'
             },
             {
                 name: 'Nguyên giá',
-                style: 'width: 120px',
+                style: 'width: 160px',
                 align: 'text-align-right'
             }, {
                 name: 'Giá trị còn lại',
-                style: 'width: 120px',
+                style: 'width: 160px',
                 align: 'text-align-right'
             }, {
                 name: 'Bộ phận sử dụng',
-                style: 'width: 180px',
+                style: 'width: 200px',
                 align: 'text-align-left'
             }, {
                 name: 'Bộ phận điều chuyển đến',
@@ -341,7 +347,9 @@ const MISAResource = {
             unselected: "Bỏ chọn",
             delete: "Xóa",
             detail: "Thông tin chi tiết",
-            generalInfo: "Thông tin chung"
+            generalInfo: "Thông tin chung",
+            wantToDeleteTransferAsset: "Bạn có muốn xóa chứng từ",
+            longWantToDeleteTransferAsset: 'chứng từ đã được chọn, bạn có muốn xóa các chứng từ này không'
         },
         // resource trong propertyTransferForm.vue
         propertyTransferForm: {
@@ -365,9 +373,16 @@ const MISAResource = {
             chooseProperty: "Chọn tài sản",
             updateTransferAsset: "Sửa chứng từ điều chuyển",
             insertTransferAsset: "Thêm chứng từ điều chuyển",
-            cancelAddTransferAsset: "Bạn có muốn hủy bỏ khai báo chứng từ này không ?",
-            cancelUpdateTransferAsset: "Bạn có muốn hủy bỏ chỉnh sửa chứng từ này không ?",
-            noChangeToSave: "Anh/Chị vui lòng thay đổi thông tin chứng từ để thực hiện cập nhật !"
+            cancelAddTransferAsset: "Bạn có muốn hủy bỏ khai báo chứng từ này không?",
+            cancelUpdateTransferAsset: "Bạn có muốn hủy bỏ chỉnh sửa chứng từ này không?",
+            noChangeToSave: "Vui lòng thay đổi thông tin chứng từ để thực hiện cập nhật!",
+            transferAssetCodeError: "Mã chứng từ không được phép trống!",
+            transferAssetTransferDateError: "Ngày điều chuyển không được phép trống!",
+            transferAssetTransactionDateError: "Ngày chứng từ không được phép trống!",
+            noEmptyReceiver: 'Thông tin ban giao nhận không được để trống!<br>',
+            noEmptyTransferAsset: 'Danh sách tài sản điều chuyển không được để trống!<br>',
+            errorTransferDate: 'Ngày chứng từ phải nhỏ hơn ngày điều chuyển!<br>',
+            differentDepartment: 'Bộ phận sử dụng mới phải khác bộ phận cũ!'
         },
         // Resource trong ChoosenForm.vue
         choosenForm: {

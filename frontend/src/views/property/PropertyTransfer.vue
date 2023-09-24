@@ -119,6 +119,7 @@
                     >
                         <div class="text-align-center cell--item cell--item--checkbox" style="width: 50px">
                             <m-checkbox
+                                @dblclick.stop
                                 :ref="`checkbox-${data.TransferAssetId}`"
                                 @click="clickOnCheckbox(index, data.TransferAssetId)"
                             ></m-checkbox>
@@ -138,7 +139,13 @@
                             <div v-if="header.money" class="cell--item__child">
                                 {{ this.formatedMoney(data[header.field]) }}
                             </div>
-                            <div v-if="!header.date && !header.money" class="cell--item__child" :title="data[header.field]">{{ data[header.field] }}</div>
+                            <div
+                                v-if="!header.date && !header.money"
+                                class="cell--item__child"
+                                :title="data[header.field]"
+                            >
+                                {{ data[header.field] }}
+                            </div>
                         </div>
                         <div
                             class="table-list-icons cell--item"
@@ -196,6 +203,7 @@
             </div>
             <div v-if="this.transferAssetList.length == 0" class="table__content--empty">
                 <div class="icon--empty"></div>
+                <div>{{this.$_MISAResource['vn-VI'].noData}}</div>
             </div>
             <div v-if="this.isLoadingDataDocument" class="grid-loading-container">
                 <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
@@ -264,22 +272,29 @@
                             <div class="text-align-left cell--item" style="width: 120px">
                                 <div class="text--surround" :title="data.PropertyCode">{{ data.PropertyCode }}</div>
                             </div>
-                            <div class="text-align-left cell--item" style="width: 120px">
+                            <div class="text-align-left cell--item" style="width: 160px">
                                 <div class="text--surround" :title="data.PropertyName">{{ data.PropertyName }}</div>
                             </div>
-                            <div class="text-align-right cell--item" style="width: 120px">
-                                <div class="text--surround" :title="this.formatedMoney(data.OriginalPrice)">{{ this.formatedMoney(data.OriginalPrice) }}</div>
+                            <div class="text-align-right cell--item" style="width: 160px">
+                                <div class="text--surround" :title="this.formatedMoney(data.OriginalPrice)">
+                                    {{ this.formatedMoney(data.OriginalPrice) }}
+                                </div>
                             </div>
-                            <div class="text-align-right cell--item" style="width: 120px">
-                                <div class="text--surround" :title="this.formatedMoney(this.caculateResidualPrice(data))">
+                            <div class="text-align-right cell--item" style="width: 160px">
+                                <div
+                                    class="text--surround"
+                                    :title="this.formatedMoney(this.caculateResidualPrice(data))"
+                                >
                                     {{ this.formatedMoney(this.caculateResidualPrice(data)) }}
                                 </div>
                             </div>
-                            <div class="text-align-left cell--item" style="width: 180px">
+                            <div class="text-align-left cell--item" style="width: 200px">
                                 <div class="text--surround" :title="data.DepartmentName">{{ data.DepartmentName }}</div>
                             </div>
                             <div class="text-align-left cell--item" style="width: 200px">
-                                <div class="text--surround" :title="data.DepartmentTransferName">{{ data.DepartmentTransferName }}</div>
+                                <div class="text--surround" :title="data.DepartmentTransferName">
+                                    {{ data.DepartmentTransferName }}
+                                </div>
                             </div>
                             <div class="text-align-left cell--item" style="flex: 1">
                                 <div class="text--surround" :title="data.Reason">{{ data.Reason }}</div>
@@ -337,6 +352,8 @@
             :text="this.textDialog"
             :documentInfo="this.documentInfoDialog"
             :dialogActions="this.dialogActions"
+            :errorField="this.errorField"
+            :componentFocusedName="this.componentFocusedName"
         ></m-dialog>
     </m-modal>
     <m-toast :label="this.labelToastSuccess" icon="icon--success" v-if="isShowToastSuccess"></m-toast>
@@ -382,12 +399,14 @@ export default {
             labelToastError: '',
             isShowToastSuccess: false,
             isShowToastError: false,
-            listHeaderTranfer: this.$_MISAResource['vn-VI'].listHeaderTranfer,
+            // listHeaderTranfer: this.$_MISAResource['vn-VI'].listHeaderTranfer,
+            listHeaderTranfer: [],
+            headerInfo: {},
             listHeaderDetailTranfer: this.$_MISAResource['vn-VI'].listHeaderDetailTranfer,
             transferAssetList: [],
             transferAssetDetailList: [],
             documentTableHeight: 189,
-            documentDetailTableHeight: 189,
+            documentDetailTableHeight: 192,
             startMousePositionY: 0,
             isShowDetailDocument: true,
             resizingDetail: false,
@@ -429,28 +448,42 @@ export default {
             indexSelected: -1,
             transferAssetAutoCode: '',
             isHasScrollBar: false,
+            errorField: '',
+            componentFocusedName: ''
         };
     },
     watch: {
         detailDocumentPage: async function () {
             await this.getDetailDocument();
+            this.checkForCheckbox();
+            this.checkFullChecked();
+            this.clickIndex = 0
+            await this.handleGetDetailDocument(0);
         },
         detailDocumentPageSize: async function () {
             await this.getDetailDocument();
         },
         currentPageDocument: async function () {
             await this.getDocumentByPaging();
+            this.checkForCheckbox();
+            this.checkFullChecked();
+            this.clickIndex = 0
+            await this.handleGetDetailDocument(0);
         },
         pageSizeDocument: async function () {
             await this.getDocumentByPaging();
         },
     },
     async created() {
+        await this.getListHeader();
+
         await this.getDocumentByPaging();
 
         this.pageNumberDocument = Math.ceil(this.totalRecordDocuments / this.pageSizeDocument);
 
         await this.handleGetDetailDocument(0);
+
+        window.addEventListener('beforeunload', this.updateListHeaderTransferAsset);
     },
     updated() {
         // Lấy tham chiếu đến phần tử chứa nội dung có thể cuộn
@@ -462,7 +495,45 @@ export default {
             this.isHasScrollBar = false;
         }
     },
+    async beforeUnmount() {
+        await this.updateListHeaderTransferAsset();
+        window.removeEventListener('beforeunload', this.updateListHeaderTransferAsset);
+    },
+
     methods: {
+        /*
+         * Gọi api lấy thông tin header của bảng
+         * Author: BATUAN (27/08/2023)
+         */
+        async getListHeader() {
+            await request
+                .getRecord('ConfigTable?tableName=TransferAssetTable')
+                .then((res) => {
+                    this.listHeaderTranfer = JSON.parse(res.data.ConfigContent);
+                    this.headerInfo = res.data;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        },
+        /*
+         * Gọi api cập nhật thông tin headers
+         * Author: BATUAN (27/08/2023)
+         */
+        async updateListHeaderTransferAsset() {
+            await request
+                .updateRecord('ConfigTable', {
+                    ConfigId: this.headerInfo.ConfigId,
+                    TableName: this.headerInfo.TableName,
+                    ConfigContent: JSON.stringify(this.listHeaderTranfer),
+                })
+                .then((res) => {
+                    console.log(res);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        },
         /*
          * Gọi api lấy mã code tự động
          * Author: BATUAN (27/08/2023)
@@ -477,7 +548,7 @@ export default {
                     this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
 
-            await delay(300);
+            await delay(200);
             this.$store.commit('toggleMaskElementShow');
         },
         /*
@@ -496,7 +567,7 @@ export default {
                     this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
 
-            await delay(300);
+            await delay(200);
             this.$store.commit('toggleMaskElementShow');
         },
         /*
@@ -519,13 +590,12 @@ export default {
                     this.summaryTotal.totalPrice = response.data.Total[0].TotalPrice;
                     if (response.data.Data.length > 0) {
                         this.summaryTotal.totalResidualPrice = response.data.Data[0].TotalResidualPrice;
-                    }
-                    else {
+                    } else {
                         this.summaryTotal.totalResidualPrice = 0;
                         this.transferAssetDetailList = [];
                     }
 
-                    await delay(500);
+                    await delay(200);
                     this.isLoadingDataDocument = false;
                 })
                 .catch((err) => {
@@ -546,13 +616,13 @@ export default {
                 )
                 .then(async (response) => {
                     // lưu dữ liệu data hiển thị
-                    await delay(500);
+                    await delay(150);
                     this.isLoadingDataDetail = false;
                     if (response.data) {
                         this.transferAssetDetailList = response.data;
                         this.totalRecordDetail = this.transferAssetDetailList[0].TotalRecords;
                         this.pageNumbersDetail = Math.ceil(this.totalRecordDetail / this.detailDocumentPageSize);
-                    }  
+                    }
                 })
                 .catch((err) => {
                     this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
@@ -605,7 +675,7 @@ export default {
         mousemoveHandler(event) {
             if (this.holdingDetail) {
                 const deltaY = event.clientY - this.startMousePositionY;
-                if (Math.abs(deltaY) > 10) {
+                if (Math.abs(deltaY) > 2) {
                     if (deltaY < 0 && this.documentTableHeight > 10) {
                         this.documentTableHeight += deltaY;
                         this.documentDetailTableHeight -= deltaY;
@@ -697,8 +767,7 @@ export default {
             this.clickIndex = index;
             if (this.transferAssetList.length > 0) {
                 await this.getDetailDocument();
-            }
-            else {
+            } else {
                 this.totalRecordDetail = 0;
             }
         },
@@ -874,6 +943,7 @@ export default {
         ) {
             this.isShowDialog = true;
             this.documentInfoDialog = documentInfo;
+            this.errorField = '';
             this.textDialog = textDialog;
             this.dialogActions = dialogActions;
         },
@@ -890,12 +960,12 @@ export default {
          */
         deleteTransferAsset(index, id) {
             this.showDialog(
-                `Bạn có muốn xóa chứng từ <strong>${this.transferAssetList[index].TransferAssetCode}</strong> không?`,
+                `${this.$_MISAResource['vn-VI'].propertyTransfer.wantToDeleteTransferAsset} <strong>${this.transferAssetList[index].TransferAssetCode}</strong> ${this.$_MISAResource['vn-VI'].no}?`,
                 '',
                 {
-                    firstDialogBtnText: 'Hủy',
+                    firstDialogBtnText: this.$_MISAResource['vn-VI'].cancel,
                     firstBtnFunction: this.hideDialog,
-                    thirdDialogBtnText: 'Xóa',
+                    thirdDialogBtnText: this.$_MISAResource['vn-VI'].delete,
                     thirdBtnFunction: () => this.deleteRecord(id),
                 },
             );
@@ -907,23 +977,23 @@ export default {
         deleteTransferAssets() {
             if (this.selectedRow.length == 1) {
                 this.showDialog(
-                    `Bạn có muốn xóa chứng từ <strong>${this.selectedRow[0].TransferAssetCode}</strong> không?`,
+                    `${this.$_MISAResource['vn-VI'].propertyTransfer.wantToDeleteTransferAsset} <strong>${this.selectedRow[0].TransferAssetCode}</strong> ${this.$_MISAResource['vn-VI'].no}?`,
                     '',
                     {
-                        firstDialogBtnText: 'Hủy',
+                        firstDialogBtnText: this.$_MISAResource['vn-VI'].cancel,
                         firstBtnFunction: this.hideDialog,
-                        thirdDialogBtnText: 'Xóa',
+                        thirdDialogBtnText: this.$_MISAResource['vn-VI'].delete,
                         thirdBtnFunction: this.deleteRecords,
                     },
                 );
             } else {
                 this.showDialog(
-                    `<strong>${this.selectedRow.length}</strong> chứng từ đã được chọn, bạn có muốn xóa các chứng từ này không ?`,
+                    `<strong>${this.selectedRow.length >= 10 ? this.selectedRow.length : `0${this.selectedRow.length}`}</strong> ${this.$_MISAResource['vn-VI'].propertyTransfer.longWantToDeleteTransferAsset}?`,
                     '',
                     {
-                        firstDialogBtnText: 'Hủy',
+                        firstDialogBtnText: this.$_MISAResource['vn-VI'].cancel,
                         firstBtnFunction: this.hideDialog,
-                        thirdDialogBtnText: 'Xóa',
+                        thirdDialogBtnText: this.$_MISAResource['vn-VI'].delete,
                         thirdBtnFunction: this.deleteRecords,
                     },
                 );
@@ -938,16 +1008,23 @@ export default {
             this.selectedRow.forEach((row) => {
                 listId.push(row.TransferAssetId);
             });
+            this.$store.commit('toggleMaskElementShow');
             await request
                 .deleteRecord('TransferAsset', { data: listId })
                 .then(async () => {
-                    this.showToastSuccess('Xóa thành công');
+                    await delay(150);
+                    this.$store.commit('toggleMaskElementShow');
+                    this.showToastSuccess(this.$_MISAResource['vn-VI'].deleteSuccess);
                     this.hideDialog();
                     await this.getDocumentByPaging();
                     await this.handleGetDetailDocument(0);
                     this.selectedRow = [];
+                    this.checkForCheckbox();
+                    this.checkFullChecked();
                 })
-                .catch((err) => {
+                .catch(async (err) => {
+                    await delay(150);
+                    this.$store.commit('toggleMaskElementShow');
                     this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
         },
@@ -958,16 +1035,25 @@ export default {
         async deleteRecord(id) {
             let listId = [];
             listId.push(id);
+            this.$store.commit('toggleMaskElementShow');
             await request
                 .deleteRecord('TransferAsset', { data: listId })
                 .then(async () => {
-                    this.showToastSuccess('Xóa thành công');
+                    await delay(100);
+                    this.$store.commit('toggleMaskElementShow');
+                    this.showToastSuccess(this.$_MISAResource['vn-VI'].deleteSuccess);
                     this.hideDialog();
                     await this.getDocumentByPaging();
+                    this.selectedRow = this.selectedRow.filter(row => {
+                        return row.TransferAssetId != id
+                    });
+                    this.checkForCheckbox();
+                    this.checkFullChecked();
                     await this.handleGetDetailDocument(0);
-                    this.selectedRow = [];
                 })
-                .catch((err) => {
+                .catch(async (err) => {
+                    await delay(100);
+                    this.$store.commit('toggleMaskElementShow');
                     this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                 });
         },
@@ -992,17 +1078,21 @@ export default {
             await request
                 .insertRecord('TransferAsset/Insert', transferAsset)
                 .then(async () => {
-                    await delay(200);
+                    await delay(100);
                     this.$store.commit('toggleMaskElementShow');
-                    this.showToastSuccess('Thêm chứng từ thành công');
+                    this.showToastSuccess(this.$_MISAResource['vn-VI'].addTransferAssetSuccess);
                     this.hideTransferForm();
                     await this.getDocumentByPaging();
                     await this.handleGetDetailDocument(0);
+                    this.checkForCheckbox();
+                    this.checkFullChecked();
                 })
                 .catch(async (err) => {
-                    await delay(200);
+                    await delay(100);
                     this.$store.commit('toggleMaskElementShow');
+                    this.componentFocusedName = 'propertyTransferForm';
                     this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                    this.errorField = err.errorField;
                 });
         },
         /*
@@ -1014,18 +1104,19 @@ export default {
             await request
                 .updateRecord('TransferAsset', transferAsset)
                 .then(async () => {
-                    await delay(200);
+                    await delay(100);
                     this.$store.commit('toggleMaskElementShow');
-                    this.showToastSuccess('Chỉnh sửa chứng từ thành công');
+                    this.showToastSuccess(this.$_MISAResource['vn-VI'].updateTransferAssetSuccess);
                     this.hideTransferForm();
                     await this.getDocumentByPaging();
                     await this.handleGetDetailDocument(0);
                 })
                 .catch(async (err) => {
-                    await delay(200);
+                    await delay(100);
                     this.$store.commit('toggleMaskElementShow');
-                    this.$refs.propertyTransferForm.errorField = err.errorField 
+                    this.componentFocusedName = 'propertyTransferForm';
                     this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                    this.errorField = err.errorField;
                 });
         },
         /*
@@ -1065,12 +1156,15 @@ export default {
          */
         changeCurrentPageDocument(newPage) {
             this.currentPageDocument = newPage;
+            
         },
         /*
          * Sự kiện khi thay đổi pagesize
          * Author: BATUAN (30/08/2023)
-         */ changePageSizeDocument(newPageSize) {
+         */ 
+        changePageSizeDocument(newPageSize) {
             this.pageSizeDocument = newPageSize;
+            this.pageNumberDocument = Math.ceil(this.totalRecordDocuments / this.pageSizeDocument);
         },
         /*
          * Sự kiện khi ấn nút nạp

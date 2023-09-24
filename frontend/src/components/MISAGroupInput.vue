@@ -4,12 +4,13 @@
             {{ text }}
             <div class="input__icon--force" v-show="isForce">*</div>
         </div>
-        <slot @showErrorMessage="showErrorMessage"></slot>
-        <m-validate-text
+        <slot @showErrorMessage="showErrorMessage" @showTooltip="showTooltip"></slot>
+        <!-- <m-validate-text
             ref="validateText"
             :isEmptyField="this.isShowMessage"
             :message="this.message"
-        ></m-validate-text>
+        ></m-validate-text> -->
+        <div class="icon-tooltip-validate" v-if="this.isShowMessage && this.isShowText">{{ this.message }}</div>
     </div>
 </template>
 
@@ -24,6 +25,7 @@ export default {
     data() {
         return {
             isShowMessage: false,
+            isShowText: false,
         };
     },
     methods: {
@@ -34,12 +36,26 @@ export default {
         showErrorMessage() {
             this.isShowMessage = true;
         },
-         /*
+        /*
          * Sự kiện ẩn error message dưới các ô input trong các form
          * Author: BATUAN (14/06/2023)
          */
         hideErrorMessage() {
             this.isShowMessage = false;
+        },
+        /*
+         * Sự kiện hiện tooltip thông báo lỗi validate
+         * Author: BATUAN (14/06/2023)
+         */
+        showTooltip() {
+            this.isShowText = true;
+        },
+        /*
+         * Sự kiện ẩn tooltip thông báo lỗi validate
+         * Author: BATUAN (14/06/2023)
+         */
+        hideTooltip() {
+            this.isShowText = false;
         },
     },
 };

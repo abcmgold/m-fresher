@@ -4,7 +4,7 @@
         ref="container"
         tabindex="0"
         @keydown.esc="handleClickClose"
-        @keydown="handleSearchByKeyBoard"
+        @keydown="handleShortKey"
     >
         <div class="transfer-form-header">
             <div class="transfer-form__title">{{ this.title }}</div>
@@ -26,6 +26,7 @@
                             <m-group-input
                                 :text="this.$_MISAResource['vn-VI'].propertyTransferForm.transferAssetCode"
                                 :isForce="true"
+                                :message="this.$_MISAResource['vn-VI'].propertyTransferForm.transferAssetCodeError"
                             >
                                 <m-text-input
                                     ref="transferAssetCodeInput"
@@ -43,6 +44,9 @@
                             <m-group-input
                                 :text="this.$_MISAResource['vn-VI'].propertyTransferForm.transactionDate"
                                 :isForce="true"
+                                :message="
+                                    this.$_MISAResource['vn-VI'].propertyTransferForm.transferAssetTransactionDateError
+                                "
                                 ><m-date-picker
                                     v-model="this.transferAsset.TransactionDate"
                                     ref="transactionDateInput"
@@ -55,6 +59,9 @@
                             <m-group-input
                                 :text="this.$_MISAResource['vn-VI'].propertyTransferForm.transferDate"
                                 :isForce="true"
+                                :message="
+                                    this.$_MISAResource['vn-VI'].propertyTransferForm.transferAssetTransferDateError
+                                "
                                 ><m-date-picker
                                     v-model="this.transferAsset.TransferDate"
                                     ref="transferDateInput"
@@ -84,7 +91,7 @@
                             <div>{{ this.$_MISAResource['vn-VI'].propertyTransferForm.chooseReceiver }}</div>
                         </div>
                         <div class="delivery-checkbox" v-if="this.isShowMoreDeliveryOptions">
-                            <m-checkbox ref="checkboxAddReceiver" @click="handleClickAddLastestReceiver"></m-checkbox>
+                            <m-checkbox ref="checkbox-add-receiver" @click="handleClickAddLastestReceiver"></m-checkbox>
                             <div>{{ this.$_MISAResource['vn-VI'].propertyTransferForm.addMoreReceiver }}</div>
                         </div>
                     </div>
@@ -136,17 +143,28 @@
                                         class="icon--up--v2"
                                         v-if="this.transferAsset.ReceiverList.length != 1"
                                         @click="pushUpDeliveryInput(index)"
+                                        :content="this.$_MISAResource['vn-VI'].moveUp"
+                                        v-tippy="{ placement: 'top' }"
                                     ></div>
                                     <div
                                         class="icon--down--v2"
                                         v-if="this.transferAsset.ReceiverList.length != 1"
                                         @click="pushDownDeliveryInput(index)"
+                                        :content="this.$_MISAResource['vn-VI'].moveDown"
+                                        v-tippy="{ placement: 'top' }"
                                     ></div>
-                                    <div class="icon--add-v2" @click="addDeliveryInput(index)"></div>
+                                    <div
+                                        class="icon--add-v2"
+                                        @click="addDeliveryInput(index)"
+                                        :content="this.$_MISAResource['vn-VI'].addReceiverField"
+                                        v-tippy="{ placement: 'top' }"
+                                    ></div>
                                     <div
                                         class="icon--delete"
                                         v-if="index != 0"
                                         @click="deleteDeliveryInput(index)"
+                                        :content="this.$_MISAResource['vn-VI'].delete"
+                                        v-tippy="{ placement: 'top' }"
                                     ></div>
                                 </div>
                             </div>
@@ -231,7 +249,7 @@
                         <div class="table__content--body" ref="contentFormBody" @scroll="handleScrollBodyTable">
                             <div
                                 v-for="(data, index) in this.propertyTransferListPaging"
-                                :key="data.TransferAssetDetailId"
+                                :key="data.PropertyId"
                                 class="table__content--row"
                                 :class="{
                                     'row-selected': isSelected(data),
@@ -241,8 +259,8 @@
                             >
                                 <div class="text-align-center cell--item cell--item--checkbox" style="width: 50px">
                                     <m-checkbox
+                                        @event.stop
                                         :ref="`checkbox-${data.PropertyId}`"
-                                        :id="data.PropertyId"
                                         @click="clickOnCheckbox(index, data.PropertyId)"
                                     ></m-checkbox>
                                 </div>
@@ -281,6 +299,7 @@
                                         v-model="data.Reason"
                                         type="text-field"
                                         :maxLength="this.$_MISAEnum.maxLengthText"
+                                        :title="data.Reason"
                                     ></m-text-input>
                                 </div>
                                 <div
@@ -325,6 +344,7 @@
                         </div>
                         <div v-if="this.propertyTransferListPaging.length == 0" class="table__content--empty">
                             <div class="icon--empty"></div>
+                            <div>{{ this.$_MISAResource['vn-VI'].noData }}</div>
                         </div>
                         <div v-if="this.isLoadingData" class="grid-loading-container">
                             <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
@@ -374,6 +394,7 @@
             :text="this.textDialog"
             :documentInfo="this.documentInfo"
             :dialogActions="this.dialogActions"
+            :errorField="this.errorField"
         ></m-dialog>
     </m-modal>
 </template>
@@ -382,7 +403,7 @@
 import request from '@/common/api';
 import ChoosenForm from './ChoosenForm.vue';
 import exception from '@/common/exception';
-import { formatMoney } from '@/common/common';
+import { formatMoney, formatCurrentDateReserve } from '@/common/common';
 import debounce from 'lodash/debounce';
 import { delay } from '@/common/common';
 
@@ -450,13 +471,31 @@ export default {
             listTemporaryDelete: [], // lưu danh sách tài sản xóa mềm (tài sản điều chuyển đã nằm trong database)
             isCheckboxDeliveryChecked: false,
             isHasScrollBar: false,
-            errorField: ''
+            errorField: '',
         };
     },
     watch: {
         inputFilter: debounce(function () {
             this.paging();
+            this.$nextTick(() => {
+                this.checkForCheckbox();
+                this.checkFullChecked();
+            });
         }, 1000),
+        currentPage: function () {
+            this.paging();
+            this.$nextTick(() => {
+                this.checkForCheckbox();
+                this.checkFullChecked();
+            });
+        },
+        pageSize: function () {
+            this.paging();
+            this.$nextTick(() => {
+                this.checkForCheckbox();
+                this.checkFullChecked();
+            });
+        },
     },
     async created() {
         switch (this.formMode) {
@@ -502,17 +541,12 @@ export default {
         }
     },
     mounted() {
-        this.$refs.transferAssetCodeInput.$el.focus();
-
-        console.log(this.$refs['checkbox-delivery'].isChecked);
-        // if (this.transferAsset.ReceiverList && this.transferAsset.ReceiverList.length > 0) {
-        //     this.$refs['checkbox-delivery'].isChecked = true;
-        //     this.listReceiver = JSON.parse(JSON.stringify(this.transferAsset.ReceiverList));
-        //     console.log(this.listReceiver)
-        // }
+        if (this.$refs.transferAssetCodeInput) {
+            this.$refs.transferAssetCodeInput.$el.focus();
+        }
     },
     unmounted() {
-        if (this.$parent) {
+        if (this.$parent && this.$parent.$refs.container) {
             this.$parent.$refs.container.focus();
         }
     },
@@ -598,8 +632,9 @@ export default {
                 if (this.formMode == this.$_MISAEnum.formAdd) {
                     this.transferAsset.ReceiverList = [];
                 } else if (this.formMode == this.$_MISAEnum.formUpdate) {
-                    this.transferAsset.ReceiverList = JSON.parse(JSON.stringify(this.listInitialReceiver));
+                    this.transferAsset.ReceiverList = [];
                 }
+                console.log(this.transferAsset);
             } else {
                 if (this.formMode == this.$_MISAEnum.formAdd) {
                     this.$refs['checkbox-delivery'].isChecked = true;
@@ -611,10 +646,12 @@ export default {
                 } else if (this.formMode == this.$_MISAEnum.formUpdate) {
                     this.$refs['checkbox-delivery'].isChecked = true;
                     this.isShowMoreDeliveryOptions = true;
-                    if (!this.transferAsset.ReceiverList || this.transferAsset.ReceiverList.length <= 0) {
+                    if (!this.listInitialReceiver || this.listInitialReceiver.length <= 0) {
                         this.transferAsset.ReceiverList.push({
                             ReceiverOrder: 1,
                         });
+                    } else {
+                        this.transferAsset.ReceiverList = JSON.parse(JSON.stringify(this.listInitialReceiver));
                     }
                 }
             }
@@ -693,6 +730,17 @@ export default {
                             element.PropertyName.toLowerCase().includes(this.inputFilter.trim().toLowerCase())
                         );
                     });
+                    this.totalResidualPrice = 0;
+                    transferAssetCopyList.forEach((element) => {
+                        this.totalResidualPrice += element.ResidualPrice;
+                    });
+                    this.totalOriginalPrice = 0;
+                    transferAssetCopyList.forEach((element) => {
+                        this.totalOriginalPrice += element.OriginalPrice;
+                    });
+                } else {
+                    this.calculateTotalResidualPrice();
+                    this.calculateTotalOriginalPrice();
                 }
                 this.propertyTransferListPaging = transferAssetCopyList.slice(beginIndex, endIndex);
                 this.numberPages = Math.ceil(transferAssetCopyList.length / this.pageSize);
@@ -707,7 +755,6 @@ export default {
          */
         changeCurrentPage(newPage) {
             this.currentPage = newPage;
-            this.paging();
         },
         /*
          * Sự kiện khi thay đổi giá trị của pageSize
@@ -715,7 +762,6 @@ export default {
          */
         changePageSize(newValue) {
             this.pageSize = newValue;
-            this.paging();
         },
         /*
          * Sự kiện khi click vào ô checkbox all
@@ -771,11 +817,15 @@ export default {
          */
         checkForCheckbox() {
             for (let i = 0; i < this.propertyTransferListPaging.length; i++) {
+                // if (this.$refs[`checkbox-${this.propertyTransferListPaging[i].PropertyId}`]) {
                 if (this.selectedRow.some((item) => item.PropertyId == this.propertyTransferListPaging[i].PropertyId)) {
+                    // this.$refs[`checkbox-${this.listProperty[i].PropertyId}`][0].isChecked = true;
+
                     this.$refs[`checkbox-${this.propertyTransferListPaging[i].PropertyId}`][0].isChecked = true;
                 } else {
                     this.$refs[`checkbox-${this.propertyTransferListPaging[i].PropertyId}`][0].isChecked = false;
                 }
+                // }
             }
         },
         /*
@@ -859,10 +909,13 @@ export default {
          * Author: BATUAN (29/06/2023)
          */
         async createNewTransferAsset() {
-            if (this.validateData() && this.validateDataMajor()) {
-                this.transferAsset.OriginalPrice = this.totalOriginalPrice;
-                
-                this.$emit('createdNewTransferAsset', this.transferAsset);
+            if (this.validateData().check) {
+                if (this.validateDataMajor().check) {
+                    this.transferAsset.OriginalPrice = this.totalOriginalPrice;
+                    this.$emit('createdNewTransferAsset', this.transferAsset);
+                }
+            } else {
+                this.focusOnErrorInput(this.validateData().refErrorName);
             }
         },
         async btnSaveAction() {
@@ -903,24 +956,33 @@ export default {
             ) {
                 let propertyIds = [];
                 propertyIds.push(row.PropertyId);
+                this.$store.commit('toggleMaskElementShow');
                 await request
                     .insertRecord(
                         `TransferAsset/CheckTransferAsset?transferAssetId=${this.transferAsset.TransferAssetId}`,
                         propertyIds,
                     )
-                    .then(() => {
+                    .then(async () => {
                         this.transferAsset.TransferAssetDetailList = this.transferAsset.TransferAssetDetailList.filter(
                             (element) => {
                                 return element.PropertyId != row.PropertyId;
                             },
                         );
+                        await delay(150);
+                        this.$store.commit('toggleMaskElementShow');
                         this.listTemporaryDelete = [];
                         this.listTemporaryDelete.push(row);
                         this.paging();
                         this.calculateTotalResidualPrice();
                         this.calculateTotalOriginalPrice();
+                        this.$nextTick(() => {
+                            this.checkForCheckbox();
+                            this.checkFullChecked();
+                        });
                     })
-                    .catch((err) => {
+                    .catch(async (err) => {
+                        await delay(150);
+                        this.$store.commit('toggleMaskElementShow');
                         this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                     });
             } else {
@@ -929,9 +991,13 @@ export default {
                         return element.PropertyId != row.PropertyId;
                     },
                 );
-                this.paging();
-                this.calculateTotalResidualPrice();
-                this.calculateTotalOriginalPrice();
+                this.$nextTick(() => {
+                    this.paging();
+                    this.calculateTotalResidualPrice();
+                    this.calculateTotalOriginalPrice();
+                    this.checkForCheckbox();
+                    this.checkFullChecked();
+                });
             }
         },
         /*
@@ -940,7 +1006,7 @@ export default {
          */
         async checkDeleteRows() {
             let propertyIds = [];
-            if (this.listInitialTransferAssetDetail) {
+            if (this.listInitialTransferAssetDetail && this.listInitialTransferAssetDetail.length > 0) {
                 this.selectedRow.forEach((row) => {
                     if (
                         this.listInitialTransferAssetDetail.some((element) => {
@@ -951,33 +1017,62 @@ export default {
                     }
                 });
 
+                this.$store.commit('toggleMaskElementShow');
+
                 await request
                     .insertRecord(
                         `TransferAsset/CheckTransferAsset?transferAssetId=${this.transferAsset.TransferAssetId}`,
                         propertyIds,
                     )
-                    .then(() => {
-                        this.transferAsset.TransferAssetDetailList = this.transferAsset.TransferAssetDetailList.filter(
-                            (element) => {
-                                return !JSON.Stringify(this.selectedRow).includes(JSON.Stringify(element));
-                            },
-                        );
+                    .then(async () => {
+                        await delay(150);
+                        this.$store.commit('toggleMaskElementShow');
+                        for (let i = 0; i < this.transferAsset.TransferAssetDetailList.length; i++) {
+                            for (let j = 0; j < this.selectedRow.length; j++) {
+                                if (
+                                    this.transferAsset.TransferAssetDetailList[i].PropertyId ==
+                                    this.selectedRow[j].PropertyId
+                                ) {
+                                    this.transferAsset.TransferAssetDetailList.splice(i, 1);
+                                    this.selectedRow.splice(j, 1);
+                                    i--;
+                                    break;
+                                }
+                            }
+                        }
                         this.paging();
                         this.calculateTotalResidualPrice();
                         this.calculateTotalOriginalPrice();
+                        this.$nextTick(() => {
+                            this.checkForCheckbox();
+                            this.checkFullChecked();
+                        });
                     })
-                    .catch((err) => {
+                    .catch(async (err) => {
+                        await delay(150);
+                        this.$store.commit('toggleMaskElementShow');
                         this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                     });
             } else {
-                this.transferAsset.TransferAssetDetailList = this.transferAsset.TransferAssetDetailList.filter(
-                    (element) => {
-                        return !JSON.Stringify(this.selectedRow).includes(JSON.Stringify(element));
-                    },
-                );
+                for (let i = 0; i < this.transferAsset.TransferAssetDetailList.length; i++) {
+                    for (let j = 0; j < this.selectedRow.length; j++) {
+                        if (
+                            this.transferAsset.TransferAssetDetailList[i].PropertyId == this.selectedRow[j].PropertyId
+                        ) {
+                            this.transferAsset.TransferAssetDetailList.splice(i, 1);
+                            this.selectedRow.splice(j, 1);
+                            i--;
+                            break;
+                        }
+                    }
+                }
                 this.paging();
                 this.calculateTotalResidualPrice();
                 this.calculateTotalOriginalPrice();
+                this.$nextTick(() => {
+                    this.checkForCheckbox();
+                    this.checkFullChecked();
+                });
             }
         },
         /*
@@ -1103,13 +1198,17 @@ export default {
          * Author: BATUAN (29/08/2023)
          */
         handleUpdateTransferAsset() {
-            if (this.validateData() && this.validateDataMajor()) {
-                let listTransferAsset = [];
-                listTransferAsset.push(this.transferAsset);
-                this.checkInforTransferAssetDetail();
-                this.checkInforReceiver();
-                this.$emit('updateTransferAsset', listTransferAsset);
-                // console.log(listTransferAsset)
+            if (this.validateData().check) {
+                if (this.validateDataMajor().check) {
+                    let listTransferAsset = [];
+                    listTransferAsset.push(this.transferAsset);
+                    this.checkInforTransferAssetDetail();
+                    this.checkInforReceiver();
+                    // this.formate
+                    this.$emit('updateTransferAsset', listTransferAsset);
+                }
+            } else {
+                this.focusOnErrorInput(this.validateData().refErrorName);
             }
         },
         /*
@@ -1143,15 +1242,12 @@ export default {
                 this.transferAsset.TransferAssetCode == undefined ||
                 this.transferAsset.TransferAssetCode.trim().length == 0
             ) {
-                textDialog += 'Mã chứng từ không được phép trống !</br>';
                 refErrorName = 'transferAssetCodeInput';
             }
             if (!this.transferAsset.TransferDate) {
-                textDialog += 'Ngày điều chuyển không được phép trống !<br>';
                 refErrorName = refErrorName ? refErrorName : 'transferDateInput';
             }
             if (!this.transferAsset.TransactionDate) {
-                textDialog += 'Ngày chứng từ không được phép trống !<br>';
                 refErrorName = refErrorName ? refErrorName : 'transactionDateInput';
             }
             if (this.$refs['checkbox-delivery'].isChecked) {
@@ -1164,21 +1260,20 @@ export default {
                         this.transferAsset.ReceiverList[i].Position == undefined ||
                         this.transferAsset.ReceiverList[i].Position.trim() == ''
                     ) {
-                        textDialog += 'Thông tin ban giao nhận không được để trống !<br>';
+                        textDialog += this.$_MISAResource['vn-VI'].propertyTransferForm.noEmptyReceiver;
                         break;
                     }
                 }
             }
-            if (!this.transferAsset.TransferAssetDetailList) {
-                textDialog += 'Danh sách tài sản điều chuyển không được để trống !<br>';
-            } else if (
-                this.transferAsset.TransferAssetDetailList &&
-                this.transferAsset.TransferAssetDetailList.length == 0
+            if (
+                !this.transferAsset.TransferAssetDetailList ||
+                (this.transferAsset.TransferAssetDetailList && this.transferAsset.TransferAssetDetailList.length == 0)
             ) {
-                textDialog += 'Danh sách tài sản điều chuyển không được để trống !<br>';
+                textDialog += this.$_MISAResource['vn-VI'].propertyTransferForm.noEmptyTransferAsset;
             }
-
-            if (textDialog) {
+            if (refErrorName) {
+                check = false;
+            } else if (textDialog) {
                 check = false;
                 this.showDialog(textDialog, '', {
                     thirdDialogBtnText: this.$_MISAResource['vn-VI'].close,
@@ -1188,8 +1283,10 @@ export default {
                     },
                 });
             }
-
-            return check;
+            return {
+                check,
+                refErrorName,
+            };
         },
         /*
          * validate nghiệp vụ của chứng từ trước khi gửi lên server
@@ -1199,8 +1296,11 @@ export default {
             let textDialog = '';
             let check = true;
             let refErrorName = '';
-            if (this.transferAsset.TransferDate < this.transferAsset.TransactionDate) {
-                textDialog = 'Ngày chứng từ phải nhỏ hơn ngày điều chuyển !<br>';
+            if (
+                this.formatedCurrentDateReserve(this.transferAsset.TransferDate) <
+                this.formatedCurrentDateReserve(this.transferAsset.TransactionDate)
+            ) {
+                textDialog = this.$_MISAResource['vn-VI'].propertyTransferForm.errorTransferDate;
                 refErrorName = refErrorName ? refErrorName : 'transferDateInput';
                 check = false;
             } else if (!this.checkDepartmentTransfer().check) {
@@ -1219,7 +1319,7 @@ export default {
                     },
                 });
             }
-            return check;
+            return { check, refErrorName };
         },
         /*
          * Kiểm tra các phòng ban chuyển đi có khác phòng ban hiện tại không
@@ -1228,14 +1328,16 @@ export default {
         checkDepartmentTransfer() {
             let errorMessage = '';
             let check = true;
-            for (let i = 0; i < this.transferAsset.TransferAssetDetailList.length; i++) {
-                if (
-                    this.transferAsset.TransferAssetDetailList[i].DepartmentId ==
-                    this.transferAsset.TransferAssetDetailList[i].DepartmentTransferId
-                ) {
-                    errorMessage = `Bộ phận chuyển đi phải khác bộ phận cũ (<strong>${this.transferAsset.TransferAssetDetailList[i].PropertyCode}</strong>) !`;
-                    check = false;
-                    break;
+            if (this.transferAsset.TransferAssetDetailList) {
+                for (let i = 0; i < this.transferAsset.TransferAssetDetailList.length; i++) {
+                    if (
+                        this.transferAsset.TransferAssetDetailList[i].DepartmentId ==
+                        this.transferAsset.TransferAssetDetailList[i].DepartmentTransferId
+                    ) {
+                        errorMessage = `${this.$_MISAResource['vn-VI'].propertyTransferForm.differentDepartment}(<strong>${this.transferAsset.TransferAssetDetailList[i].PropertyCode}</strong>) !`;
+                        check = false;
+                        break;
+                    }
                 }
             }
             return {
@@ -1265,6 +1367,7 @@ export default {
             },
         ) {
             this.isShowDialog = true;
+            this.errorField = '';
             this.textDialog = textDialog;
             this.documentInfo = documentInfo;
             this.dialogActions = dialogActions;
@@ -1289,6 +1392,13 @@ export default {
          */
         formatedMoney(value) {
             return formatMoney(value);
+        },
+        /*
+         * Format giá trị ngày tháng năm về dạng dd/mm/yyyy
+         * Author: BATUAN (27/05/2023)
+         */
+        formatedCurrentDateReserve(value) {
+            return formatCurrentDateReserve(value);
         },
         /*
          * Tính toán tổng giá trị còn lại của các tài sản
@@ -1334,8 +1444,8 @@ export default {
          * Author: BATUAN (14/06/2023)
          */
         async handleClickAddLastestReceiver() {
-            if (this.$refs.checkboxAddReceiver.isChecked == true) {
-                this.$refs.checkboxAddReceiver.isChecked = false;
+            if (this.$refs['checkbox-add-receiver'].isChecked == true) {
+                this.$refs['checkbox-add-receiver'].isChecked = false;
                 if (this.formMode == this.$_MISAEnum.formAdd) {
                     this.transferAsset.ReceiverList = [];
                     this.transferAsset.ReceiverList.push({
@@ -1352,7 +1462,7 @@ export default {
                     }
                 }
             } else {
-                this.$refs.checkboxAddReceiver.isChecked = true;
+                this.$refs['checkbox-add-receiver'].isChecked = true;
                 await this.getLastestReceiver();
 
                 if (this.listReceiverLastest.length > 0) {
@@ -1373,10 +1483,10 @@ export default {
             }
         },
         /*
-         * Sự kiện Ctrl + F để tìm kiếm
+         * Các sự kiện Ctrl + Phím tắt
          * Author: BATUAN (24/08/2023)
          */
-        handleSearchByKeyBoard(event) {
+        handleShortKey(event) {
             if (event.key === 'f') {
                 {
                     if (event.ctrlKey) {
@@ -1385,6 +1495,13 @@ export default {
                         event.preventDefault();
                     }
                 }
+            }
+            else if (event.key === 's') {
+                if (event.ctrlKey) {
+                        this.btnSaveAction();
+                        // Ngăn chặn hành vi mặc định của trình duyệt khi nhấn Ctrl + S
+                        event.preventDefault();
+                    }
             }
         },
         /*

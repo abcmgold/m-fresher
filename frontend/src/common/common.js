@@ -35,7 +35,7 @@ export function unformatMoney(money) {
 }
 
 /**
- * Format ngày tháng
+ * Format ngày tháng dạng DD/MM/YYYY
  * Author: BATUAN (29/05/2023) 
  */
 export function formatCurrentDate(date) {
@@ -54,7 +54,30 @@ export function formatCurrentDate(date) {
     });
     const year = dateObject.getFullYear();
 
-    return `${formattedDay}-${formattedMonth}-${year}`
+    return `${formattedDay}/${formattedMonth}/${year}`
+}
+
+/**
+ * Format ngày tháng dạng YYYY-MM-DD
+ * Author: BATUAN (29/05/2023) 
+ */
+export function formatCurrentDateReserve(date) {
+    var dateObject = new Date(date);
+
+    const day = dateObject.getDate();
+    const formattedDay = day.toLocaleString('en-US', {
+        minimumIntegerDigits: 2,
+        useGrouping: false
+    });
+
+    const month = dateObject.getMonth() + 1;
+    const formattedMonth = month.toLocaleString('en-US', {
+        minimumIntegerDigits: 2,
+        useGrouping: false
+    });
+    const year = dateObject.getFullYear();
+
+    return `${year}-${formattedMonth}-${formattedDay}`
 }
 
 /**
@@ -62,7 +85,7 @@ export function formatCurrentDate(date) {
  * Author: BATUAN (29/05/2023) 
  */
 export function formatRatio(number) {
-    if (!number) {
+    if (! number) {
         return 0;
     }
     let formatted_number = new Intl.NumberFormat('vi-VN', {

@@ -16,6 +16,8 @@
             "
             @keydown="blockAlphabets"
             v-on:focus="highlightInput"
+            @mouseenter="handleHoverInput"
+            @mouseleave="handleLeaveInput"
         />
         <div class="number-field__input--icons" v-if="isShowIcon">
             <div class="number-field__input--icon--up" @click="this.increasingValue"></div>
@@ -155,6 +157,24 @@ export default {
          */
         autoFocus() {
             this.$refs.myInputNumber.focus();
+        },
+        /*
+         * Sự kiện khi hover vào ô input
+         * Author: BATUAN (14/06/2023)
+         */
+        handleHoverInput() {
+            if (this.$parent && this.$parent.showTooltip) {
+                this.$parent.showTooltip();
+            }
+        },
+        /*
+         * Sự kiện khi rời khỏi ô input
+         * Author: BATUAN (14/06/2023)
+         */
+        handleLeaveInput() {
+            if (this.$parent && this.$parent.hideTooltip) {
+                this.$parent.hideTooltip();
+            }
         },
     },
 };

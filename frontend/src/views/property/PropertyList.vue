@@ -71,7 +71,7 @@
                 :icon="'icon--delete'"
                 @click="this.deleteRowOnClickIcon"
             ></m-button>
-            <div class="drop-down">
+            <!-- <div class="drop-down">
                 <m-button
                     v-tippy="$_MISAResource['vn-VI'].hide"
                     :individualClass="' btn--single btn--setting'"
@@ -83,7 +83,7 @@
                     :isShowMiniSetting="this.isShowMiniSetting"
                     @toggleMiniSetting="this.toggleMiniSetting"
                 ></m-setting>
-            </div>
+            </div> -->
         </div>
     </div>
     <div class="content__body">
@@ -145,9 +145,10 @@
                 >
                     <div class="text-align-center cell--item cell--item--checkbox" style="minWidth: 50px">
                         <m-checkbox
+                            @dblclick.stop
                             :ref="`checkbox-${data.PropertyId}`"
                             :id="data.PropertyId"
-                            @click="clickOnCheckbox(index, data.PropertyId)"
+                            @click="clickOnCheckbox(data.PropertyId)"
                         ></m-checkbox>
                     </div>
                     <div class="text-align-center cell--item" style="minWidth: 50px">{{ index + 1 }}</div>
@@ -157,11 +158,12 @@
                         :class="header.align"
                         :style="{ minWidth: header.width }"
                         :key="header.id"
+                        :title="data[header.field]"
                     >
-                        <div v-if="header.money">
+                        <div v-if="header.money" classs="cell--item__child">
                             {{ this.formatedMoney(data[header.field]) }}
                         </div>
-                        <div v-else>{{ data[header.field] }}</div>
+                        <div v-else class="cell--item__child" >{{ data[header.field] }}</div>
                     </div>
                     <div class="cell--item" style="minWidth: 120px"></div>
                 </div>
@@ -203,6 +205,7 @@
                     <div
                         v-tippy="$_MISAResource['vn-VI'].edit"
                         class="table--icon table--icon-pencil"
+                        @click.stop
                         @click="this.showDetail(index, data.PropertyId)"
                     ></div>
                     <div
@@ -227,6 +230,7 @@
         </div>
         <div class="table__content--empty" v-if="isShowEmptyRecord">
             <div class="icon--empty"></div>
+            <div>{{this.$_MISAResource['vn-VI'].noData}}</div>
         </div>
         <div v-if="this.isLoadingData" class="grid-loading-container">
             <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
@@ -265,7 +269,6 @@
     ></PropertyAdd>
     <m-modal v-if="this.isShowModal">
         <m-dialog
-            :type="this.typeDialog"
             :text="this.textDialog"
             :status="this.statusDialog"
             :documentInfo="this.documentInfoDialog"
@@ -276,6 +279,8 @@
             :secondBtnLabel="this.secondDialogBtnText"
             :thirdBtnLabel="this.thirdDialogBtnText"
             :dialogActions="this.dialogActions"
+            :errorField="this.errorField"
+            :componentFocusedName="this.componentFocusedName"
         ></m-dialog>
     </m-modal>
 
@@ -327,7 +332,6 @@ export default {
             thirdBtnFunction: null,
             // Nhãn của các button trong dialog
             statusDialog: -1,
-            typeDialog: '',
             firstDialogBtnText: '',
             secondDialogBtnText: '',
             thirdDialogBtnText: '',
@@ -355,6 +359,7 @@ export default {
             formMode: null,
             // Lưu danh sách header
             listHeader: [],
+            headerInfo: {},
             // Giá trị ô lọc mã tài sản
             propertyTypeFilter: '',
             // Giá trị ô lọc tên phòng ban sử dụng
@@ -423,7 +428,8 @@ export default {
             firstClickRow: 0,
             // Đánh dấu hàng thứ hai được chọn khi dùng sự kiện shift + click
             secondClickRow: '',
-            errorFieldName: '',
+            errorField: '',
+            componentFocusedName: '',
             documentInfoDialog: [],
             dialogActions: {
                 firstDialogBtnText: '',
@@ -436,15 +442,8 @@ export default {
         };
     },
     async created() {
-        await request.getRecord('ConfigTable?tableName=PropertyTable')
-        .then (res => {
-            console.log(res)
-        })
-        .catch(error => {
-            console.log(error)
-        })
         // Lấy ra list header
-        this.listHeader = this.$_MISAResource['vn-VI'].listHeader;
+        await this.getListHeader();
         // Lấy ra danh sách phòng ban để đưa vào combo box
         this.getAllDepartments();
         // Lấy ra danh sách mã loại tài sản để đưa vào combo box
@@ -453,6 +452,12 @@ export default {
         await this.getPropertyWithFilter();
         // Tính toán số trang
         this.calculateNumberPage();
+
+        window.addEventListener("beforeunload", this.updateListHeaderProperty);
+    },
+    async beforeUnmount() {
+        await this.updateListHeaderProperty();
+        window.removeEventListener("beforeunload", this.updateListHeaderProperty);
     },
     watch: {
         pageSize: function (newValue) {
@@ -561,6 +566,42 @@ export default {
         },
     },
     methods: {
+         /*
+         * Gọi api lấy thông tin header của bảng
+         * Author: BATUAN (27/08/2023)
+         */
+         async getListHeader() {
+            await request
+                .getRecord('ConfigTable?tableName=PropertyTable')
+                .then((res) => {
+                    this.listHeader = JSON.parse(res.data.ConfigContent);
+                    this.headerInfo = res.data;
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        },
+        /*
+         * Gọi api cập nhật thông tin headers
+         * Author: BATUAN (27/08/2023)
+         */
+        async updateListHeaderProperty() {
+            await request
+                .updateRecord('ConfigTable', {
+                    ConfigId: this.headerInfo.ConfigId,
+                    TableName: this.headerInfo.TableName,
+                    ConfigContent: JSON.stringify(this.listHeader),
+                })
+                .then(() => {
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        },
+        /*
+         * Thay đổi số bản ghi trên 1 trang
+         * Author: BATUAN (27/06/2023)
+         */
         changePageSize: function (newValue) {
             this.pageSize = newValue;
         },
@@ -711,7 +752,6 @@ export default {
             await this.getPropertyById(id);
             // Hiển thị màn hình update(giống thêm mới)
             this.isShowAddProperty = true;
-            console.log(this.selectedData)
            
         }
         /*
@@ -821,6 +861,8 @@ export default {
                 .catch((err) => {
                     this.$store.commit('toggleMaskElementShow');
                     this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
+                    this.errorField = err.errorField
+                    this.componentFocusedName = "propertyForm"
                 });
 
             if (isSuccess) {
@@ -958,8 +1000,10 @@ export default {
                 .then(() => (isSuccess = true))
                 .catch(async (err) => {
                     this.$store.commit('toggleMaskElementShow');
+                    
                     this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
-                    this.errorFieldName = err.errorField;
+                    this.errorField = err.errorField
+                    this.componentFocusedName = "propertyForm"
                 });
 
             if (isSuccess) {
@@ -1146,10 +1190,12 @@ export default {
         async deleteRows(id) {
             if (this.isMultipleDelele) {
                 //Xóa các bản ghi
+                this.$store.commit('toggleMaskElementShow');
+
                 await instance
                     .delete(`Property`, { data: this.selectedRow })
                     .then(async () => {
-                        this.showToastSuccess('Xóa thành công');
+                        this.showToastSuccess(this.$_MISAResource['vn-VI'].deleteSuccess);
                         // Reset list các hàng được chọn && set ô checkbox là unchecked
                         for (let i = 0; i < this.selectedRow.length; i++) {
                             if (
@@ -1164,12 +1210,16 @@ export default {
 
                         await this.getPropertyWithFilter();
 
+                        this.checkForCheckbox()
+
+                        this.checkFullChecked()
+
                         this.calculateNumberPage();
 
-                        console.log(this.$refs['checkbox-all'])
-                        // this.$refs['checkbox-all'][0].isChecked = false;
                     })
-                    .catch((err) => {
+                    .catch(async (err) => {
+                        await delay(150)
+                        this.$store.commit('toggleMaskElementShow');
                         this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                     });
             }
@@ -1177,13 +1227,13 @@ export default {
             else {
                 let row = [];
                 row.push(id);
+                this.$store.commit('toggleMaskElementShow');
                 await instance
                     .delete(`Property`, { data: row })
-                    .then(async (res) => {
-                        console.log(res)
-
+                    .then(async () => {
+                        this.$store.commit('toggleMaskElementShow');
                         // Hiện toast message thông báo thành công
-                        this.showToastSuccess('Xóa thành công');
+                        this.showToastSuccess(this.$_MISAResource['vn-VI'].deleteSuccess);
                         // Xóa hàng bị xóa khỏi danh sách các hàng đang được chọn (nếu có)
                         this.selectedRow = this.selectedRow.filter((rowId) => {
                             return id != rowId;
@@ -1197,11 +1247,16 @@ export default {
 
                         this.calculateNumberPage();
 
-                        this.$refs['checkbox-all'].isChecked = false;
+                        this.checkForCheckbox()
+
+                        this.checkFullChecked()
+
+                        // this.$refs['checkbox-all'].isChecked = false;
 
                     })
-                    .catch((err) => {
-                        console.log(err)
+                    .catch(async (err) => {
+                        await delay(150)
+                        this.$store.commit('toggleMaskElementShow');
                         this.handleException(err.statusCode, err.message, err.documentInfo, this.showDialog);
                     });
             }
@@ -1217,8 +1272,7 @@ export default {
          * Sự kiện khi click vào ô checkbox
          * Author: BATUAN (07/06/2023)
          */
-        clickOnCheckbox(index, id) {
-            console.log(index);
+        clickOnCheckbox(id) {
             if (this.$refs[`checkbox-${id}`][0].isChecked) {
                 this.selectedRow = this.selectedRow.filter((idRow) => {
                     return idRow != id;
@@ -1397,6 +1451,7 @@ export default {
             },
         ) {
             this.isShowModal = true;
+            this.errorField = '',
             this.documentInfoDialog = documentInfo;
             this.textDialog = textDialog;
             this.dialogActions = dialogActions;
