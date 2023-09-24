@@ -131,6 +131,7 @@
                     </div>
                     <div v-if="this.listProperty.length == 0" class="table__content--empty">
                         <div class="icon--empty"></div>
+                        <div>{{this.$_MISAResource['vn-VI'].noData}}</div>
                     </div>
                     <div v-if="this.isLoadingData" class="grid-loading-container">
                         <div class="ld-row m-row"><div class="flex ld-item shimmer"></div></div>
@@ -155,10 +156,14 @@
             <div class="choosen-input">
                 <div class="row">
                     <div class="col-4">
-                        <m-group-input :text="this.$_MISAResource['vn-VI'].choosenForm.newDepartment" :isForce="true">
+                        <m-group-input
+                            :text="this.$_MISAResource['vn-VI'].choosenForm.newDepartment"
+                            :isForce="true"
+                            :message="this.$_MISAResource['vn-VI'].choosenForm.pleaseChooseNewDepartment"
+                        >
                             <m-combo-box
                                 :dataSelect="this.departmentNames"
-                                ref=""
+                                ref="newDepartmentInput"
                                 :isRequired="true"
                                 :placeholder="this.$_MISAResource['vn-VI'].choosenForm.chooseNewDepartment"
                                 type="combo-box"
@@ -212,7 +217,7 @@
         </div>
     </m-modal>
     <m-modal v-if="this.isShowDialog">
-        <m-dialog :type="this.typeDialog" :text="this.textDialog" :dialogActions="this.dialogActions"></m-dialog>
+        <m-dialog :text="this.textDialog" :dialogActions="this.dialogActions" :errorField="this.errorField"></m-dialog>
     </m-modal>
 </template>
 
@@ -264,6 +269,7 @@ export default {
             totalOriginalPrice: 0,
             totalResidualPrice: 0,
             inputSearch: '',
+            errorField: '',
         };
     },
     async created() {
@@ -275,7 +281,7 @@ export default {
         this.$refs.inputSearch.$el.focus();
     },
     unmounted() {
-        if (this.$parent) {
+        if (this.$parent && this.$parent.$refs.transferAssetCodeInput) {
             this.$parent.$refs.transferAssetCodeInput.$el.focus();
         }
     },
@@ -288,7 +294,6 @@ export default {
             this.pageNumber = Math.ceil(this.totalRecords / this.pageSize);
             this.selectedRow = [];
             this.checkForCheckbox();
-
             this.checkFullChecked();
             this.getListProperty();
         },
@@ -334,7 +339,6 @@ export default {
                     )}&searchInput=${this.inputSearch}&excludedIds=${tringId}`,
                 )
                 .then(async (res) => {
-                    console.log(res);
                     await delay(500);
                     this.isLoadingData = false;
                     this.listProperty = res.data;
@@ -546,20 +550,27 @@ export default {
         handleChoosenProperty() {
             if (this.selectedRow.length == 0) {
                 this.showDialog(this.$_MISAResource['vn-VI'].choosenForm.pleaseChooseTransferAsset);
+                this.errorField = '';
             } else if (!this.newDepartmentName) {
                 this.showDialog(this.$_MISAResource['vn-VI'].choosenForm.pleaseChooseNewDepartment);
+                this.errorField = 'newDepartmentInput';
             } else {
                 let listSelectedProperty = [];
                 let checked = true;
 
                 for (let i = 0; i < this.selectedRow.length; i++) {
-                    if (this.selectedRow[i].DepartmentTransferName == this.newDepartmentName) {
+                    if (this.selectedRow[i].DepartmentTransferName && this.selectedRow[i].DepartmentTransferName == this.newDepartmentName) {
+                        checked = false;
+                        break;
+                    }
+                    else if (!this.selectedRow[i].DepartmentTransferName && this.selectedRow[i].DepartmentName == this.newDepartmentName) {
                         checked = false;
                         break;
                     }
                 }
                 if (checked == false) {
-                    this.showDialog('Bộ phận sử dụng mới phải khác bộ phận cũ');
+                    this.showDialog(this.$_MISAResource['vn-VI'].propertyTransferForm.differentDepartment);
+                    this.errorField = 'newDepartmentInput';
                 } else {
                     for (let i = 0; i < this.selectedRow.length; i++) {
                         let property = { ...this.selectedRow[i] };
@@ -622,6 +633,7 @@ export default {
             },
         ) {
             this.isShowDialog = true;
+            this.erroField = '';
             this.textDialog = textDialog;
             this.dialogActions = dialogActions;
         },

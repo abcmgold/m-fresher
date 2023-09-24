@@ -9,7 +9,7 @@
         <div class="popup">
             <div class="popup__header">
                 <div class="popup__header__title">{{ this.title }}</div>
-                <div id="btnCloseModalAdd" class="popup__header__close" @click="this.showDialogCancel">
+                <div class="popup__header__close" @click="this.showDialogCancel">
                     <div
                         :content="this.MISAResource['vn-VI'].close"
                         v-tippy="{ placement: 'bottom' }"
@@ -267,7 +267,7 @@
                                 :isForce="true"
                                 :message="this.MISAResource['vn-VI'].property.useDateError"
                                 ><m-date-picker
-                                    ref="useDateInput"
+                                    ref="followDateInput"
                                     type="date"
                                     :isRequired="true"
                                     v-model="property.FollowDate"
@@ -297,15 +297,9 @@
     </m-modal>
     <m-modal v-if="this.isShowModal">
         <m-dialog
-            :type="this.typeDialog"
             :text="this.textDialog"
-            :firstBtnFunction="this.firstBtnFunction"
-            :secondBtnFunction="this.secondBtnFunction"
-            :thirdBtnFunction="this.thirdBtnFunction"
-            :firstBtnLabel="this.firstDialogBtnText"
-            :secondBtnLabel="this.secondDialogBtnText"
-            :thirdBtnLabel="this.thirdDialogBtnText"
             :dialogActions="this.dialogActions"
+            :errorField="this.errorField"
         ></m-dialog>
     </m-modal>
 </template>
@@ -331,6 +325,15 @@ export default {
         },
         formMode: Number,
     },
+    emits: [
+        'addNewProperty',
+        'updateValueRow',
+        'hideAddProperty',
+        'resetSelectedRow',
+        'showDialog',
+        'closeDialogAndForm',
+        'closeDialog',
+    ],
     data() {
         return {
             property: {},
@@ -341,12 +344,6 @@ export default {
             title: '',
             isShowModal: '',
             textDialog: '',
-            firstDialogBtnText: '',
-            secondDialogBtnText: '',
-            thirdDialogBtnText: '',
-            firstBtnFunction: null,
-            secondBtnFunction: null,
-            thirdBtnFunction: null,
             dialogActions: {
                 firstDialogBtnText: '',
                 secondDialogBtnText: '',
@@ -355,7 +352,8 @@ export default {
                 secondBtnFunction: null,
                 thirdBtnFunction: null,
             },
-            isDisableInput: 0
+            isDisableInput: false,
+            errorField: ''
         };
     },
     created() {
@@ -369,14 +367,15 @@ export default {
                 this.property.NumberYearUse = Number(0);
                 this.property.WearRate = Number(0);
                 this.property.WearRateValue = Number(0);
-                this.property.FollowYear = new Date().getFullYear();
+                this.property.FollowYear = new Date().getFullYear().toString();
                 this.property.PurchaseDate = new Date();
                 this.property.FollowDate = new Date();
                 break;
             case this.enum.formUpdate:
                 this.title = this.MISAResource['vn-VI'].updateProperty;
                 this.property = { ...this.selectedRow };
-                this.isDisableInput = !this.property.EditMode
+                this.compareProperty = { ...this.property };
+                this.isDisableInput = !this.property.EditMode;
                 break;
             case this.enum.formDuplicate:
                 this.title = this.MISAResource['vn-VI'].addProperty;
@@ -386,7 +385,6 @@ export default {
             default:
                 break;
         }
-        this.compareProperty = { ...this.property };
     },
     mounted() {
         // focus vào ô input đầu tiên khi lên form
@@ -415,8 +413,8 @@ export default {
             if (option) {
                 this.property.PropertyTypeName = option.value;
                 this.property.PropertyTypeId = option.id;
-                this.property.WearRate = option.wearRate;
-                this.property.NumberYearUse = option.numberYearUse;
+                // this.property.WearRate = option.wearRate;
+                // this.property.NumberYearUse = option.numberYearUse;
             }
         },
         // Tính toán lại giá trị hao mòn khi nguyên giá thay đổi
@@ -430,7 +428,7 @@ export default {
             } else {
                 this.property.WearRate = (Number(((1 / parseInt(newValue)) * 100).toFixed(2)) * 100) / 100;
                 this.property.WearRateValue =
-                    ((Number((this.property.OriginalPrice * this.property.WearRate).toFixed(2)) / 100) * 100) / 100;
+                    Number((((Number((this.property.OriginalPrice * this.property.WearRate).toFixed(2)) / 100) * 100) / 100).toFixed(0))
             }
         },
     },
@@ -471,7 +469,11 @@ export default {
                             break;
                     }
                 } else {
-                    this.$emit('showDialog', this.textDialog);
+                    this.showDialog(this.textDialog, {
+                        thirdDialogBtnText: this.$_MISAResource['vn-VI'].close,
+                        thirdBtnFunction: this.hideDialog,
+                    });
+                    this.errorField = this.validateMajor().refName
                 }
             } else {
                 // Gọi hàm blur của các ô input
@@ -485,25 +487,15 @@ export default {
             }
         },
         /*
-         * Show dialog thông báo lỗi validate
-         * Author: BATUAN (30/05/2023)
-         */
-        showDialogValidate(message) {
-            this.showDialogValidate = true;
-            this.textDialog = message;
-        },
-        /*
          * Validate dữ liệu của các trường bắt buộc
          * Author: BATUAN (30/05/2023)
          */
         validateData() {
-            console.log('validateData');
             let validate = true;
             let refName = '';
             for (const ref in this.$refs) {
                 if (this.$refs[ref].isRequired) {
                     if (this.$refs[ref].modelValue === '' || this.$refs[ref].modelValue === undefined) {
-                        console.log(ref, this.$refs[ref].modelValue)
                         validate = false;
                         refName = ref;
                         break;
@@ -520,24 +512,21 @@ export default {
          * Author: BATUAN (30/05/2023)
          */
         validateMajor() {
-            console.log('Major')
-
             let check = true;
-            let refName = null;
+            let refName = '';
             if (
                 Number(this.property.WearRate.toFixed(2)) != Number((1 / this.property.NumberYearUse) * 100).toFixed(2)
             ) {
                 this.textDialog = this.MISAResource['vn-VI'].wearRateError;
                 check = false;
                 refName = 'numberYearsUseInput';
-                console.log(this.property.WearRate.toFixed(2))
             }
             if (Number(this.property.WearRateValue) > Number(this.property.OriginalPrice)) {
                 this.textDialog = this.MISAResource['vn-VI'].wearRateValueError;
                 check = false;
                 refName = 'originalValueInput';
             }
-            if (this.property.PurchaseDate > this.property.FollowDate) {
+            if (new Date(this.property.PurchaseDate) > new Date(this.property.FollowDate)) {
                 this.textDialog = this.MISAResource['vn-VI'].dateError;
                 check = false;
                 refName = 'purchaseDateInput';
@@ -552,6 +541,7 @@ export default {
          * Author: BATUAN (27/05/2023)
          */
         showDialogCancel() {
+            this.errorField = ''
             if (
                 JSON.stringify(this.compareProperty) == JSON.stringify(this.property) &&
                 this.formMode != this.enum.formAdd &&
@@ -569,7 +559,7 @@ export default {
                         });
                         break;
                     case this.enum.formUpdate:
-                        this.showDialog(this.$_MISAResource['vn-VI'].declareProperty, {
+                        this.showDialog(this.$_MISAResource['vn-VI'].cancelEditting, {
                             firstDialogBtnText: this.$_MISAResource['vn-VI'].no,
                             thirdDialogBtnText: this.$_MISAResource['vn-VI'].yes,
                             firstBtnFunction: this.hideDialog,
@@ -590,6 +580,7 @@ export default {
             }
         },
         showDialog(textDialog, dialogActions) {
+            this.errorField = ''
             this.isShowModal = true;
             this.textDialog = textDialog;
             this.dialogActions = dialogActions;
@@ -658,11 +649,11 @@ export default {
                 }
             }
         },
-           /*
+        /*
          * Xử lý mã lỗi backend trả về
          * Author: BATUAN (29/06/2023)
          */
-         handleException(statusCode, message, documentInfo, showDialog) {
+        handleException(statusCode, message, documentInfo, showDialog) {
             exception(statusCode, message, documentInfo, showDialog);
         },
     },

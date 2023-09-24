@@ -34,7 +34,7 @@
 }
 
 .dp__input:hover {
-    border-color: var(--primary-color) !important;
+    /* border-color: var(--primary-color) !important; */
 }
 
 .dp__range_end, .dp__range_start, .dp__active_date {

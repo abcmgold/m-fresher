@@ -45,7 +45,7 @@
 
 .text__input:hover {
     /* background-color: #e6e6e6; */
-    border-color: var(--primary-color);
+    /* border-color: var(--primary-color); */
 }
 .text__input:focus {
     border: 1px solid var(--primary-color);

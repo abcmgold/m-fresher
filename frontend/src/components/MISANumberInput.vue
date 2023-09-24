@@ -15,6 +15,8 @@
                 }
             "
             @keydown="blockAlphabets"
+            @mouseenter="handleHoverInput"
+            @mouseleave="handleLeaveInput"
         />
         <div class="number-field__input--icons" v-if="isShowIcon">
             <div class="number-field__input--icon--up" @click="this.increasingValue"></div>
@@ -25,7 +27,7 @@
 
 <script>
 import { formatRatio } from '@/common/common';
-import debounce from 'lodash/debounce';
+// import debounce from 'lodash/debounce';
 export default {
     name: 'MISANumberInput',
     props: {
@@ -57,17 +59,17 @@ export default {
     },
     mounted() {},
     watch: {
-        currentvalue: debounce(function (newValue) {
-            if (newValue) {
-                newValue = parseFloat(newValue.replace(',', '.'));
-            }
-            this.$emit('update:modelValue', newValue);
-            this.currentvalue = this.formattedRatio(this.modelValue);
-            this.error = false;
-            if (this.$parent.hideErrorMessage) {
-                this.$parent.hideErrorMessage();
-            }
-        },1000),
+        // currentvalue: debounce(function (newValue) {
+        //     if (newValue) {
+        //         newValue = parseFloat(newValue.replace(',', '.'));
+        //     }
+        //     this.$emit('update:modelValue', newValue);
+        //     this.currentvalue = this.formattedRatio(this.modelValue);
+        //     this.error = false;
+        //     if (this.$parent.hideErrorMessage) {
+        //         this.$parent.hideErrorMessage();
+        //     }
+        // }, 1000),
         modelValue: function (newValue) {
             this.currentvalue = this.formattedRatio(newValue);
         },
@@ -157,6 +159,24 @@ export default {
          */
         autoFocus() {
             this.$refs.myInputNumber.focus();
+        },
+        /*
+         * Sự kiện khi hover vào ô input
+         * Author: BATUAN (14/06/2023)
+         */
+        handleHoverInput() {
+            if (this.$parent && this.$parent.showTooltip) {
+                this.$parent.showTooltip();
+            }
+        },
+        /*
+         * Sự kiện khi rời khỏi ô input
+         * Author: BATUAN (14/06/2023)
+         */
+        handleLeaveInput() {
+            if (this.$parent && this.$parent.hideTooltip) {
+                this.$parent.hideTooltip();
+            }
         },
     },
 };

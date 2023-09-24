@@ -18,6 +18,8 @@
         :disabled="isDisabled"
         v-on:blur="onBlurFunction"
         @focus="highlightInput"
+        @mouseenter="handleHoverInput"
+        @mouseleave="handleLeaveInput"
     />
 </template>
 
@@ -61,6 +63,24 @@ export default {
                         this.$parent.showErrorMessage();
                     }
                 }
+            }
+        },
+        /*
+         * Sự kiện khi hover vào ô input
+         * Author: BATUAN (14/06/2023)
+         */
+        handleHoverInput() {
+            if (this.$parent && this.$parent.showTooltip) {
+                this.$parent.showTooltip();
+            }
+        },
+        /*
+         * Sự kiện khi rời khỏi ô input
+         * Author: BATUAN (14/06/2023)
+         */
+         handleLeaveInput() {
+            if (this.$parent && this.$parent.hideTooltip) {
+                this.$parent.hideTooltip();
             }
         },
         /*

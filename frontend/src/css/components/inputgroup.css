@@ -1,5 +1,6 @@
 .input-group {
-    margin: 4px 0px;
+    margin: 8px 0px;
+    position: relative;
 }
 
 .input-group input {
@@ -19,4 +20,17 @@
     color: red;
     margin-left: 2px;
     display: block;
+}
+
+.icon-tooltip-validate {
+    display: inline-block;
+    white-space: nowrap;
+    position: absolute;
+    color: #fff;
+    background: #f93154;
+    left: 30px;
+    top: -2px;
+    padding: 7px 10px;
+    border-radius: 3px;
+    z-index: 99999;
 }
